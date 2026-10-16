@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/jackc/pgx/v5"
+
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/apperror"
 )
 
@@ -268,6 +270,44 @@ func TestServiceRejectsBadIDs(t *testing.T) {
 		if _, err := svc.Delete(context.Background(), id); err == nil {
 			t.Errorf("Delete(%d) error = nil, want validation error", id)
 		}
+	}
+}
+
+// TestServiceGetByIDTranslatesErrNoRows mengunci regresi.
+//
+// Query :one milik sqlc mengembalikan pgx.ErrNoRows saat baris tidak ada, dan
+// itulah yang terjadi kalau ID-nya memang tidak ada atau barisnya sudah
+// di-soft-delete. ErrorTranslate dulu tidak memetakan error itu, jadi ia jatuh
+// ke default dan membalas 500.
+//
+// Sangat mudah terlewat: stubStore di atas mengembalikan apperror.NotFound
+// untuk ID yang tidak ditemukan, bukan pgx.ErrNoRows - jadi jalur yang salah
+// itu tidak pernah tersentuh test. Stub-nya harus meniru apa yang benar-benar
+// dikembalikan database.
+func TestServiceGetByIDTranslatesErrNoRows(t *testing.T) {
+	store := &stubStore{getErr: pgx.ErrNoRows}
+	svc := newTestService(store)
+
+	_, err := svc.GetByID(context.Background(), 4242)
+	if err == nil {
+		t.Fatal("GetByID() error = nil, want NotFound")
+	}
+	if !apperror.IsNotFound(err) {
+		t.Errorf("GetByID() kind = %v, want NotFound (pgx.ErrNoRows harus jadi 404, bukan 500)", apperror.KindOf(err))
+	}
+}
+
+// TestErrorTranslateKeepsUnexpectedErrorsAsInternal memastikan perbaikan di atas
+// tidak swallow error yang memang tidak terduga. Tidak semua error harus jadi
+// 404 - hanya "tidak ada".
+func TestErrorTranslateKeepsUnexpectedErrorsAsInternal(t *testing.T) {
+	err := ErrorTranslate(errors.New("koneksi database putus"), ResourceDescribe{Singular: "Stub"})
+
+	if err == nil {
+		t.Fatal("ErrorTranslate() = nil, want internal error")
+	}
+	if apperror.IsNotFound(err) {
+		t.Error("ErrorTranslate() = NotFound, want Internal untuk error tak terduga")
 	}
 }
 

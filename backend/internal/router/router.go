@@ -8,6 +8,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/ai"
+	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/aihandler"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/auth"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/authhandler"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/authservice"
@@ -80,6 +82,10 @@ func New(d Deps) http.Handler {
 	)
 	authH := authhandler.New(authSvc, cookies, tokens.TTLRefresh())
 
+	// --- Wiring AI ekstraksi struk/faktur -----------------------------------
+	aiProvider := ai.NewOpenAIProvider(cfg.AI.BaseURL, cfg.AI.APIKey, cfg.AI.Model, cfg.AI.Timeout)
+	aiH := aihandler.NewHandler(aiProvider)
+
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Get("/healthz", health.Liveness())
 
@@ -111,27 +117,34 @@ func New(d Deps) http.Handler {
 			// kategori baru. Sara ini menutup celah itu.
 			mountMasterData(r, authenticator, masterdatastore.NewDepartmentStore(d.Queries), "/departments",
 				masterdata.ResourceDescribe{Singular: "Department", Plural: "Department"},
-				"request", departmentDTO)
+				"request", departmentDTO, nil)
 
 			mountMasterData(r, authenticator, masterdatastore.NewSatuanStore(d.Queries), "/satuan",
 				masterdata.ResourceDescribe{Singular: "Satuan", Plural: "Satuan"},
-				"payment receipt", satuanDTO)
+				"payment receipt", satuanDTO, nil)
 
 			mountMasterData(r, authenticator, masterdatastore.NewCategoryStore(d.Queries), "/categories",
 				masterdata.ResourceDescribe{Singular: "Kategori", Plural: "Kategori"},
-				"payment receipt", categoryDTO)
+				"payment receipt", categoryDTO, nil)
 
+			// Base punya endpoint autocomplete untuk dipakai form request base.
 			mountMasterData(r, authenticator, basestore.NewBaseStore(d.Queries), "/bases",
 				masterdata.ResourceDescribe{Singular: "Base", Plural: "Base"},
-				"request base", baseDTO)
+				"request base", baseDTO, SearchBases(d.Queries))
 
 			// Request (pengajuan department) — filter list per departemen
 			// dan department_id wajib saat create/update.
 			mountRequests(r, authenticator, d.Queries, requeststore.NewRequestStore(d.Queries), "/requests")
 
-			// Request base — base_id wajib karena request base selalu merujuk
-			// ke satu base.
-			mountRequestBase(r, authenticator, d.Queries, requestbasestore.NewRequestBaseStore(d.Queries), "/requestbases")
+			// Request base - base_id wajib karena request base selalu merujuk
+			// ke satu base. Path memakai bentuk kebab-case seperti route lain.
+			mountRequestBases(r, authenticator, d.Queries,
+				requestbasestore.NewRequestBaseStore(d.Queries), "/request-bases")
+
+			mountSources(r, authenticator, d.Queries)
+
+			// AI ekstraksi struk/faktur — upload gambar, dapatkan data terstruktur.
+			r.Post("/ai/extract-receipt", aiH.ExtractReceipt)
 
 			// Modul bisnis lain menyusul di Phase 5-7.
 		})

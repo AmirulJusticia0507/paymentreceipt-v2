@@ -83,7 +83,7 @@ func (q *Queries) CreateRequest(ctx context.Context, arg CreateRequestParams) (R
 const getRequestByID = `-- name: GetRequestByID :one
 SELECT id, kode, nama, department_id, keterangan, is_active, created_at, updated_at
 FROM requests
-WHERE id = $1
+WHERE id = $1 AND is_active = TRUE
 `
 
 func (q *Queries) GetRequestByID(ctx context.Context, id int64) (Request, error) {

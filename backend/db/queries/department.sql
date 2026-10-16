@@ -26,7 +26,7 @@ WHERE is_active = TRUE
 -- name: GetDepartmentByID :one
 SELECT id, kode, nama, keterangan, is_active, created_at, updated_at
 FROM department
-WHERE id = @id;
+WHERE id = @id AND is_active = TRUE;
 
 -- name: GetDepartmentByKode :one
 SELECT id, kode, nama, keterangan, is_active, created_at, updated_at

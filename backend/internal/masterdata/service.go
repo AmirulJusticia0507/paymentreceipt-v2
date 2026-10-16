@@ -127,6 +127,17 @@ func ErrorTranslate(err error, res ResourceDescribe) error {
 	case apperror.IsNotFound(err):
 		return apperror.NotFound(res.Singular)
 
+	case IsNotFoundError(err):
+		// Query :one mengembalikan pgx.ErrNoRows kalau baris tidak ada.
+		//
+		// Kasus ini nyata, bukan teoretis: tanpa filter is_active, ID yang
+		// sudah di-soft-delete tetap terbaca, jadi ErrNoRows nyaris tak pernah
+		// muncul dan cabang ini terlihat tak perlu. Begitu GetByID diperbaiki
+		// ikut memfilter is_active, ErrNoRows mulai muncul - dan karena tidak
+		// dipetakan, jatuh ke default dan membalas 500. ID yang memang tidak
+		// ada sudah salah jadi 500 sejak awal, cuma belum pernah diuji.
+		return apperror.NotFound(res.Singular)
+
 	case apperror.IsUniqueViolation(err):
 		return apperror.Conflictf(
 			"%s dengan kode tersebut sudah ada. Gunakan kode lain.", res.Plural)

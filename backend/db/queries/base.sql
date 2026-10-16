@@ -26,7 +26,7 @@ WHERE is_active = TRUE
 -- name: GetBaseByID :one
 SELECT id, kode, nama, keterangan, is_active, created_at, updated_at
 FROM base
-WHERE id = @id;
+WHERE id = @id AND is_active = TRUE;
 
 -- name: GetBaseByKode :one
 SELECT id, kode, nama, keterangan, is_active, created_at, updated_at

@@ -23,7 +23,7 @@ WHERE is_active = TRUE
 -- name: GetSatuanByID :one
 SELECT id, kode, nama, is_active, created_at, updated_at
 FROM satuan
-WHERE id = @id;
+WHERE id = @id AND is_active = TRUE;
 
 -- name: CreateSatuan :one
 INSERT INTO satuan (kode, nama)

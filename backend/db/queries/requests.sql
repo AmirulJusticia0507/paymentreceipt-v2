@@ -30,7 +30,7 @@ WHERE is_active = TRUE
 -- name: GetRequestByID :one
 SELECT id, kode, nama, department_id, keterangan, is_active, created_at, updated_at
 FROM requests
-WHERE id = @id;
+WHERE id = @id AND is_active = TRUE;
 
 -- name: GetRequestByKode :one
 SELECT id, kode, nama, department_id, keterangan, is_active, created_at, updated_at

@@ -73,7 +73,7 @@ func (q *Queries) CreateBase(ctx context.Context, arg CreateBaseParams) (Base, e
 const getBaseByID = `-- name: GetBaseByID :one
 SELECT id, kode, nama, keterangan, is_active, created_at, updated_at
 FROM base
-WHERE id = $1
+WHERE id = $1 AND is_active = TRUE
 `
 
 func (q *Queries) GetBaseByID(ctx context.Context, id int64) (Base, error) {

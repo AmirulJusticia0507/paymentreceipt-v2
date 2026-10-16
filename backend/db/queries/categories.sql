@@ -23,7 +23,7 @@ WHERE is_active = TRUE
 -- name: GetCategoryByID :one
 SELECT id, kode, nama, keterangan, is_active, created_at, updated_at
 FROM categories
-WHERE id = @id;
+WHERE id = @id AND is_active = TRUE;
 
 -- name: CreateCategory :one
 INSERT INTO categories (kode, nama, keterangan)

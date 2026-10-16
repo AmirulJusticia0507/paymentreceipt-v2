@@ -69,7 +69,7 @@ func (q *Queries) CreateSatuan(ctx context.Context, arg CreateSatuanParams) (Sat
 const getSatuanByID = `-- name: GetSatuanByID :one
 SELECT id, kode, nama, is_active, created_at, updated_at
 FROM satuan
-WHERE id = $1
+WHERE id = $1 AND is_active = TRUE
 `
 
 func (q *Queries) GetSatuanByID(ctx context.Context, id int64) (Satuan, error) {

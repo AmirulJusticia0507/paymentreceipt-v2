@@ -296,6 +296,80 @@ func TestServerAddr(t *testing.T) {
 	}
 }
 
+func TestLoad_AIConfigDefaults(t *testing.T) {
+	setEnv(t, baseEnv())
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load() error = %v, want nil", err)
+	}
+
+	if cfg.AI.BaseURL != "https://smartsproxy.clouad/v1" {
+		t.Errorf("AI.BaseURL = %q, want %q", cfg.AI.BaseURL, "https://smartsproxy.clouad/v1")
+	}
+	if cfg.AI.APIKey != "" {
+		t.Errorf("AI.APIKey = %q, want kosong (default)", cfg.AI.APIKey)
+	}
+	if cfg.AI.Model != "gemini-3.8-flash-high" {
+		t.Errorf("AI.Model = %q, want %q", cfg.AI.Model, "gemini-3.8-flash-high")
+	}
+	if cfg.AI.Timeout != 60*time.Second {
+		t.Errorf("AI.Timeout = %s, want 60s", cfg.AI.Timeout)
+	}
+	if cfg.AI.MaxRequestBody != 10<<20 {
+		t.Errorf("AI.MaxRequestBody = %d, want %d (10 MiB)", cfg.AI.MaxRequestBody, 10<<20)
+	}
+}
+
+func TestLoad_AIConfigFromEnv(t *testing.T) {
+	setEnv(t, map[string]string{
+		"DB_URL":              "postgres://x",
+		"AUTH_JWT_SECRET":     strings.Repeat("a", 32),
+		"AI_BASE_URL":         "https://contoh-proxy.ai/v1",
+		"AI_API_KEY":          "sk-contoh-kunci-rahasia",
+		"AI_MODEL_RECEIPT":    "qwen/qwen3.8-omni-flash",
+		"AI_TIMEOUT":          "120s",
+		"AI_MAX_REQUEST_BODY": "5242880",
+	})
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load() error = %v, want nil", err)
+	}
+
+	if cfg.AI.BaseURL != "https://contoh-proxy.ai/v1" {
+		t.Errorf("AI.BaseURL = %q, want %q", cfg.AI.BaseURL, "https://contoh-proxy.ai/v1")
+	}
+	if cfg.AI.APIKey != "sk-contoh-kunci-rahasia" {
+		t.Errorf("AI.APIKey = %q, want %q", cfg.AI.APIKey, "sk-contoh-kunci-rahasia")
+	}
+	if cfg.AI.Model != "qwen/qwen3.8-omni-flash" {
+		t.Errorf("AI.Model = %q, want %q", cfg.AI.Model, "qwen/qwen3.8-omni-flash")
+	}
+	if cfg.AI.Timeout != 120*time.Second {
+		t.Errorf("AI.Timeout = %s, want 120s", cfg.AI.Timeout)
+	}
+	if cfg.AI.MaxRequestBody != 5<<20 {
+		t.Errorf("AI.MaxRequestBody = %d, want %d (5 MiB)", cfg.AI.MaxRequestBody, 5<<20)
+	}
+}
+
+func TestLoad_AIInvalidBaseURL(t *testing.T) {
+	setEnv(t, map[string]string{
+		"DB_URL":          "postgres://x",
+		"AUTH_JWT_SECRET": strings.Repeat("a", 32),
+		"AI_BASE_URL":     "bukan-url",
+	})
+
+	_, err := Load()
+	if err == nil {
+		t.Fatal("Load() error = nil, want error about AI_BASE_URL")
+	}
+	if !strings.Contains(err.Error(), "AI_BASE_URL") {
+		t.Errorf("Load() error = %q, want it to mention AI_BASE_URL", err)
+	}
+}
+
 func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }

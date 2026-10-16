@@ -78,7 +78,7 @@ func (q *Queries) CreateDepartment(ctx context.Context, arg CreateDepartmentPara
 const getDepartmentByID = `-- name: GetDepartmentByID :one
 SELECT id, kode, nama, keterangan, is_active, created_at, updated_at
 FROM department
-WHERE id = $1
+WHERE id = $1 AND is_active = TRUE
 `
 
 func (q *Queries) GetDepartmentByID(ctx context.Context, id int64) (Department, error) {

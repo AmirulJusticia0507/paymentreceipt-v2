@@ -15,7 +15,7 @@ import { AlertCircle } from 'lucide-vue-next'
 
 interface Props {
   label: string
-  modelValue?: string
+  modelValue?: string | number
   error?: string
   hint?: string
   required?: boolean
@@ -35,7 +35,7 @@ const props = withDefaults(defineProps<Props>(), {
   suffix: false,
 })
 
-const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
+const emit = defineEmits<{ 'update:modelValue': [value: string | number] }>()
 
 // useId menghasilkan id unik dan stabil antar render. Id manual berisiko
 // bentrok kalau halaman punya dua form dengan label yang sama - dan duplikat

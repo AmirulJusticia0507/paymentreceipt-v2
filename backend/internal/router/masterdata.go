@@ -1,6 +1,8 @@
 package router
 
 import (
+	"net/http"
+
 	"github.com/go-chi/chi/v5"
 
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/auth"
@@ -8,7 +10,7 @@ import (
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/masterdata"
 )
 
-// DTO bentuk JSON yang dikirim ke klien.
+// masterDTO adalah bentuk JSON dasar untuk tabel master sederhana.
 //
 // Ditulis eksplisit, bukan marshal langsung dari struct sqlc. Struct database
 // adalah detail implementasi yang boleh berubah; bentuk JSON adalah kontrak
@@ -33,6 +35,10 @@ func baseDTO(d dbgen.Base) any {
 	return masterDTO{ID: d.ID, Kode: d.Kode, Nama: d.Nama, Keterangan: d.Keterangan}
 }
 
+func requestDTO(d dbgen.Request) any {
+	return masterDTO{ID: d.ID, Kode: d.Kode, Nama: d.Nama, Keterangan: d.Keterangan}
+}
+
 // satuanDTO mengosongkan Keterangan karena tabel satuan tidak punya kolom itu.
 //
 // Bentuk JSON tetap sama dengan tabel master lain supaya satu komponen tabel
@@ -41,12 +47,21 @@ func satuanDTO(d dbgen.Satuan) any {
 	return masterDTO{ID: d.ID, Kode: d.Kode, Nama: d.Nama}
 }
 
-func requestDTO(d dbgen.Request) any {
-	return masterDTO{ID: d.ID, Kode: d.Kode, Nama: d.Nama, Keterangan: d.Keterangan}
-}
-
-func requestbaseDTO(d dbgen.RequestBase) any {
-	return masterDTO{ID: d.ID, Kode: d.Kode, Nama: d.Nama, Keterangan: d.Keterangan}
+// requestBaseDTO memetakan request base ke bentuk JSON.
+//
+// Bukan masterDTO biasa karena ada dua field tambahan: jabatan (penanggung
+// jawab pengajuan) dan base_id (induknya). base_id wajib dikembalikan supaya
+// frontend bisa menampilkan base mana yang sedang dipilih tanpa menebak dari
+// daftar.
+func requestBaseDTO(d dbgen.RequestBase) any {
+	return map[string]any{
+		"id":         d.ID,
+		"kode":       d.Kode,
+		"nama":       d.Nama,
+		"jabatan":    d.Jabatan,
+		"keterangan": d.Keterangan,
+		"base_id":    d.BaseID,
+	}
 }
 
 // mountMasterData memasang route CRUD untuk satu tabel master.
@@ -67,6 +82,9 @@ func mountMasterData[T any](
 	resource masterdata.ResourceDescribe,
 	noun string,
 	toDTO func(T) any,
+	// searchHandler opsional - hanya tabel yang punya endpoint autocomplete
+	// yang mengisinya.
+	searchHandler http.HandlerFunc,
 ) {
 	svc := masterdata.NewService(store, resource, noun)
 	h := masterdata.NewHandler(svc, toDTO)
@@ -74,8 +92,22 @@ func mountMasterData[T any](
 	admin := authn.RequireRole(auth.RoleAdmin)
 
 	r.Route(path, func(r chi.Router) {
+		// /search HARUS didaftarkan sebelum /{id}, dan di DALAM subrouter ini.
+		//
+		// Dua kesalahan bisa terjadi di sini, dan keduanya sudah pernah terjadi:
+		//
+		//  1. Terdaftar setelah /{id}. Chi mencocokkan dalam urutan pendaftaran,
+		//     jadi /{id} akan menelan "/search", mencoba mem-parse "search"
+		//     sebagai angka, lalu membalas 422 "ID harus berupa angka". Gejalanya
+		//     jauh dari penyebabnya.
+		//  2. Terdaftar di luar r.Route(path, ...). Registrasinya jadi "/search"
+		//     di root router, bukan "/<path>/search", dan tidak pernah terpanggil.
+		if searchHandler != nil {
+			r.Get("/search", searchHandler)
+		}
+
 		// Bacanya terbuka untuk semua user yang sudah login - user perlu melihat
-		// daftar department untuk mengisi form payment receipt.
+		// daftar department dan satuan untuk mengisi form payment receipt.
 		r.Get("/", h.List)
 		r.Get("/{id}", h.GetByID)
 

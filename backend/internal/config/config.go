@@ -9,6 +9,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -21,6 +22,7 @@ type Config struct {
 	Server ServerConfig
 	DB     DBConfig
 	Auth   AuthConfig
+	AI     AIConfig
 	Log    LogConfig
 }
 
@@ -102,6 +104,25 @@ type LogConfig struct {
 	Format string // "json" | "text"
 }
 
+// AIConfig konfigurasi penyedia AI untuk ekstraksi dokumen (struk/faktur).
+//
+// Semua nilai bisa di-override lewat environment variable. APIKey wajib diisi
+// saat fitur AI dipakai, tapi aplikasi tetap bisa start tanpa agar fitur AI
+// boleh di-aktifkan nanti tanpa merusak deployment yang tidak memakainya.
+type AIConfig struct {
+	// BaseURL endpoint OpenAI-compatible (contoh: https://smartsproxy.clouad/v1).
+	BaseURL string
+	// APIKey untuk autentikasi ke penyedia AI. Tidak ada default - kosong
+	// berarti fitur AI tidak tersedia sampai diisi.
+	APIKey string
+	// Model default untuk ekstraksi struk/faktur.
+	Model string
+	// Timeout per permintaan ke penyedia AI.
+	Timeout time.Duration
+	// MaxRequestBody batas ukuran file unggahan dalam byte.
+	MaxRequestBody int64
+}
+
 // Load memuat konfigurasi dari environment variable dan memvalidasinya.
 //
 // Nilai dibaca dari OS environment. Untuk pengembangan lokal, gunakan godotenv
@@ -151,6 +172,13 @@ func Load() (*Config, error) {
 		Log: LogConfig{
 			Level:  getEnv("LOG_LEVEL", "info"),
 			Format: getEnv("LOG_FORMAT", "text"),
+		},
+		AI: AIConfig{
+			BaseURL:        strings.TrimRight(getEnv("AI_BASE_URL", "https://smartsproxy.clouad/v1"), "/"),
+			APIKey:         os.Getenv("AI_API_KEY"),
+			Model:          getEnv("AI_MODEL_RECEIPT", "gemini-3.8-flash-high"),
+			Timeout:        getEnvDuration("AI_TIMEOUT", 60*time.Second),
+			MaxRequestBody: getEnvInt64("AI_MAX_REQUEST_BODY", 10<<20), // 10 MiB
 		},
 	}
 
@@ -238,6 +266,16 @@ func (c *Config) validate() error {
 	}
 	if c.Auth.Argon2SaltLen < 16 {
 		errs = append(errs, fmt.Errorf("AUTH_ARGON2_SALT_LEN: minimal 16, dapat %d", c.Auth.Argon2SaltLen))
+	}
+
+	// AI config: timeout harus positif, BaseURL harus valid kalau diset.
+	if c.AI.Timeout <= 0 {
+		errs = append(errs, fmt.Errorf("AI_TIMEOUT: harus > 0, dapat %s", c.AI.Timeout))
+	}
+	if c.AI.BaseURL != "" {
+		if _, err := url.ParseRequestURI(c.AI.BaseURL); err != nil {
+			errs = append(errs, fmt.Errorf("AI_BASE_URL: %q bukan URL yang valid", c.AI.BaseURL))
+		}
 	}
 
 	switch strings.ToLower(c.Log.Format) {

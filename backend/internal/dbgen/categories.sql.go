@@ -72,7 +72,7 @@ func (q *Queries) CreateCategory(ctx context.Context, arg CreateCategoryParams) 
 const getCategoryByID = `-- name: GetCategoryByID :one
 SELECT id, kode, nama, keterangan, is_active, created_at, updated_at
 FROM categories
-WHERE id = $1
+WHERE id = $1 AND is_active = TRUE
 `
 
 func (q *Queries) GetCategoryByID(ctx context.Context, id int64) (Category, error) {

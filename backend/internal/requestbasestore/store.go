@@ -28,7 +28,7 @@ func NewRequestBaseStore(q *dbgen.Queries) *RequestBaseStore {
 // List mengembalikan halaman request base beserta totalnya.
 func (s *RequestBaseStore) List(ctx context.Context, in masterdata.ListInput) ([]dbgen.RequestBase, int64, error) {
 	params := dbgen.ListRequestBasesParams{
-		BaseID: in.BaseID,
+		BaseID: filterBaseID(in.BaseID),
 		Q:      nullableText(in.Query),
 		Limit:  in.Limit,
 		Offset: in.Offset,
@@ -94,6 +94,21 @@ func (s *RequestBaseStore) SoftDelete(ctx context.Context, id int64) (dbgen.Requ
 // perlu ditulis bersamaan - bukan diam-diam dibiarkan di sini.
 func (s *RequestBaseStore) CountUsage(_ context.Context, _ int64) (int64, error) {
 	return 0, nil
+}
+
+// filterBaseID mengubah 0 menjadi NULL.
+//
+// Query memakai "sqlc.narg('base_id')::bigint IS NULL OR base_id = ...". Nol di
+// sini berarti "tanpa filter", jadi harus jadi NULL, bukan angka 0. Kalau 0
+// diteruskan apa adanya, SQL-nya jadi "0 IS NULL OR base_id = 0" - cabang
+// pertama selalu salah dan cabang kedua tidak akan cocok dengan base mana pun.
+// Hasilnya: daftar tanpa filter selalu kosong, dan gejalanya menyuruh kita
+// menduga filter base_id-nya yang rusak.
+func filterBaseID(id int64) pgtype.Int8 {
+	if id <= 0 {
+		return pgtype.Int8{}
+	}
+	return pgtype.Int8{Int64: id, Valid: true}
 }
 
 // nullableText mengubah string kosong menjadi NULL.
