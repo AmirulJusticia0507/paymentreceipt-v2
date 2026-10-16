@@ -32,6 +32,28 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/pages/DashboardPage.vue'),
         meta: { title: 'Dashboard' },
       },
+      {
+        // Master data butuh login, tapi TIDAK butuh role admin untuk dibaca -
+        // user biasa perlu melihat daftar department dan satuan saat mengisi
+        // form payment receipt. Penulisan dicegah di router pada sisi server
+        // dengan RequireRole; di sini hanya menjaga halaman create/edit.
+        path: 'departments',
+        name: 'departments',
+        component: () => import('@/pages/DepartmentPage.vue'),
+        meta: { requiresAuth: true, title: 'Department' },
+      },
+      {
+        path: 'satuan',
+        name: 'satuan',
+        component: () => import('@/pages/SatuanPage.vue'),
+        meta: { requiresAuth: true, title: 'Satuan' },
+      },
+      {
+        path: 'categories',
+        name: 'categories',
+        component: () => import('@/pages/CategoryPage.vue'),
+        meta: { requiresAuth: true, title: 'Kategori' },
+      },
     ],
   },
   {

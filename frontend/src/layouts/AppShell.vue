@@ -55,9 +55,9 @@ const NAV_GROUPS: NavGroup[] = [
   {
     title: 'Master Data',
     items: [
-      { label: 'Department', to: '/departments', icon: Package, disabled: true },
-      { label: 'Satuan', to: '/satuan', icon: Tags, disabled: true },
-      { label: 'Kategori', to: '/categories', icon: Tags, disabled: true },
+      { label: 'Department', to: '/departments', icon: Package },
+      { label: 'Satuan', to: '/satuan', icon: Tags },
+      { label: 'Kategori', to: '/categories', icon: Tags },
       { label: 'Sumber Beli', to: '/sources', icon: Truck, disabled: true },
     ],
   },

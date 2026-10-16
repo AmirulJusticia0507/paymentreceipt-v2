@@ -259,14 +259,14 @@ Tujuan: login/logout/refresh + proteksi seluruh endpoint.
 
 Pola yang diulang untuk semua modul master: **CRUD + paginated list + search + soft guard**.
 
-- [ ] **T4.1** Shared: `GET/POST/PUT/DELETE /api/v1/departments` (+soft delete bila dipakai)
-- [ ] **T4.2** Department — migration sudah ada, buat query sqlc + repo + service + handler
-- [ ] **T4.3** Department — halaman Vue: tabel, form modal, validasi, toast
-- [ ] **T4.4** Satuan — backend CRUD
-- [ ] **T4.5** Satuan — halaman Vue
-- [ ] **T4.6** Categories — backend CRUD
-- [ ] **T4.7** Categories — halaman Vue
-- [ ] **T4.8** **Komponen generik** (dipakai semua halaman berikutnya):
+- [x] **T4.1** Shared: `GET/POST/PUT/DELETE /api/v1/departments` (+soft delete bila dipakai)
+- [x] **T4.2** Department — migration sudah ada, buat query sqlc + repo + service + handler
+- [x] **T4.3** Department — halaman Vue: tabel, form modal, validasi, toast
+- [x] **T4.4** Satuan — backend CRUD
+- [x] **T4.5** Satuan — halaman Vue
+- [x] **T4.6** Categories — backend CRUD
+- [x] **T4.7** Categories — halaman Vue
+- [x] **T4.8** **Komponen generik** (dipakai semua halaman berikutnya):
   - [ ] `DataTable` — kolom konfigurabel, sort server-side, pagination, empty/loading state
   - [ ] `Modal` / `ConfirmDialog`
   - [ ] `FormField` + error message + helper text
