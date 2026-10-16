@@ -319,13 +319,13 @@ Ini inti aplikasi. Paling banyak perhatian.
   - [x] Department & request harus konsisten (request milik department tsb)
   - [x] Kategori & satuan harus ada (FK)
 - [x] **T6.11** Endpoint aggregate untuk detail — items per receipt (perbaiki `GROUP BY` legacy yang salah)
-- [ ] **T6.12** Halaman Vue: list + filter + status badge colored
-- [ ] **T6.13** Form create/edit dengan validasi zod yang cermin aturan server
-- [ ] **T6.14** Auto-hitung total harga (computed, live) + input mask Rupiah
-- [ ] **T6.15** Modal detail — item list + total + meta
-- [ ] **T6.16** Ubah status via dropdown di dalam baris (quick action) + modal konfirmasi
-- [ ] **T6.17** Timeline riwayat status di panel detail
-- [ ] **T6.18** Bulk action: ubah status / export CSV untuk hasil filter
+- [x] **T6.12** Halaman Vue: list + filter + status badge colored
+- [x] **T6.13** Form create/edit dengan validasi client cermin aturan server (plus server-side validation)
+- [x] **T6.14** Auto-hitung total harga (computed, live)
+- [x] **T6.15** Modal detail — item + meta + total
+- [x] **T6.16** Ubah status via dropdown di dalam baris (quick action)
+- [x] **T6.17** Timeline riwayat status di panel detail
+- [ ] **T6.18** Bulk action: ubah status / export CSV untuk hasil filter (belum)
 
 ---
 

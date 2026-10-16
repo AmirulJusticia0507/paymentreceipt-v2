@@ -98,6 +98,12 @@ const routes: RouteRecordRaw[] = [
         meta: { requiresAuth: true, title: 'Detail Arsip PR' },
       },
       {
+        path: 'payment-receipts',
+        name: 'payment-receipts',
+        component: () => import('@/pages/PaymentReceiptsPage.vue'),
+        meta: { requiresAuth: true, title: 'Payment Receipt' },
+      },
+      {
         path: 'payment-receipts/:id',
         name: 'payment-receipt-detail',
         component: () => import('@/pages/PaymentReceiptDetailPage.vue'),
