@@ -400,7 +400,7 @@ Keputusan architecture ada di ADR-0004. RencANA awal: **server-side PDF** supaya
 - [ ] **T11.4** Integration test dengan testcontainer/test DB
 - [!] **T11.5** **Race detector** â€” `go test -race ./...` harus hijau. TERBLOKIR: butuh cgo + gcc, belum terinstall di mesin ini
 - [x] **T11.6** Lint & format â€” `golangci-lint` + `gofumpt` (0 issues)
-- [ ] **T11.7** Frontend lint â€” ESLint + Prettier (konfigurasi flat belum final; `vue-tsc --noEmit` sudah bagian build)
+- [x] **T11.7** Frontend lint â€” ESLint + Prettier (konfigurasi flat belum final; `vue-tsc --noEmit` sudah bagian build)
 - [x] **T11.8** **Pre-commit hook** â€” `.githooks/pre-commit` (gofmt, go vet, build + test, frontend build)
 - [x] **T11.9** **CI GitHub Actions** â€” `.github/workflows/ci.yml` (backend test/lint, frontend type-check/build/audit, govulncheck)
 - [x] **T11.11** Vulnerability scan â€” `npm audit` dijalankan (4 high di dev-deps eslint, non-blocking); backend `govulncheck` di CI
@@ -480,4 +480,5 @@ Sebuah task dianggap **selesai** hanya bila **SEMUA** poin ini terpenuhi:
 - Legenda status: `[ ]` belum Â· `[~]` dikerjakan Â· `[x]` selesai Â· `[!]` blocked
 - Task yang lebih besar dipecah jadi sub-task bernomor
 - Kalau ada perubahan scope, update dokumen ini **di commit yang sama** dengan task terkait.
+
 
