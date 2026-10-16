@@ -1,0 +1,61 @@
+# Ignore
+# --- Go ---
+/backend/bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+/backend/vendor/
+*.test
+*.out
+
+# --- Node / Frontend ---
+node_modules/
+/frontend/dist/
+/frontend/.vite/
+/frontend/coverage/
+*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- Environment / Secrets ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+!.env.example
+
+# --- Database ---
+*.sql.gz
+/pgdata/
+/tmp/
+
+# --- IDE / Editor ---
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.example.json
+.idea/
+*.swp
+*.swo
+*~
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# --- Logs ---
+*.log
+logs/
+/backend/logs/
+
+# --- Testing ---
+/backend/coverage.out
+/coverage/
+/playwright-report/
+/test-results/
