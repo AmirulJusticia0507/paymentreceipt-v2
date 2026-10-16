@@ -16,6 +16,8 @@ import (
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/dbgen"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/health"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/httputil"
+	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/masterdata"
+	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/masterdatastore"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/middleware"
 )
 
@@ -98,15 +100,25 @@ func New(d Deps) http.Handler {
 		r.Group(func(r chi.Router) {
 			r.Use(authenticator.Middleware)
 
-			// Modul bisnis menyusul di Phase 4-7. Semua yang ada di sini
-			// dijaga auth guard-nya dari sekarang, bukan ditambahkan belakangan -
-			// lebih mudah menjaga dari awal daripada retrofit.
+			// Master data (Phase 4).
+			//
+			// Dua dari tiga tabel ini TIDAK punya CRUD sama sekali di aplikasi
+			// legacy - satuan dan categories hanya di-SELECT lewat JOIN, tanpa
+			// form insert maupun handler. User tidak bisa menambah satuan atau
+			// kategori baru. Sara ini menutup celah itu.
+			mountMasterData(r, authenticator, masterdatastore.NewDepartmentStore(d.Queries), "/departments",
+				masterdata.ResourceDescribe{Singular: "Department", Plural: "Department"},
+				"request", departmentDTO)
 
-			// Contoh pola pembatasan role:
-			//   r.Group(func(r chi.Router) {
-			//       r.Use(authenticator.RequireRole(auth.RoleAdmin, auth.RoleGAStaff))
-			//       r.Post("/x", h.Create)
-			//   })
+			mountMasterData(r, authenticator, masterdatastore.NewSatuanStore(d.Queries), "/satuan",
+				masterdata.ResourceDescribe{Singular: "Satuan", Plural: "Satuan"},
+				"payment receipt", satuanDTO)
+
+			mountMasterData(r, authenticator, masterdatastore.NewCategoryStore(d.Queries), "/categories",
+				masterdata.ResourceDescribe{Singular: "Kategori", Plural: "Kategori"},
+				"payment receipt", categoryDTO)
+
+			// Modul bisnis lain menyusul di Phase 5-7.
 		})
 
 		r.NotFound(func(w http.ResponseWriter, req *http.Request) {
