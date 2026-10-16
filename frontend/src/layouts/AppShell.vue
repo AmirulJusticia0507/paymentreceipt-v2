@@ -58,6 +58,7 @@ const NAV_GROUPS: NavGroup[] = [
       { label: 'Department', to: '/departments', icon: Package },
       { label: 'Satuan', to: '/satuan', icon: Tags },
       { label: 'Kategori', to: '/categories', icon: Tags },
+      { label: 'Base', to: '/bases', icon: FolderTree },
       { label: 'Sumber Beli', to: '/sources', icon: Truck, disabled: true },
     ],
   },

@@ -197,6 +197,10 @@ export function useMasterCrud(config: MasterCrudConfig) {
   }
 
   return {
+    // label dipakai template untuk judul halaman, tombol, dan pesan. Dikembalikan
+    // dari sini supaya teks itu punya satu sumber kebenaran - menulis label
+    // langsung di template pernah membuat tombol menampilkan "undefined".
+    label: config.label,
     // data
     rows,
     meta,

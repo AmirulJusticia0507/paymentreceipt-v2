@@ -2,9 +2,15 @@
 /**
  * Form create/edit untuk tabel master.
  *
- * Dipakai department, satuan, dan kategori. Field keterangan disembunyikan saat
- * `withKeterangan` false, karena tabel satuan memang tidak punya kolom itu -
+ * Dipakai department, satuan, kategori, dan base. Field keterangan disembunyikan
+ * saat `withKeterangan` false, karena tabel satuan memang tidak punya kolom itu -
  * menampilkan input yang diam-diam tidak disimpan adalah pembohongan UI.
+ *
+ * Tombol Simpan berada di footer modal, di luar elemen <form> ini. Daripada
+ * mengambil referensi component lewat ref lalu memanggil metodenya - yang rapuh
+ * kalau ref belum terisi atau component berada di dalam Teleport - assosiasi
+ * form bawaan HTML lebih andal: tombol cukup menunjuk form lewat atribut `form`.
+ * Bonusnya, Enter di dalam input tetap memicu submit.
  */
 import { watch } from 'vue'
 import { useField, useForm } from 'vee-validate'
@@ -19,15 +25,7 @@ const props = defineProps<{
   withKeterangan?: boolean
   /** Error per-field dari server (422), dikunci ke nama field. */
   serverErrors?: Record<string, string>
-  /**
-   * Id untuk elemen <form>.
-   *
-   * Tombol Simpan berada di footer modal, di luar elemen ini. Daripada
-   * mengambil referensi component dari luar lalu memanggil metodenya - yang rapuh
-   * kalau ref belum terisi atau component-nya berada di dalam Teleport -
-   * assosiasi form bawaan HTML lebih andal: tombol cukup menunjuk form lewat
-   * atribut form. Bonusnya, Enter di dalam input tetap memicu submit.
-   */
+  /** Id untuk elemen <form>, dipakai tombol Simpan di luar form lewat atribut form. */
   formId?: string
 }>()
 
@@ -85,6 +83,17 @@ watch(
   },
 )
 
+/**
+ * Penyerang event submit.
+ *
+ * preventDefault dan pemanggilan handler ditulis eksplisit di sini supaya
+ * tidak bergantung pada cara compiler Vue membaca ekspresi template.
+ */
+function onFormSubmit(event: Event): void {
+  event.preventDefault()
+  void handleSubmit(onSubmit)(event)
+}
+
 function onSubmit(values: { kode: string; nama: string; keterangan: string }): void {
   emit('submit', {
     kode: values.kode,
@@ -92,19 +101,10 @@ function onSubmit(values: { kode: string; nama: string; keterangan: string }): v
     keterangan: props.withKeterangan === false ? undefined : values.keterangan,
   })
 }
-
-
 </script>
 
 <template>
-  <!--
-    Tag <form> dipakai supaya Enter di dalam input memicu submit. Penangan
-    submit-nya memanggil preventDefault secara eksplisit: menulis
-    @submit="handleSubmit(onSubmit)" di template compilation Vue memperlakukan
-    ekspresi bertanda kurung sebagai statement sehingga $event dibuang dan form
-    jatuh ke submit GET bawaan browser.
-  -->
-  <form :id="formId" novalidate class="space-y-4" @submit.prevent="handleSubmit(onSubmit)">
+  <form :id="formId" novalidate class="space-y-4" @submit="onFormSubmit">
     <FormField
       v-model="kode"
       label="Kode"

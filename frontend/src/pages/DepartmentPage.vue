@@ -57,7 +57,7 @@ const canManage = computed(() => auth.hasRole('admin'))
     <!-- Header halaman -->
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h1 class="text-lg font-semibold tracking-tight text-ink">Department</h1>
+        <h1 class="text-lg font-semibold tracking-tight text-ink">{{ crud.label }}</h1>
         <p class="mt-0.5 text-sm text-ink-muted">
           Unit kerja pemohon pengajuan pembelian.
         </p>
@@ -68,7 +68,7 @@ const canManage = computed(() => auth.hasRole('admin'))
            tidak melihat tombolnya sama sekali. -->
       <BaseButton v-if="canManage" @click="crud.openCreate()">
         <template #icon><Plus class="size-4" aria-hidden="true" /></template>
-        Tambah Department
+        {{ 'Tambah ' + crud.label }}
       </BaseButton>
     </div>
 
@@ -126,7 +126,7 @@ const canManage = computed(() => auth.hasRole('admin'))
 
       <template #empty>
         <p class="text-sm font-medium text-ink">
-          {{ crud.search.value ? 'Tidak ada department yang cocok' : 'Belum ada department' }}
+          {{ crud.search.value ? 'Tidak ada ' + crud.label.toLowerCase() + ' yang cocok' : 'Belum ada ' + crud.label.toLowerCase() }}
         </p>
         <p class="mt-1 text-sm text-ink-muted">
           {{
@@ -141,7 +141,7 @@ const canManage = computed(() => auth.hasRole('admin'))
     <!-- Modal form -->
     <BaseModal
       :open="crud.formOpen.value"
-      :title="crud.editing.value ? 'Ubah Department' : 'Tambah Department'"
+        :title="crud.editing.value ? 'Ubah ' + crud.label : 'Tambah ' + crud.label"
       :description="
         crud.editing.value
           ? 'Perubahan langsung berlaku untuk pengajuan baru.'
@@ -150,7 +150,11 @@ const canManage = computed(() => auth.hasRole('admin'))
       :busy="crud.saving.value"
       @close="crud.closeForm()"
     >
-      <MasterEditForm :form-id="formId" :item="crud.editing.value" />
+      <MasterEditForm
+        :form-id="formId"
+        :item="crud.editing.value"
+        @submit="crud.save"
+      />
 
       <template #footer>
         <BaseButton variant="secondary" :disabled="crud.saving.value" @click="crud.closeForm()">
@@ -165,7 +169,7 @@ const canManage = computed(() => auth.hasRole('admin'))
     <!-- Konfirmasi hapus -->
     <ConfirmDialog
       :open="!!deleteTarget"
-      title="Hapus Department?"
+      :title="'Hapus ' + crud.label + '?'"
       :message="`Department ${deleteTarget?.nama ?? ''} akan dinonaktifkan dan tidak muncul lagi di daftar.`"
       :item-name="deleteTarget?.kode"
       :busy="crud.deleteBusy.value"

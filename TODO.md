@@ -284,7 +284,7 @@ Pola yang diulang untuk semua modul master: **CRUD + paginated list + search + s
 ### Phase 5 — Master Request
 
 - [x] **T5.1** Basename — backend CRUD + unique check `kode`
-- [ ] **T5.2** Basename — halaman Vue
+- [x] **T5.2** Basename — halaman Vue
 - [ ] **T5.3** Requests — backend CRUD + filter by department
 - [ ] **T5.4** Requests — halaman Vue + filter department
 - [ ] **T5.5** Request Base — backend CRUD

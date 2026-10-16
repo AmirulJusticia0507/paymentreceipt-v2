@@ -54,6 +54,12 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/pages/CategoryPage.vue'),
         meta: { requiresAuth: true, title: 'Kategori' },
       },
+      {
+        path: 'bases',
+        name: 'bases',
+        component: () => import('@/pages/BasePage.vue'),
+        meta: { requiresAuth: true, title: 'Base' },
+      },
     ],
   },
   {

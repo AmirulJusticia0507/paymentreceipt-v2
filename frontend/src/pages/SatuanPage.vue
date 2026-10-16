@@ -2,11 +2,12 @@
 /**
  * Halaman daftar Satuan.
  *
- * Seluruh logika CRUD ada di useMasterCrud; halaman ini hanya menyusun tampilan
- * dan kolom. Pola yang sama dipakai ulang oleh halaman satuan dan kategori, jadi
- * perbedaan antar keduanya nanti tinggal beberapa baris konfigurasi.
+ * Pola sama persis dengan DepartmentPage: CRUD lewat useMasterCrud, tabel
+ * generik BaseTable, dan form modal MasterEditForm. Bedanya: tabel satuan
+ * tidak punya kolom keterangan, jadi form disembunyikan fieldnya dengan
+ * `with-keterangan="false"`.
  */
-import { computed, useId } from 'vue'
+import { computed } from 'vue'
 import { Pencil, Plus, Trash2 } from 'lucide-vue-next'
 
 import BaseTable from '@/components/ui/BaseTable.vue'
@@ -18,7 +19,6 @@ import ToastNotification from '@/components/ui/ToastNotification.vue'
 import MasterEditForm from '@/components/MasterEditForm.vue'
 import type { Column } from '@/components/ui/tableTypes'
 import { useMasterCrud } from '@/composables/useMasterCrud'
-import type { MasterItem } from '@/composables/useMasterCrud'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
@@ -30,16 +30,9 @@ const crud = useMasterCrud({
   displayField: 'kode',
 })
 
-// Id form dibuat di halaman, lalu dipakai oleh form DAN tombol Simpan di footer
-// modal. Dengan begitu keduanya terhubung lewat atribut form bawaan HTML,
-// tanpa template ref yang harus menyeberangi batas Teleport.
-const formId = useId()
+const formId = 'master-form'
 
-// Tipe baris memakai MasterItem dari composable, bukan tipe yang ditulis ulang
-// di sini. Menyalin bentuk datanya membuat halaman ikut harus diubah setiap
-// kali field di server bertambah - dan kalau lupa, errornya baru muncul saat
-// build, jauh dari tempat perubahannya.
-const columns = computed<Column<MasterItem>[]>(
+const columns = computed<Column<{ id: number; kode: string; nama: string }>[]>(
   () => [
     { key: 'kode', label: 'Kode', width: 'w-28', sortable: false },
     { key: 'nama', label: 'Nama' },
@@ -58,16 +51,13 @@ const canManage = computed(() => auth.hasRole('admin'))
       <div>
         <h1 class="text-lg font-semibold tracking-tight text-ink">Satuan</h1>
         <p class="mt-0.5 text-sm text-ink-muted">
-          Satuan barang: pcs, box, rim, lusin, dan sejenisnya.
+          Satuan ukuran barang, misal pcs, box, rim, atau lusin.
         </p>
       </div>
 
-      <!-- Tombol tambah hanya untuk admin. Disembunyikan, bukan hanya
-           dinonaktifkan: user yang tidak punya izin akan lebih jelas dengan
-           tidak melihat tombolnya sama sekali. -->
       <BaseButton v-if="canManage" @click="crud.openCreate()">
         <template #icon><Plus class="size-4" aria-hidden="true" /></template>
-        Tambah Department
+        Tambah Satuan
       </BaseButton>
     </div>
 
@@ -127,7 +117,7 @@ const canManage = computed(() => auth.hasRole('admin'))
           {{
             crud.search.value
               ? 'Coba kata kunci lain atau bersihkan pencarian.'
-              : 'Tambahkan satuan barang pertama untuk memulai.'
+              : 'Tambahkan satuan pertama untuk memulai.'
           }}
         </p>
       </template>
@@ -139,23 +129,23 @@ const canManage = computed(() => auth.hasRole('admin'))
       :title="crud.editing.value ? 'Ubah Satuan' : 'Tambah Satuan'"
       :description="
         crud.editing.value
-          ? 'Perubahan langsung berlaku untuk pengajuan baru.'
-          : 'Satuan dipakai saat mengisi item payment receipt.'
+          ? 'Perubahan langsung berlaku untuk pembelian baru.'
+          : 'Kode harus unik, contoh PCS atau BOX.'
       "
       :busy="crud.saving.value"
       @close="crud.closeForm()"
     >
-      <MasterEditForm
-          :form-id="formId"
-          :item="crud.editing.value"
-          :with-keterangan="false"
-        />
+      <MasterEditForm :item="crud.editing.value" :form-id="formId" :with-keterangan="false" @submit="crud.save" />
 
       <template #footer>
         <BaseButton variant="secondary" :disabled="crud.saving.value" @click="crud.closeForm()">
           Batal
         </BaseButton>
-        <BaseButton type="submit" :form="formId" :loading="crud.saving.value">
+        <BaseButton
+          type="submit"
+          :form="formId"
+          :loading="crud.saving.value"
+        >
           Simpan
         </BaseButton>
       </template>
