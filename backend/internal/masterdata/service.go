@@ -69,9 +69,10 @@ func (in *ListInput) Normalize() {
 
 // WriteInput adalah input create/update yang sudah tervalidasi.
 type WriteInput struct {
-	Kode       string
-	Nama       string
-	Keterangan string
+	Kode         string
+	Nama         string
+	Keterangan   string
+	DepartmentID int64
 }
 
 // Normalize dan memvalidasi input tulis.

@@ -29,7 +29,7 @@ func NewRequestStore(q *dbgen.Queries) *RequestStore {
 func (s *RequestStore) List(ctx context.Context, in masterdata.ListInput) ([]dbgen.Request, int64, error) {
 	params := dbgen.ListRequestsParams{
 		Q:            nullableText(in.Query),
-		DepartmentID: nullableInt64(in.DepartmentID),
+		DepartmentID: in.DepartmentID,
 		Limit:        in.Limit,
 		Offset:       in.Offset,
 	}
@@ -39,7 +39,12 @@ func (s *RequestStore) List(ctx context.Context, in masterdata.ListInput) ([]dbg
 		return nil, 0, err
 	}
 
-	total, err := s.q.CountRequests(ctx, params.Q, params.DepartmentID)
+	// Count menerima params sendiri, bukan memakai params List, supaya limit dan
+	// offset yang tidak ada artinya untuk COUNT tidak ikut terbawa.
+	total, err := s.q.CountRequests(ctx, dbgen.CountRequestsParams{
+		DepartmentID: params.DepartmentID,
+		Q:            params.Q,
+	})
 	if err != nil {
 		return nil, 0, err
 	}
@@ -47,7 +52,7 @@ func (s *RequestStore) List(ctx context.Context, in masterdata.ListInput) ([]dbg
 	return items, total, nil
 }
 
-// GetRequestByID mengambil satu request.
+// GetByID mengambil satu request.
 func (s *RequestStore) GetByID(ctx context.Context, id int64) (dbgen.Request, error) {
 	return s.q.GetRequestByID(ctx, id)
 }
@@ -55,11 +60,48 @@ func (s *RequestStore) GetByID(ctx context.Context, id int64) (dbgen.Request, er
 // Create membuat request baru.
 func (s *RequestStore) Create(ctx context.Context, in masterdata.WriteInput) (dbgen.Request, error) {
 	return s.q.CreateRequest(ctx, dbgen.CreateRequestParams{
-		Kode:        in.Kode,
-		Nama:        in.Nama,
-		DepartmentID: in.DepartmentID, // placeholder - diganti di bawah
+		Kode:         in.Kode,
+		Nama:         in.Nama,
+		DepartmentID: in.DepartmentID,
+		Keterangan:   in.Keterangan,
 	})
 }
 
-// placeholder
-const _ = 0
+// Update mengubah request.
+func (s *RequestStore) Update(ctx context.Context, id int64, in masterdata.WriteInput) (dbgen.Request, error) {
+	return s.q.UpdateRequest(ctx, dbgen.UpdateRequestParams{
+		Kode:         in.Kode,
+		Nama:         in.Nama,
+		DepartmentID: in.DepartmentID,
+		Keterangan:   in.Keterangan,
+		ID:           id,
+	})
+}
+
+// SoftDelete menonaktifkan request.
+func (s *RequestStore) SoftDelete(ctx context.Context, id int64) (dbgen.Request, error) {
+	return s.q.SoftDeleteRequest(ctx, id)
+}
+
+// CountUsage menghitung pemakaian request di payment receipt.
+func (s *RequestStore) CountUsage(ctx context.Context, id int64) (int64, error) {
+	total, err := s.q.CountRequestUsage(ctx, id)
+	return int64(total), err
+}
+
+// nullableText mengubah string kosong menjadi NULL (lihat masterdatastore).
+func nullableText(s string) pgtype.Text {
+	if s == "" {
+		return pgtype.Text{}
+	}
+	return pgtype.Text{String: s, Valid: true}
+}
+
+// nullableInt64 mengubah 0 menjadi NULL. Departemen tidak pernah punya id 0,
+// jadi 0 berarti "tidak ada filter departemen".
+func nullableInt64(v int64) pgtype.Int8 {
+	if v == 0 {
+		return pgtype.Int8{}
+	}
+	return pgtype.Int8{Int64: v, Valid: true}
+}
