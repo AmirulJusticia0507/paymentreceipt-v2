@@ -267,16 +267,16 @@ Pola yang diulang untuk semua modul master: **CRUD + paginated list + search + s
 - [x] **T4.6** Categories — backend CRUD
 - [x] **T4.7** Categories — halaman Vue
 - [x] **T4.8** **Komponen generik** (dipakai semua halaman berikutnya):
-  - [ ] `DataTable` — kolom konfigurabel, sort server-side, pagination, empty/loading state
-  - [ ] `Modal` / `ConfirmDialog`
-  - [ ] `FormField` + error message + helper text
-  - [ ] `Button` (variant: primary/secondary/danger/ghost), loading spinner
-  - [ ] `Badge` untuk status (pakai palet warna status)
-  - [ ] `Toast` / notifikasi sukses-.error
-  - [ ] `SearchInput` dengan debounce 300ms
-  - [ ] `PageHeader` + breadcrumb
-  - [ ] `EmptyState`
-  - [ ] `SkeletonTable`
+  - [x] `DataTable` — BaseTable: kolom konfigurabel, pagination, empty/loading/error state (sort server-side tersedia lewat slot, wiring sort di halaman yang butuh)
+  - [x] `Modal` / `ConfirmDialog` — BaseModal + ConfirmDialog
+  - [x] `FormField` + error message + helper text
+  - [x] `Button` (variant: primary/secondary/danger/ghost), loading spinner
+  - [x] `Badge` untuk status (pakai palet warna status)
+  - [x] `Toast` / notifikasi sukses-.error
+  - [x] `SearchInput` dengan debounce 300ms
+  - [x] `PageHeader` + breadcrumb
+  - [x] `EmptyState`
+  - [x] `SkeletonTable`
 - [ ] **T4.9** Playground/storybook sederhana: `/dev/components` untuk uji komponen
 
 ---
