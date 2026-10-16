@@ -251,7 +251,7 @@ Tujuan: login/logout/refresh + proteksi seluruh endpoint.
 - [x] **T3.10** Rate limit login: 5 percobaan / 15 menit per username+IP
 - [x] **T3.11** Cookie flags: `HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/`
 - [x] **T3.12** Test: hash/verify password, issue/parse token, RBAC matrix
-- [ ] **T3.13** Halaman Login (Vue) — desain modern, tanpa kedokutang "password"!
+- [x] **T3.13** Halaman Login (Vue) — desain modern, tanpa kedokutang "password"!
 
 ---
 
@@ -375,17 +375,17 @@ Keputusan architecture ada di ADR-0004. RencANA awal: **server-side PDF** supaya
 
 ### Phase 10 — Design System & Polish
 
-- [ ] **T10.1** Setup Tailwind 4 + `@theme` tokens (warna brand, status, surface)
-- [ ] **T10.2** Palet warna — derive dari warna legacy (biru AdminLTE) tapi lebih lembut
-- [ ] **T10.3** Font — Inter (variable) via `fontsource`, fallback system
+- [x] **T10.1** Setup Tailwind 4 + `@theme` tokens (warna brand, status, surface)
+- [x] **T10.2** Palet warna — derive dari warna legacy (biru AdminLTE) tapi lebih lembut
+- [x] **T10.3** Font — Inter (variable) via `fontsource`, fallback system
 - [ ] **T10.4** `AppShell` — sidebar collapsible + topbar + breadcrumbs
 - [ ] **T10.5** Sidebar: grouped menu, active state, badge count (mis. jumlah pending)
 - [ ] **T10.6** Topbar: user menu, role badge, toggle tema, logout
-- [ ] **T10.7** **Dark mode** — class strategy, persist ke localStorage, respect `prefers-color-scheme`
+- [x] **T10.7** **Dark mode** — class strategy, persist ke localStorage, respect `prefers-color-scheme`
 - [ ] **T10.8** Responsif — mobile: sidebar jadi drawer, tabel jadi card list
 - [ ] **T10.9** Loading & error state di **semua** halaman (tidak ada "halaman kosong/error")
 - [ ] **T10.10** Animasi subtle — transisi 150–200ms, hormati `prefers-reduced-motion`
-- [ ] **T10.11** Accessibility — label form, focus ring, kontras warna, navigasi keyboard
+- [x] **T10.11** Accessibility — label form, focus ring, kontras warna, navigasi keyboard
 - [ ] **T10.12** Empty state yang informatif + CTA (bukan cuma "tidak ada data")
 - [ ] **T10.13** **Hapus dump aset legacy** — tidak ada AdminLTE, tidak ada bower, tidak ada jQuery
 - [ ] **T10.14** Optimasi bundle — code-split per route, lazy load komponen berat
