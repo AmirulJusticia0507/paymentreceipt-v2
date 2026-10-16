@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS sources;
+DROP TYPE IF EXISTS source_type;

@@ -59,15 +59,14 @@ const NAV_GROUPS: NavGroup[] = [
       { label: 'Satuan', to: '/satuan', icon: Tags },
       { label: 'Kategori', to: '/categories', icon: Tags },
       { label: 'Base', to: '/bases', icon: FolderTree },
-      { label: 'Sumber Beli', to: '/sources', icon: Truck, disabled: true },
+      { label: 'Sumber Beli', to: '/sources', icon: Truck },
     ],
   },
   {
     title: 'Pengajuan',
     items: [
       { label: 'Request', to: '/requests', icon: FolderTree },
-      { label: 'Request Base', to: '/request-bases', icon: FolderTree, disabled: true },
-      { label: 'Base', to: '/bases', icon: FolderTree, disabled: true },
+      { label: 'Request Base', to: '/request-bases', icon: FolderTree },
     ],
   },
 ]

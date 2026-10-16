@@ -170,18 +170,6 @@ func (h *requestBaseHandler) decodeAndValidate(w http.ResponseWriter, r *http.Re
 	}, true
 }
 
-// requestBaseDTO memetakan baris ke bentuk JSON yang dikirim ke klien.
-func requestBaseDTO(d dbgen.RequestBase) any {
-	return map[string]any{
-		"id":         d.ID,
-		"kode":       d.Kode,
-		"nama":       d.Nama,
-		"jabatan":    d.Jabatan,
-		"keterangan": d.Keterangan,
-		"base_id":    d.BaseID,
-	}
-}
-
 // mountRequestBases memasang route CRUD untuk request base.
 //
 // Route ini harus dipasang SEBELUM /bases/{id} dalam router, kalau tidak pola

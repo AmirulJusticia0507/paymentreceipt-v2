@@ -288,12 +288,12 @@ Pola yang diulang untuk semua modul master: **CRUD + paginated list + search + s
 - [x] **T5.3** Requests — backend CRUD + filter by department
 - [x] **T5.4** Requests — halaman Vue + filter department
 - [x] **T5.5** Request Base — backend CRUD
-- [ ] **T5.6** Request Base — halaman Vue
-- [ ] **T5.7** Autocomplete Base — `GET /api/v1/bases/search?q=` (JSON, limit 10) — pengganti `searchbase.php`
-- [ ] **T5.8** Autocomplete di frontend — composable `useAutocomplete` (debounce + abort request stale)
-- [ ] **T5.9** Sources — backend CRUD dengan branching online/offline
-- [ ] **T5.10** Sources — validasi kolom wajib per mode (CHECK di DB + validasi di service)
-- [ ] **T5.11** Sources — halaman Vue dengan form dinamis (field berganti saat mode dipilih)
+- [x] **T5.6** Request Base — halaman Vue
+- [x] **T5.7** Autocomplete Base — `GET /api/v1/bases/search?q=` (JSON, limit 10) — pengganti `searchbase.php`
+- [x] **T5.8** Autocomplete di frontend — composable `useAutocomplete` (debounce + abort request stale)
+- [x] **T5.9** Sources — backend CRUD dengan branching online/offline
+- [x] **T5.10** Sources — validasi kolom wajib per mode (CHECK di DB + validasi di service)
+- [x] **T5.11** Sources — halaman Vue dengan form dinamis (field berganti saat mode dipilih)
 
 ---
 

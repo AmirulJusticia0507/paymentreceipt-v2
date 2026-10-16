@@ -26,11 +26,15 @@ CREATE TABLE sources (
 
     -- Mode ONLINE wajib punya link pembelian
     CONSTRAINT sources_online_requires_link CHECK (
-        source <> 'online' OR link_pembelian IS NOT NULL
+        source <> 'online' OR NULLIF(BTRIM(link_pembelian), '') IS NOT NULL
     ),
     -- Mode OFFLINE wajib punya nama toko
     CONSTRAINT sources_offline_requires_shop CHECK (
-        source <> 'offline' OR nama_toko IS NOT NULL
+        source <> 'offline' OR (
+            NULLIF(BTRIM(nama_toko), '') IS NOT NULL
+            AND NULLIF(BTRIM(no_telp), '') IS NOT NULL
+            AND NULLIF(BTRIM(no_rekening), '') IS NOT NULL
+        )
     ),
     -- Kolom yang tidak relevan dengan mode harus kosong (bukan diisi asal)
     CONSTRAINT sources_offline_no_link  CHECK (source <> 'offline' OR link_pembelian IS NULL),
