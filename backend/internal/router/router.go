@@ -20,6 +20,7 @@ import (
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/masterdata"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/masterdatastore"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/middleware"
+	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/requeststore"
 )
 
 // Deps adalah semua yang dibutuhkan router untuk menyusun handler.
@@ -87,7 +88,7 @@ func New(d Deps) http.Handler {
 			r.Post("/refresh", authH.Refresh)
 
 			// Logout butuh tahu siapa yang logout. Tanpa auth guard, endpoint ini
-			// tidak bisa Finding tau token mana yang harus dicabut.
+			// tidak bisa menemukan token mana yang harus dicabut.
 			r.Group(func(r chi.Router) {
 				r.Use(authenticator.Middleware)
 				r.Post("/logout", authH.Logout)
@@ -122,6 +123,10 @@ func New(d Deps) http.Handler {
 			mountMasterData(r, authenticator, basestore.NewBaseStore(d.Queries), "/bases",
 				masterdata.ResourceDescribe{Singular: "Base", Plural: "Base"},
 				"request base", baseDTO)
+
+			// Request (pengajuan department) — filter list per departemen
+			// dan department_id wajib saat create/update.
+			mountRequests(r, authenticator, d.Queries, requeststore.NewRequestStore(d.Queries), "/requests")
 
 			// Modul bisnis lain menyusul di Phase 5-7.
 		})
