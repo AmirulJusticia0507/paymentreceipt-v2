@@ -45,6 +45,10 @@ func requestDTO(d dbgen.Request) any {
 	return masterDTO{ID: d.ID, Kode: d.Kode, Nama: d.Nama, Keterangan: d.Keterangan}
 }
 
+func requestbaseDTO(d dbgen.RequestBase) any {
+	return masterDTO{ID: d.ID, Kode: d.Kode, Nama: d.Nama, Keterangan: d.Keterangan}
+}
+
 // mountMasterData memasang route CRUD untuk satu tabel master.
 //
 // Store sudah dikonstruksi oleh pemanggil dan tipe T ditulis eksplisit

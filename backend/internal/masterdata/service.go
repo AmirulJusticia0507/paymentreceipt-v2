@@ -52,8 +52,12 @@ type ListInput struct {
 	Offset int32
 
 	// DepartmentID, saat non-nol, membatasi hasil ke data milik departemen
-	// tersebut. Digunakan tabel request; tabel master lain mengabaikannya.
+	// tersebut. Dipakai tabel requests.
 	DepartmentID int64
+
+	// BaseID, saat non-nol, membatasi hasil ke request base milik base tersebut.
+	// Dipakai tabel request_base.
+	BaseID int64
 }
 
 // Normalize membersihkan input list: query kosong menjadi NULL, dan whitespace
@@ -72,7 +76,9 @@ type WriteInput struct {
 	Kode         string
 	Nama         string
 	Keterangan   string
+	Jabatan      string
 	DepartmentID int64
+	BaseID       int64
 }
 
 // Normalize dan memvalidasi input tulis.

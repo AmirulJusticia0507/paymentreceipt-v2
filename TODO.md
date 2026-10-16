@@ -287,7 +287,7 @@ Pola yang diulang untuk semua modul master: **CRUD + paginated list + search + s
 - [x] **T5.2** Basename — halaman Vue
 - [x] **T5.3** Requests — backend CRUD + filter by department
 - [x] **T5.4** Requests — halaman Vue + filter department
-- [ ] **T5.5** Request Base — backend CRUD
+- [x] **T5.5** Request Base — backend CRUD
 - [ ] **T5.6** Request Base — halaman Vue
 - [ ] **T5.7** Autocomplete Base — `GET /api/v1/bases/search?q=` (JSON, limit 10) — pengganti `searchbase.php`
 - [ ] **T5.8** Autocomplete di frontend — composable `useAutocomplete` (debounce + abort request stale)

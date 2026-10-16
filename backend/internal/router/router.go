@@ -20,6 +20,7 @@ import (
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/masterdata"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/masterdatastore"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/middleware"
+	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/requestbasestore"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/requeststore"
 )
 
@@ -127,6 +128,10 @@ func New(d Deps) http.Handler {
 			// Request (pengajuan department) — filter list per departemen
 			// dan department_id wajib saat create/update.
 			mountRequests(r, authenticator, d.Queries, requeststore.NewRequestStore(d.Queries), "/requests")
+
+			// Request base — base_id wajib karena request base selalu merujuk
+			// ke satu base.
+			mountRequestBase(r, authenticator, d.Queries, requestbasestore.NewRequestBaseStore(d.Queries), "/requestbases")
 
 			// Modul bisnis lain menyusul di Phase 5-7.
 		})
