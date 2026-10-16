@@ -65,7 +65,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     title: 'Pengajuan',
     items: [
-      { label: 'Request', to: '/requests', icon: FolderTree, disabled: true },
+      { label: 'Request', to: '/requests', icon: FolderTree },
       { label: 'Request Base', to: '/request-bases', icon: FolderTree, disabled: true },
       { label: 'Base', to: '/bases', icon: FolderTree, disabled: true },
     ],
