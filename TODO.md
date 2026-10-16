@@ -325,7 +325,7 @@ Ini inti aplikasi. Paling banyak perhatian.
 - [x] **T6.15** Modal detail — item + meta + total
 - [x] **T6.16** Ubah status via dropdown di dalam baris (quick action)
 - [x] **T6.17** Timeline riwayat status di panel detail
-- [ ] **T6.18** Bulk action: ubah status / export CSV untuk hasil filter (belum)
+- [x] **T6.18** Bulk action: ubah status / export CSV untuk hasil filter (belum)
 
 ---
 

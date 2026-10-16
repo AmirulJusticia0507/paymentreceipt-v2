@@ -38,6 +38,35 @@ const meta = computed(() => metaValue.value)
 
 const state = ref<'ready' | 'loading'>('ready')
 
+const bulkSelected = ref<Set<number>>(new Set())
+const bulkStatus = ref('')
+const bulkBusy = ref(false)
+const allChecked = computed(() => rows.value.length > 0 && rows.value.every(r => bulkSelected.value.has(r.id)))
+
+function toggleRow(id: number): void {
+  if (bulkSelected.value.has(id)) bulkSelected.value.delete(id)
+  else bulkSelected.value.add(id)
+}
+
+function toggleAll(): void {
+  if (allChecked.value) bulkSelected.value = new Set()
+  else bulkSelected.value = new Set(rows.value.map(r => r.id))
+}
+
+const tableColumns = computed(() => {
+  const base: any[] = [
+    { key: 'kode', label: 'Kode', width: 'w-32', sortable: false },
+    { key: 'deskripsi_items', label: 'Deskripsi' },
+    { key: 'department_nama', label: 'Departemen', width: 'w-32' },
+    { key: 'status', label: 'Status', width: 'w-28' },
+    { key: 'total_harga', label: 'Total', align: 'right', width: 'w-32' },
+    { key: 'tanggal_pembelian', label: 'Tanggal', width: 'w-28' },
+    { key: 'aksi', label: 'Aksi', align: 'right', width: 'w-28' },
+  ]
+  if (canManage.value) base.unshift({ key: 'pilih', label: '', width: 'w-8', sortable: false })
+  return base
+})
+
 const departments = ref<any[]>([])
 const requests = ref<any[]>([])
 const categories = ref<any[]>([])
@@ -223,6 +252,37 @@ async function confirmDelete(): Promise<void> {
   }
 }
 
+async function applyBulk(): Promise<void> {
+  if (bulkSelected.value.size === 0 || !bulkStatus.value) return
+  bulkBusy.value = true
+  try {
+    const res: any = await requestWithMeta('/api/v1/payment-receipts/bulk-status', {
+      method: 'PATCH',
+      body: { ids: [...bulkSelected.value], status: bulkStatus.value, note: '' },
+    })
+    toast.value = { kind: 'success', title: 'Bulk status berhasil', description: `Diubah: ${res.data?.changed ?? bulkSelected.value.size}` }
+    bulkSelected.value = new Set()
+    bulkStatus.value = ''
+    await fetchList()
+  } catch (e: any) {
+    toast.value = { kind: 'error', title: 'Bulk gagal', description: e?.message ?? 'Error' }
+  } finally {
+    bulkBusy.value = false
+  }
+}
+
+async function exportCsv(): Promise<void> {
+  const params = qs({
+    q: search.value.trim() || undefined,
+    status: statusFilter.value || undefined,
+    department_id: departmentFilter.value || undefined,
+    request_id: requestFilter.value || undefined,
+    date_from: dateFrom.value || undefined,
+    date_to: dateTo.value || undefined,
+  })
+  window.location.href = `/api/v1/payment-receipts/export${params}`
+}
+
 async function changeStatus(item: any, newStatus: string): Promise<void> {
   statusChanging.value = item.id
   try {
@@ -285,22 +345,32 @@ function closeDetail(): void { detailOpen.value = false; detailItem.value = null
       <input v-model="dateTo" type="date" class="rounded-lg border border-default bg-raised px-3 py-2 text-sm text-ink focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none" />
     </div>
 
+    <div v-if="canManage && bulkSelected.size > 0" class="flex flex-wrap items-center gap-2 rounded-lg border border-default bg-raised px-3 py-2">
+      <span class="text-sm text-ink">{{ bulkSelected.size }} terpilih</span>
+      <select v-model="bulkStatus" class="rounded border border-default bg-raised px-2 py-1 text-sm text-ink focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none">
+        <option value="">Pilih status</option>
+        <option value="checked">Checked</option>
+        <option value="processed">Processed</option>
+        <option value="finished">Finished</option>
+        <option value="cancelled">Cancelled</option>
+      </select>
+      <BaseButton size="sm" :loading="bulkBusy" :disabled="!bulkStatus" @click="applyBulk()">Terapkan</BaseButton>
+    </div>
+
+    <BaseButton variant="secondary" size="sm" @click="exportCsv()">Export CSV</BaseButton>
+
     <BaseTable
-      :columns="[
-        { key: 'kode', label: 'Kode', width: 'w-32', sortable: false },
-        { key: 'deskripsi_items', label: 'Deskripsi' },
-        { key: 'department_nama', label: 'Department', width: 'w-32' },
-        { key: 'status', label: 'Status', width: 'w-28' },
-        { key: 'total_harga', label: 'Total', align: 'right', width: 'w-32' },
-        { key: 'tanggal_pembelian', label: 'Tanggal', width: 'w-28' },
-        { key: 'aksi', label: 'Aksi', align: 'right', width: 'w-28' },
-      ]"
+      :columns="tableColumns"
       :rows="rows"
       :meta="meta"
       :state="state"
       :error-message="null"
       @update:page="(e: number) => { page = e; fetchList() }"
     >
+      <template v-if="canManage" #cell-pilih="{ row }">
+        <input type="checkbox" :checked="bulkSelected.has(row.id)" @change="toggleRow(row.id)" />
+      </template>
+
       <template #cell-kode="{ row }">
         <span class="font-mono text-xs font-medium text-ink">{{ row.kode }}</span>
       </template>

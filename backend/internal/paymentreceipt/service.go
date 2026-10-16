@@ -316,5 +316,46 @@ func (s *Service) StatusHistory(ctx context.Context, receiptID int64) ([]StatusH
 	return s.store.ListStatusHistory(ctx, receiptID)
 }
 
+// BulkChangeStatus mengubah status banyak receipt sekaligus. Transisi tiap
+// receipt divalidasi; suatu transisi ilegal atau status tidak valid akan
+// menggagalkan seluruh permintaan (best-effort, partial failure mungkin
+// terjadi kalau perubahan pertama berhasil sebelum yang kedua gagal).
+func (s *Service) BulkChangeStatus(ctx context.Context, ids []int64, status string, changedBy int64, note string) (int, error) {
+	if len(ids) == 0 {
+		return 0, apperror.New(apperror.KindValidation, "payment_receipt.bulk_invalid", "Minimal satu receipt harus dipilih")
+	}
+	if !domain.ValidStatus(status) {
+		return 0, apperror.New(apperror.KindValidation, "payment_receipt.invalid_status", "Status tidak valid")
+	}
+	for _, id := range ids {
+		item, err := s.store.Get(ctx, id)
+		if err != nil {
+			if errors.Is(err, ErrNotFound) {
+				return 0, apperror.New(apperror.KindNotFound, "payment_receipt.not_found", "Payment receipt tidak ditemukan")
+			}
+			return 0, err
+		}
+		if !domain.CanTransition(domain.PaymentReceiptStatus(item.Status), domain.PaymentReceiptStatus(status)) {
+			return 0, apperror.New(apperror.KindConflict, "payment_receipt.illegal_transition", "Transisi status tidak diizinkan")
+		}
+	}
+
+	changed := 0
+	for _, id := range ids {
+		item, err := s.store.Get(ctx, id)
+		if err != nil {
+			return changed, err
+		}
+		if err := s.store.InsertStatusHistory(ctx, id, item.Status, status, changedBy, note); err != nil {
+			return changed, err
+		}
+		if _, err := s.store.UpdateStatus(ctx, id, status); err != nil {
+			return changed, err
+		}
+		changed++
+	}
+	return changed, nil
+}
+
 // ErrNotFound indicates that a receipt does not exist.
 var ErrNotFound = errors.New("payment receipt not found")

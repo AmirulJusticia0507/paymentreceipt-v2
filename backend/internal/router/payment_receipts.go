@@ -1,7 +1,9 @@
 package router
 
 import (
+	"encoding/csv"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -226,9 +228,72 @@ func (h *paymentReceiptHandler) statusHistory(w http.ResponseWriter, r *http.Req
 	httputil.JSONData(w, http.StatusOK, items)
 }
 
+func (h *paymentReceiptHandler) bulkStatus(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		IDs    []int64 `json:"ids"`
+		Status string  `json:"status"`
+		Note   string  `json:"note"`
+	}
+	if err := httputil.DecodeJSON(w, r, &body); err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	changedBy := int64(0)
+	if identity, ok := auth.IdentityFrom(r.Context()); ok {
+		changedBy = identity.UserID
+	}
+	changed, err := h.service.BulkChangeStatus(r.Context(), body.IDs, body.Status, changedBy, body.Note)
+	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	httputil.JSONData(w, http.StatusOK, map[string]any{"changed": changed})
+}
+func (h *paymentReceiptHandler) exportCSV(w http.ResponseWriter, r *http.Request) {
+	p := httputil.ParsePagination(r)
+	from, _ := parseDateField(r.URL.Query().Get("date_from"), "date_from")
+	to, _ := parseDateField(r.URL.Query().Get("date_to"), "date_to")
+	statusValue := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("status")))
+	limit := int32(p.Limit())
+	if limit < 5000 {
+		limit = 5000
+	}
+	items, _, err := h.service.List(r.Context(), paymentreceipt.Filters{
+		Status:       statusValue,
+		DepartmentID: queryInt64(r, "department_id"),
+		RequestID:    queryInt64(r, "request_id"),
+		DateFrom:     from,
+		DateTo:       to,
+		Query:        strings.TrimSpace(r.URL.Query().Get("q")),
+		Sort:         "tanggal_desc",
+		Limit:        limit,
+		Offset:       0,
+	})
+	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/csv; charset=utf-8")
+	w.Header().Set("Content-Disposition", "attachment; filename=\"payment-receipts.csv\"")
+	writer := csv.NewWriter(w)
+	writer.Write([]string{"Kode", "Request Kode", "Request Nama", "Department Kode", "Department Nama", "Deskripsi Items", "Jumlah Items", "Harga Items", "Total Harga", "Tanggal Pembelian", "Status", "Usage", "Kategori", "Satuan", "Source", "Keterangan", "Price Estimate"})
+	for _, it := range items {
+		writer.Write([]string{
+			it.Kode, it.RequestKode, it.RequestNama, it.DepartmentKode, it.DepartmentNama,
+			it.DeskripsiItems, strconv.Itoa(int(it.JumlahItems)), it.HargaItems, it.TotalHarga,
+			it.TanggalPembelian.Format("2006-01-02"), it.Status, it.Usage, it.CategoryNama, it.UnitNama, it.SourceMode, it.Keterangan, ptrString(it.PriceEstimate),
+		})
+	}
+	writer.Flush()
+}
+
+func ptrString(v *string) string { if v == nil { return "" }; return *v }
+
 func mountPaymentReceipts(r chi.Router, a *auth.Authenticator, service *paymentreceipt.Service) {
 	h := &paymentReceiptHandler{service: service}
 	r.Route("/payment-receipts", func(r chi.Router) {
+		r.Get("/export", h.exportCSV)
 		r.Get("/", h.list)
 		r.Get("/{id}", h.get)
 		r.Get("/{id}/pdf", h.pdf)
@@ -236,6 +301,7 @@ func mountPaymentReceipts(r chi.Router, a *auth.Authenticator, service *paymentr
 		r.With(a.RequireRole(auth.RoleAdmin, auth.RoleGAStaff)).Post("/", h.create)
 		r.With(a.RequireRole(auth.RoleAdmin, auth.RoleGAStaff)).Put("/{id}", h.update)
 		r.With(a.RequireRole(auth.RoleAdmin)).Delete("/{id}", h.delete)
+		r.With(a.RequireRole(auth.RoleAdmin, auth.RoleGAStaff, auth.RoleApprover)).Patch("/bulk-status", h.bulkStatus)
 		r.With(a.RequireRole(auth.RoleAdmin, auth.RoleGAStaff, auth.RoleApprover)).Patch("/{id}/status", h.changeStatus)
 	})
 }
