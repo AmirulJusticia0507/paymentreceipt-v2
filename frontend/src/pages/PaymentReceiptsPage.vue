@@ -41,17 +41,11 @@ const state = ref<'ready' | 'loading'>('ready')
 const bulkSelected = ref<Set<number>>(new Set())
 const bulkStatus = ref('')
 const bulkBusy = ref(false)
-const allChecked = computed(() => rows.value.length > 0 && rows.value.every(r => bulkSelected.value.has(r.id)))
-
 function toggleRow(id: number): void {
   if (bulkSelected.value.has(id)) bulkSelected.value.delete(id)
   else bulkSelected.value.add(id)
 }
 
-function toggleAll(): void {
-  if (allChecked.value) bulkSelected.value = new Set()
-  else bulkSelected.value = new Set(rows.value.map(r => r.id))
-}
 
 const tableColumns = computed(() => {
   const base: any[] = [

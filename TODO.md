@@ -362,14 +362,14 @@ Keputusan architecture ada di ADR-0004. RencANA awal: **server-side PDF** supaya
 
 ### Phase 9 — Dashboard
 
-- [ ] **T9.1** `GET /api/v1/dashboard/summary` — total requests, PR, base, department (setara legacy)
-- [ ] **T9.2** `GET /api/v1/dashboard/recent` — 10 transaksi terakhir
-- [ ] **T9.3** `GET /api/v1/dashboard/status-breakdown` — count per status
-- [ ] **T9.4** `GET /api/v1/dashboard/monthly-spend` — total belanja per bulan (12 bulan)
-- [ ] **T9.5** `GET /api/v1/dashboard/top-departments` — department dengan total terbesar
-- [ ] **T9.6** Halaman Dashboard Vue — kartu statistik + chart
-- [ ] **T9.7** Chart: spend trend (line/bar), status breakdown (doughnut), top dept (horizontal bar)
-- [ ] **T9.8** Loading skeleton + empty state yang proper
+- [x] **T9.1** `GET /api/v1/dashboard/summary` — total requests, PR, base, department (setara legacy)
+- [x] **T9.2** `GET /api/v1/dashboard/recent` — 10 transaksi terakhir
+- [x] **T9.3** `GET /api/v1/dashboard/status-breakdown` — count per status
+- [x] **T9.4** `GET /api/v1/dashboard/monthly-spend` — total belanja per bulan (12 bulan)
+- [x] **T9.5** `GET /api/v1/dashboard/top-departments` — department dengan total terbesar
+- [x] **T9.6** Halaman Dashboard Vue — kartu statistik + chart
+- [x] **T9.7** Chart: spend trend (line/bar), status breakdown (doughnut), top dept (horizontal bar)
+- [x] **T9.8** Loading skeleton + empty state yang proper
 
 ---
 
