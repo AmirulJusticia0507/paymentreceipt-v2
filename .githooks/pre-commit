@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+# Pre-commit hook.
+#
+# Menjalankan pemeriksaan dasar sebelum commit dibuat. Tujuannya adalah
+# menangkap kelas masalah yang sudah benar-benar terjadi di repo ini, bukan
+# menjadi gerbang yang memblokir setiap commit:
+#
+#   1. gofmt     — file Go yang staged harus sudah diformat.
+#   2. secret    — tidak ada credential yang ikut ter-commit.
+#
+# Sengaja TIDAK menjalankan `go test` atau `go vet` di sini: keduanya butuh
+# lebih dari satu detik dan akan membuat orang menghindari commit sama sekali.
+# Itu tugas CI (T11.9).
+#
+# Memakai hook ini: jalankan sekali per clone
+#
+#     git config core.hooksPath .githooks
+#
+# atau salin ke .git/hooks/pre-commit.
+
+set -euo pipefail
+
+staged() {
+  git diff --cached --name-only --diff-filter=ACM
+}
+
+# --- 1. gofmt -------------------------------------------------------------
+
+staged_go=$(staged | grep '\.go$' || true)
+
+if [ -n "$staged_go" ]; then
+  # gofmt -l mencetak nama file yang PERLU diformat. Kosong berarti semuanya
+  # sudah benar. Memeriksa hanya file yang staged, bukan seluruh tree, supaya
+  # hook ini tidak menuntut pembersihan yang belum dikerjakan siapa pun.
+  unformatted=$(printf '%s\n' "$staged_go" | xargs gofmt -l 2>/dev/null || true)
+
+  if [ -n "$unformatted" ]; then
+    echo "gofmt: file berikut belum diformat:"
+    printf '%s\n' "$unformatted" | sed 's/^/  /'
+    echo ""
+    echo "Jalankan: gofmt -w <file>"
+    exit 1
+  fi
+fi
+
+# --- 2. secret scan -------------------------------------------------------
+
+# Pola credential nyata. Sengaja sempit: tiap pola tambahan adalah peluang
+# false positive, dan orang akan belajar mengabaikan hook ini.
+#
+# Dikecualikan:
+#   - .env.example  -> memang boleh berisi placeholder
+#   - *_test.go     -> test memakai credential palsu secara sengaja
+#   - docs/         -> dokumentasi menjelaskan nama variabel
+#   - file biner
+exclude_regex='(\.env\.example$|_test\.go$|^docs/|^\.github/workflows/)'
+
+# AKIA + 16 karakter alfanumerik kapital = AWS access key ID.
+aws_key='AKIA[0-9A-Z]{16}'
+# Kunci privat apa pun.
+private_key='-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----'
+# Penugasan credential dengan nilai yang BUKAN placeholder.
+#
+# Huruf kecil dan besar sama-sama dicari: credential di file konfigurasi
+# dan .env sering memakai huruf kecil (password=..., secret=...), dan
+# pola yang hanya huruf besar akan melewatkan sebagian besar kasus nyata.
+assignment='(PASSWORD|SECRET|API_KEY|APIKEY|TOKEN|AUTH_JWT_SECRET)[[:space:]]*=[[:space:]]*["'"'"'][^"'"'"']{8,}["'"'"']'
+
+staged_files=$(staged | grep -vE "$exclude_regex" || true)
+
+if [ -n "$staged_files" ]; then
+  hits=$(printf '%s\n' "$staged_files" | while read -r f; do
+    [ -f "$f" ] || continue
+    # -i: tidak peduli huruf besar/kecil. False positive yang lolos pola
+    # disaring oleh grep -vEi di bawahnya.
+    grep -niHE "$aws_key|$private_key|$assignment" "$f" 2>/dev/null \
+      | grep -vEi 'your[_-]?|xxx|change[_-]?me|changeme|<[a-z_]+>|contoh|example|dummy|_local\b|placeholder' \
+      || true
+  done)
+
+  if [ -n "$hits" ]; then
+    echo "secret: kemungkinan credential ikut ter-commit:"
+    echo "$hits" | sed 's/^/  /'
+    echo ""
+    echo "Kalau ini benar credential, jangan dikanakan. Kalau ini false positive,"
+    echo "perbaiki pola di .githooks/pre-commit lalu commit lagi."
+    exit 1
+  fi
+fi
+
+exit 0

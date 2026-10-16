@@ -401,7 +401,7 @@ Keputusan architecture ada di ADR-0004. RencANA awal: **server-side PDF** supaya
 - [!] **T11.5** **Race detector** — `go test -race ./...` harus hijau. TERBLOKIR: butuh cgo + gcc, belum terinstall di mesin ini
 - [ ] **T11.6** Lint & format — `golangci-lint` + `gofumpt`
 - [ ] **T11.7** Frontend lint — ESLint + Prettier + `vue-tsc --noEmit`
-- [ ] **T11.8** **Pre-commit hook** — gofmt, go vet, eslint, secret scan
+- [x] **T11.8** **Pre-commit hook** - gofmt, go vet, eslint, secret scan
 - [x] **T11.9** **CI GitHub Actions** - test + lint + build (matrix)
 - [ ] **T11.10** SQL injection regression test — semua query wajib parameterized
 - [ ] **T11.11** Vulnerability scan — `govulncheck`, `npm audit`
