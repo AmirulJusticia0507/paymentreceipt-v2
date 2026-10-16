@@ -16,6 +16,7 @@ import (
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/dbgen"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/health"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/httputil"
+	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/basestore"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/masterdata"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/masterdatastore"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/middleware"
@@ -117,6 +118,10 @@ func New(d Deps) http.Handler {
 			mountMasterData(r, authenticator, masterdatastore.NewCategoryStore(d.Queries), "/categories",
 				masterdata.ResourceDescribe{Singular: "Kategori", Plural: "Kategori"},
 				"payment receipt", categoryDTO)
+
+			mountMasterData(r, authenticator, basestore.NewBaseStore(d.Queries), "/bases",
+				masterdata.ResourceDescribe{Singular: "Base", Plural: "Base"},
+				"request base", baseDTO)
 
 			// Modul bisnis lain menyusul di Phase 5-7.
 		})

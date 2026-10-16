@@ -29,6 +29,10 @@ func categoryDTO(d dbgen.Category) any {
 	return masterDTO{ID: d.ID, Kode: d.Kode, Nama: d.Nama, Keterangan: d.Keterangan}
 }
 
+func baseDTO(d dbgen.Base) any {
+	return masterDTO{ID: d.ID, Kode: d.Kode, Nama: d.Nama, Keterangan: d.Keterangan}
+}
+
 // satuanDTO mengosongkan Keterangan karena tabel satuan tidak punya kolom itu.
 //
 // Bentuk JSON tetap sama dengan tabel master lain supaya satu komponen tabel
