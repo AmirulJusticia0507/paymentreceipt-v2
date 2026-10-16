@@ -50,6 +50,10 @@ type ListInput struct {
 	Query  string
 	Limit  int32
 	Offset int32
+
+	// DepartmentID, saat non-nol, membatasi hasil ke data milik departemen
+	// tersebut. Digunakan tabel request; tabel master lain mengabaikannya.
+	DepartmentID int64
 }
 
 // Normalize membersihkan input list: query kosong menjadi NULL, dan whitespace
