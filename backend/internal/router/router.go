@@ -22,6 +22,8 @@ import (
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/masterdata"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/masterdatastore"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/middleware"
+	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/paymentreceipt"
+	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/paymentreceiptstore"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/requestbasestore"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/requeststore"
 )
@@ -142,9 +144,13 @@ func New(d Deps) http.Handler {
 				requestbasestore.NewRequestBaseStore(d.Queries), "/request-bases")
 
 			mountSources(r, authenticator, d.Queries)
+			mountPaymentReceipts(r, authenticator, paymentreceipt.NewService(paymentreceiptstore.New(d.Queries)))
 
 			// AI ekstraksi struk/faktur — upload gambar, dapatkan data terstruktur.
 			r.Post("/ai/extract-receipt", aiH.ExtractReceipt)
+
+			// Arsip PR (Phase 7).
+			mountPrArchive(r, authenticator, d.DB, d.Queries)
 
 			// Modul bisnis lain menyusul di Phase 5-7.
 		})

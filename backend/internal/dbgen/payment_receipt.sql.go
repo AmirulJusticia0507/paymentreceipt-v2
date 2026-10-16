@@ -119,10 +119,10 @@ const getPaymentReceipt = `-- name: GetPaymentReceipt :one
 SELECT
     p.id, p.kode, p.request_id, r.kode AS request_kode, r.nama AS request_nama,
     p.department_id, d.kode AS department_kode, d.nama AS department_nama,
-    p.source_id, s.source::text AS source_mode, s.nama_barang AS source_nama_barang,
+    p.source_id, COALESCE(s.source::text, '')::text AS source_mode, s.nama_barang AS source_nama_barang,
     p.category_id, c.nama AS category_nama, p.unit_id, u.nama AS unit_nama,
     p.tanggal_pembelian, p.usage, p.deskripsi_items, p.jumlah_items,
-    p.hargaitems, p.total_harga, p.price_estimate, p.keterangan,
+    p.hargaitems, p.total_harga::text AS total_harga, COALESCE(p.price_estimate::text, '')::text AS price_estimate, p.keterangan,
     p.status, p.inputdate, p.created_at, p.updated_at
 FROM payment_receipt p
 JOIN requests r ON r.id = p.request_id
@@ -154,8 +154,8 @@ type GetPaymentReceiptRow struct {
 	DeskripsiItems   string
 	JumlahItems      int32
 	Hargaitems       string
-	TotalHarga       pgtype.Numeric
-	PriceEstimate    pgtype.Numeric
+	TotalHarga       string
+	PriceEstimate    string
 	Keterangan       string
 	Status           PaymentStatus
 	Inputdate        time.Time
@@ -202,10 +202,10 @@ const listPaymentReceipts = `-- name: ListPaymentReceipts :many
 SELECT
     p.id, p.kode, p.request_id, r.kode AS request_kode, r.nama AS request_nama,
     p.department_id, d.kode AS department_kode, d.nama AS department_nama,
-    p.source_id, s.source::text AS source_mode, s.nama_barang AS source_nama_barang,
+    p.source_id, COALESCE(s.source::text, '')::text AS source_mode, s.nama_barang AS source_nama_barang,
     p.category_id, c.nama AS category_nama, p.unit_id, u.nama AS unit_nama,
     p.tanggal_pembelian, p.usage, p.deskripsi_items, p.jumlah_items,
-    p.hargaitems, p.total_harga, p.price_estimate, p.keterangan,
+    p.hargaitems, p.total_harga::text AS total_harga, COALESCE(p.price_estimate::text, '')::text AS price_estimate, p.keterangan,
     p.status, p.inputdate, p.created_at, p.updated_at
 FROM payment_receipt p
 JOIN requests r ON r.id = p.request_id
@@ -262,8 +262,8 @@ type ListPaymentReceiptsRow struct {
 	DeskripsiItems   string
 	JumlahItems      int32
 	Hargaitems       string
-	TotalHarga       pgtype.Numeric
-	PriceEstimate    pgtype.Numeric
+	TotalHarga       string
+	PriceEstimate    string
 	Keterangan       string
 	Status           PaymentStatus
 	Inputdate        time.Time

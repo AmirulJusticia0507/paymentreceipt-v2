@@ -49,7 +49,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: 'Dashboard', to: '/', icon: LayoutDashboard },
       { label: 'Payment Receipt', to: '/payment-receipt', icon: Receipt, disabled: true },
-      { label: 'Arsip PR', to: '/pr-archive', icon: FileText, disabled: true },
+      { label: 'Arsip PR', to: '/pr-archives', icon: FileText },
     ],
   },
   {

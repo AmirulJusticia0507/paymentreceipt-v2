@@ -331,13 +331,13 @@ Ini inti aplikasi. Paling banyak perhatian.
 
 ### Phase 7 — Archive PR
 
-- [ ] **T7.1** Query sqlc `pr_archive.sql`
-- [ ] **T7.2** Backend CRUD archive
-- [ ] **T7.3** Hitung `harga_aktual` dari total payment receipt (generated/di-trigger, bukan input manual)
-- [ ] **T7.4** Filter: date range, approver, search
-- [ ] **T7.5** Halaman Vue list + form
-- [ ] **T7.6** Bulk archive: pilih receipts finished → jadikan satu PR
-- [ ] **T7.7** Detail PR + link ke payment receipt asal
+- [x] **T7.1** Query sqlc `pr_archive.sql`
+- [x] **T7.2** Backend CRUD archive
+- [x] **T7.3** Hitung `harga_aktual` dari total payment receipt (diambil dari payment_receipt.total_harga saat bulk archive)
+- [x] **T7.4** Filter: date range, approver, search
+- [x] **T7.5** Halaman Vue list + filter + form
+- [x] **T7.6** Bulk archive: pilih receipts finished → jadikan satu PR
+- [x] **T7.7** Detail PR + link ke payment receipt asal
 
 ---
 

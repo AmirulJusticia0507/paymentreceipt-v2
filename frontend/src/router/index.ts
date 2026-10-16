@@ -85,6 +85,18 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/pages/ReceiptExtractorPage.vue'),
         meta: { requiresAuth: true, title: 'Ekstraksi Struk & Faktur' },
       },
+      {
+        path: 'pr-archives',
+        name: 'pr-archives',
+        component: () => import('@/pages/PrArchivePage.vue'),
+        meta: { requiresAuth: true, title: 'Arsip PR' },
+      },
+      {
+        path: 'pr-archives/:id',
+        name: 'pr-archive-detail',
+        component: () => import('@/pages/PrArchiveDetailPage.vue'),
+        meta: { requiresAuth: true, title: 'Detail Arsip PR' },
+      },
     ],
   },
   {
