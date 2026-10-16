@@ -218,20 +218,20 @@ Tujuan: skema final siap di-implementasikan, migrasi jalan.
 
 Tujuan: API hidup, healthcheck jalan, logging rapi.
 
-- [ ] **T2.1** `go mod init` + pilih dependency (chi, pgx/v5, sqlc, validator, jwt, argon2)
-- [ ] **T2.2** `internal/config` — load `.env` + validasi, fail-fast kalau kurang
-- [ ] **T2.3** `.env.example` — semua key tanpa value sensitif
-- [ ] **T2.4** `internal/database` — pgxpool, ping saat start, graceful close
-- [ ] **T2.5** Transaction helper — `WithTx(ctx, fn)` dengan rollback otomatis
-- [ ] **T2.6** `cmd/api/main.go` — wiring: config → db → router → server → graceful shutdown
-- [ ] **T2.7** `slog` JSON logger + request ID middleware
-- [ ] **T2.8** Error handling — sentinel errors + `ProblemDetail` (RFC 9457) JSON response
-- [ ] **T2.9** Middleware: Recover, CORS, RealIP, Timeout, RateLimit
-- [ ] **T2.10** Router `GET /healthz` & `GET /readyz`
-- [ ] **T2.11** Pagination helper — `page`, `per_page` (max 100), total count, metadata di response
-- [ ] **T2.12** Konvensi nama tabel DB di Go (snake_case) + mapping struct via `db:` tag
-- [ ] **T2.13** Unit test config loader
-- [ ] **T2.14** Smoke test: jalankan server, curl `/healthz`
+- [x] **T2.1** `go mod init` + pilih dependency (chi, pgx/v5, sqlc, validator, jwt, argon2)
+- [x] **T2.2** `internal/config` — load `.env` + validasi, fail-fast kalau kurang
+- [x] **T2.3** `.env.example` — semua key tanpa value sensitif
+- [x] **T2.4** `internal/database` — pgxpool, ping saat start, graceful close
+- [x] **T2.5** Transaction helper — `WithTx(ctx, fn)` dengan rollback otomatis
+- [x] **T2.6** `cmd/api/main.go` — wiring: config → db → router → server → graceful shutdown
+- [x] **T2.7** `slog` JSON logger + request ID middleware
+- [x] **T2.8** Error handling — sentinel errors + `ProblemDetail` (RFC 9457) JSON response
+- [x] **T2.9** Middleware: Recover, CORS, RealIP, Timeout, RateLimit
+- [x] **T2.10** Router `GET /healthz` & `GET /readyz`
+- [x] **T2.11** Pagination helper — `page`, `per_page` (max 100), total count, metadata di response
+- [!] **T2.12** Konvensi nama tabel DB di Go + mapping struct via `db:` tag - menunggu sqlc generate (butuh skema DB di `sqlc.yaml`)
+- [x] **T2.13** Unit test config loader
+- [x] **T2.14** Smoke test: jalankan server, curl `/healthz`
 
 ---
 
@@ -398,7 +398,7 @@ Keputusan architecture ada di ADR-0004. RencANA awal: **server-side PDF** supaya
 - [ ] **T11.2** Test service — business rule & state machine status
 - [ ] **T11.3** Test domain (pure, cepat)
 - [ ] **T11.4** Integration test dengan testcontainer/test DB
-- [ ] **T11.5** **Race detector** — `go test -race ./...` harus hijau
+- [!] **T11.5** **Race detector** — `go test -race ./...` harus hijau. TERBLOKIR: butuh cgo + gcc, belum terinstall di mesin ini
 - [ ] **T11.6** Lint & format — `golangci-lint` + `gofumpt`
 - [ ] **T11.7** Frontend lint — ESLint + Prettier + `vue-tsc --noEmit`
 - [ ] **T11.8** **Pre-commit hook** — gofmt, go vet, eslint, secret scan
