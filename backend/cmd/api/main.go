@@ -19,6 +19,7 @@ import (
 
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/config"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/database"
+	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/dbgen"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/logging"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/router"
 )
@@ -77,7 +78,14 @@ func run() error {
 	)
 
 	// --- Router -----------------------------------------------------------
-	handler := router.New(cfg, db, logger)
+	queries := dbgen.New(db.Pool())
+
+	handler := router.New(router.Deps{
+		Config:  cfg,
+		DB:      db,
+		Logger:  logger,
+		Queries: queries,
+	})
 
 	// --- Server -----------------------------------------------------------
 	srv := &http.Server{
