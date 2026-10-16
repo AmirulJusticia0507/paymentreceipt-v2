@@ -179,26 +179,26 @@ Tujuan: repo siap, tooling terpasang, tidak ada kode aplikasi dulu.
 
 Tujuan: skema final siap di-implementasikan, migrasi jalan.
 
-- [ ] **T1.1** Buat database `paymentreceipt_v2` + user PostgreSQL lokal
-- [ ] **T1.2** Tulis `docs/erd.md` (Mermaid ERD) — jadikan kontrak skema
-- [ ] **T1.3** Migrasi `0001_extensions` — `pgcrypto` (gen_random_uuid), `citext`
-- [ ] **T1.4** Migrasi `0002_users` — id, username (`citext`, unique), email, password_hash, role, is_active, timestamps
-- [ ] **T1.5** Migrasi `0003_department` — id, nama, keterangan
-- [ ] **T1.6** Migrasi `0004_satuan` — id, keterangan (pcs/box/rim/…)
-- [ ] **T1.7** Migrasi `0005_categories` — id, kategori
-- [ ] **T1.8** Migrasi `0006_base` — id, kode (unique), basename, keterangan
-- [ ] **T1.9** Migrasi `0007_requests` — id, kode, nama, department_id FK
-- [ ] **T1.10** Migrasi `0008_requestbase` — id, nama, jabatan, base_id FK
-- [ ] **T1.11** Migrasi `0009_sources` — id, source enum(`online`/`offline`), nama_toko, no_telp, no_rekening, link_pembelian, nama_barang
-- [ ] **T1.12** Migrasi `0010_payment_receipt` — kolom legacy + snake_case + FK + check constraint
-- [ ] **T1.13** Migrasi `0011_pr_archive` — payments_id FK, tanggal_selesai, nama_request, manager_approved, description, quantity, harga_rencana, harga_aktual
-- [ ] **T1.14** Constraint & index — FK `ON DELETE RESTRICT`, unique, index pada kolom yang sering di-filter
-- [ ] **T1.15** Constraint enum `payment_status` — `checked`,`processed`,`pending`,`cancelled`,`finished`
-- [ ] **T1.16** Enum/constraint source — `online` | `offline` + CHECK kolom wajib per mode
-- [ ] **T1.17** Trigger `updated_at` otomatis
-- [ ] **T1.18** Seed data — 1 admin, sample department/satuan/category untuk dev
-- [ ] **T1.19** Script `db/reset.sh` — drop + re-migrate + seed
-- [ ] **T1.20** Verifikasi: `psql` jalankan migrasi dari nol, cek 0 error
+- [x] **T1.1** Buat database `paymentreceipt_v2` + user PostgreSQL lokal
+- [x] **T1.2** Tulis `docs/erd.md` (Mermaid ERD) — jadikan kontrak skema
+- [x] **T1.3** Migrasi `0001_extensions` — `pgcrypto` (gen_random_uuid), `citext`
+- [x] **T1.4** Migrasi `0002_users` — id, username (`citext`, unique), email, password_hash, role, is_active, timestamps
+- [x] **T1.5** Migrasi `0003_department` — id, nama, keterangan
+- [x] **T1.6** Migrasi `0004_satuan` — id, keterangan (pcs/box/rim/…)
+- [x] **T1.7** Migrasi `0005_categories` — id, kategori
+- [x] **T1.8** Migrasi `0006_base` — id, kode (unique), basename, keterangan
+- [x] **T1.9** Migrasi `0007_requests` — id, kode, nama, department_id FK
+- [x] **T1.10** Migrasi `0008_requestbase` — id, nama, jabatan, base_id FK
+- [x] **T1.11** Migrasi `0009_sources` — id, source enum(`online`/`offline`), nama_toko, no_telp, no_rekening, link_pembelian, nama_barang
+- [x] **T1.12** Migrasi `0010_payment_receipt` — kolom legacy + snake_case + FK + check constraint
+- [x] **T1.13** Migrasi `0011_pr_archive` — payments_id FK, tanggal_selesai, nama_request, manager_approved, description, quantity, harga_rencana, harga_aktual
+- [x] **T1.14** Constraint & index — FK `ON DELETE RESTRICT`, unique, index pada kolom yang sering di-filter
+- [x] **T1.15** Constraint enum `payment_status` — `checked`,`processed`,`pending`,`cancelled`,`finished`
+- [x] **T1.16** Enum/constraint source — `online` | `offline` + CHECK kolom wajib per mode
+- [x] **T1.17** Trigger `updated_at` otomatis
+- [x] **T1.18** Seed data — 1 admin, sample department/satuan/category untuk dev
+- [x] **T1.19** Script `db/reset.sh` — drop + re-migrate + seed
+- [x] **T1.20** Verifikasi: `psql` jalankan migrasi dari nol, cek 0 error
 
 **Keputusan skema penting (kunci dari analisis legacy):**
 
