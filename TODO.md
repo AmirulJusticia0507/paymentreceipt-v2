@@ -353,7 +353,7 @@ Keputusan architecture ada di ADR-0004. RencANA awal: **server-side PDF** supaya
 - [x] **T8.6** Format angka Rupiah (`1.250.000`), format tanggal `dd-MMM-yyyy`
 - [x] **T8.7** `GET /api/v1/payment-receipts/:id/pdf` — stream PDF
 - [x] **T8.8** `GET /api/v1/reports/pr-archive/:id/pdf`
-- [ ] **T8.9** Frontend: tombol Cetak → buka/embed PDF, fallback `window.print()` (tinggal menunggu halaman payment receipt / list siap)
+- [x] **T8.9** Frontend: tombol Cetak → buka/embed PDF, fallback `window.print()`
 - [x] **T8.10** **Template print CSS** (`@media print`) untuk halaman list — untuk quick print
 - [x] **T8.11** Test: generate PDF → assert teks & total benar
 - [x] **T8.12** Perbaiki bug legacy: PDF harus **filter by ID** (legacy selalu cetak semua data)
