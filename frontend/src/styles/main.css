@@ -1,0 +1,134 @@
+/*
+ * Tailwind CSS v4 - entry point.
+ *
+ * v4 tidak butuh tailwind.config.js. Token didefinisikan lewat @theme, dan
+ * Tailwind otomatis membuat utility dari setiap --color-* di dalamnya.
+ *
+ * Token semantik (surface, raised, ink, border) didefinisikan sebagai variabel
+ * CSS yang nilainya Berganti di mode gelap. Itu lebih baik daripada menulis
+ * utility dark: di setiap tempat - satu kali di sini, tidak ada tempat lain
+ * yang perlu ingat untuk menambahkan varian gelap.
+ */
+
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* --- Brand ---------------------------------------------------------
+   * Biru, diturunkan dari warna legacy (AdminLTE skin-blue) tapi lebih
+   * pekat supaya kontras teks putih jauh di atas WCAG AA.
+   */
+  --color-brand-50: oklch(0.97 0.02 255);
+  --color-brand-100: oklch(0.93 0.045 255);
+  --color-brand-200: oklch(0.86 0.08 255);
+  --color-brand-300: oklch(0.77 0.115 256);
+  --color-brand-400: oklch(0.67 0.145 257);
+  --color-brand-500: oklch(0.58 0.17 258);
+  --color-brand-600: oklch(0.5 0.175 259);
+  --color-brand-700: oklch(0.43 0.155 260);
+  --color-brand-800: oklch(0.36 0.125 261);
+  --color-brand-900: oklch(0.29 0.095 262);
+  --color-brand-950: oklch(0.2 0.07 263);
+
+  /* --- Status --------------------------------------------------------
+   * Satu warna per status transaksi, dipakai seragam di badge, chart, dan
+   * tabel. Menyamakan warna antar fitur mencegah user menemukan "pending"
+   * berwarna hijau di satu halaman dan biru di halaman lain.
+   */
+  --color-status-pending: oklch(0.65 0.16 85);
+  --color-status-checked: oklch(0.62 0.14 230);
+  --color-status-processed: oklch(0.58 0.16 290);
+  --color-status-finished: oklch(0.55 0.15 155);
+  --color-status-cancelled: oklch(0.55 0.2 25);
+
+  /* --- Font ---------------------------------------------------------- */
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system,
+    'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', monospace;
+
+  /* --- Radius -------------------------------------------------------- */
+  --radius-card: 0.75rem;
+
+  /* --- Transisi ------------------------------------------------------
+   * Durasi pendek. Animasi yang lambat terasa lambat, bukan dramatis. */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* --- Token semantik ------------------------------------------------
+   * Di bawah ini akan menghasilkan utility bg-surface, text-ink,
+   * border-default, dan seterusnya.
+   *
+   * Nilai aslinya didefinisikan ulang di blok :root dan .dark supaya
+   * perpindahan tema cukup mengganti satu variabel.
+   */
+  --color-surface: oklch(0.985 0.002 255);
+  --color-raised: oklch(1 0 0);
+  --color-ink: oklch(0.21 0.015 260);
+  --color-ink-muted: oklch(0.52 0.015 258);
+  --color-default: oklch(0.92 0.006 258);
+}
+
+@layer base {
+  /*
+   * Mode gelap: hanya nilai variabel yang berubah, bukan utility class-nya.
+   * Dark mode diatur lewat class di <html>, bukan media query, supaya user
+   * bisa memilih manual - banyak yang lebih suka terang walaupun sistemnya gelap.
+   */
+  .dark {
+    --color-surface: oklch(0.17 0.012 260);
+    --color-raised: oklch(0.21 0.014 260);
+    --color-ink: oklch(0.94 0.005 255);
+    --color-ink-muted: oklch(0.68 0.012 258);
+    --color-default: oklch(0.3 0.014 260);
+  }
+
+  /*
+   * Hormati preferensi pengguna yang menonaktifkan animasi. Pergeseran
+   * scroll adalah salah satu penyebab paling umum orang dengan vestibular
+   * disorder merasa tidak nyaman memakai aplikasi.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  html {
+    color-scheme: light;
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-surface text-ink antialiased;
+    font-family: var(--font-sans);
+  }
+
+  /* Focus ring yang konsisten untuk navigasi keyboard.
+   * Jangan pernah dihapus tanpa diganti - pengguna keyboard butuh ini. */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand-500;
+  }
+}
+
+@layer components {
+  /* Card: container utama di seluruh aplikasi. */
+  .card {
+    @apply rounded-[var(--radius-card)] border border-default bg-raised;
+  }
+}
+
+@layer utilities {
+  /* Scrollbar yang senada dengan tema. */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-default) transparent;
+  }
+}
