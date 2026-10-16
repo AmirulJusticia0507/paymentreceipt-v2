@@ -1,0 +1,33 @@
+version: "2"
+sql:
+  - engine: postgresql
+    schema: db/schema.sql
+    queries: db/queries
+    gen:
+      go:
+        package: dbgen
+        out: internal/dbgen
+        sql_package: pgx/v5
+        emit_json_tags: false
+        emit_interface: false
+        emit_empty_slices: false
+        # Override tipe bawaan PostgreSQL dengan tipe Go yang lebih ergonomis.
+        overrides:
+          - db_type: "pg_catalog.timestamptz"
+            go_type: "time.Time"
+          - db_type: "pg_catalog.date"
+            go_type: "time.Time"
+          - db_type: "pg_catalog.numeric"
+            go_type: "string"
+
+          - db_type: "inet"
+            go_type: "string"
+          # pg_dump menulis tipe sebagai public.citext, jadi nama di sini harus
+          # persis sama - "citext" atau "pg_catalog.citext" tidak akan cocok.
+          - db_type: "public.citext"
+            go_type: "string"
+      # Enum (user_role, payment_status, source_type) sengaja TIDAK di-override.
+      # sqlc hanya menerima tipe dasar sebagai go_type, dan tipe dasar akan
+      # menghilangkan nilai enum yang valid - string biasa bisa berisi apa saja,
+      # sedangkan enum di database menolak nilai di luar daftarnya. Biarkan
+      # sqlc generate named type sendiri supaya batasan itu ikut terbawa ke Go.
