@@ -165,13 +165,13 @@ Tujuan: repo siap, tooling terpasang, tidak ada kode aplikasi dulu.
 - [x] **T0.1** Inisialisasi repo git `paymentreceipt-v2`
 - [x] **T0.2** Tulis `AGENTS.md` (aturan kerja untuk agent) + `TODO.md` (dokumen ini)
 - [x] **T0.3** `.gitignore` — Go, Node, `.env`, IDE, OS, log
-- [ ] **T0.4** `README.md` — overview, prerequisite, cara run lokal
-- [ ] **T0.5** `LICENSE` (MIT, konfirmasi dulu ke user)
-- [ ] **T0.6** `docs/adr/` — 4 ADR awal:
-  - [ ] ADR-0001 Kenapa greenfield (bukan refactor PHP)
-  - [ ] ADR-0002.choice router/ORM: sqlc + pgx vs GORM
-  - [ ] ADR-0003 Strat auth: JWT cookie vs session server-side
-  - [ ] ADR-0004 Strategi PDF: server-side render vs print CSS
+- [x] **T0.4** `README.md` — overview, prerequisite, cara run lokal
+- [x] **T0.5** `LICENSE` (MIT)
+- [x] **T0.6** `docs/adr/` — 4 ADR awal:
+  - [x] ADR-0001 Kenapa greenfield (bukan refactor PHP)
+  - [x] ADR-0002 Pilihan ORM: sqlc + pgx vs GORM
+  - [x] ADR-0003 Strategi auth: JWT cookie vs session server-side
+  - [x] ADR-0004 Strategi PDF: server-side render vs print CSS
 
 ---
 
