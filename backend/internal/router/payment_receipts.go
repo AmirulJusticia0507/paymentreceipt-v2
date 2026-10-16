@@ -148,12 +148,94 @@ func (h *paymentReceiptHandler) pdf(w http.ResponseWriter, r *http.Request) {
 	w.Write(buf)
 }
 
+func (h *paymentReceiptHandler) update(w http.ResponseWriter, r *http.Request) {
+	id, err := pathID(r)
+	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	var body createPaymentReceiptBody
+	if err := httputil.DecodeJSON(w, r, &body); err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	purchaseDate, err := parseDateField(body.TanggalPembelian, "tanggal_pembelian")
+	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	var date time.Time
+	if purchaseDate != nil {
+		date = *purchaseDate
+	}
+	item, err := h.service.Update(r.Context(), id, paymentreceipt.CreateInput{RequestID: body.RequestID, DepartmentID: body.DepartmentID, SourceID: body.SourceID, CategoryID: body.CategoryID, UnitID: body.UnitID, TanggalPembelian: date, Usage: body.Usage, DeskripsiItems: body.DeskripsiItems, JumlahItems: body.JumlahItems, HargaItems: body.HargaItems, PriceEstimate: body.PriceEstimate, Keterangan: body.Keterangan})
+	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	httputil.JSONData(w, http.StatusOK, item)
+}
+func (h *paymentReceiptHandler) delete(w http.ResponseWriter, r *http.Request) {
+	id, err := pathID(r)
+	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	if err := h.service.Delete(r.Context(), id); err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+func (h *paymentReceiptHandler) changeStatus(w http.ResponseWriter, r *http.Request) {
+	id, err := pathID(r)
+	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	var body struct {
+		Status string `json:"status"`
+		Note   string `json:"note"`
+	}
+	if err := httputil.DecodeJSON(w, r, &body); err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	changedBy := int64(0)
+	if identity, ok := auth.IdentityFrom(r.Context()); ok {
+		changedBy = identity.UserID
+	}
+	item, err := h.service.ChangeStatus(r.Context(), id, paymentreceipt.ChangeStatusInput{Status: body.Status, Note: body.Note, ChangedBy: changedBy})
+	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	httputil.JSONData(w, http.StatusOK, item)
+}
+func (h *paymentReceiptHandler) statusHistory(w http.ResponseWriter, r *http.Request) {
+	id, err := pathID(r)
+	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	items, err := h.service.StatusHistory(r.Context(), id)
+	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	httputil.JSONData(w, http.StatusOK, items)
+}
+
 func mountPaymentReceipts(r chi.Router, a *auth.Authenticator, service *paymentreceipt.Service) {
 	h := &paymentReceiptHandler{service: service}
 	r.Route("/payment-receipts", func(r chi.Router) {
 		r.Get("/", h.list)
 		r.Get("/{id}", h.get)
 		r.Get("/{id}/pdf", h.pdf)
+		r.Get("/{id}/status-history", h.statusHistory)
 		r.With(a.RequireRole(auth.RoleAdmin, auth.RoleGAStaff)).Post("/", h.create)
+		r.With(a.RequireRole(auth.RoleAdmin, auth.RoleGAStaff)).Put("/{id}", h.update)
+		r.With(a.RequireRole(auth.RoleAdmin)).Delete("/{id}", h.delete)
+		r.With(a.RequireRole(auth.RoleAdmin, auth.RoleGAStaff, auth.RoleApprover)).Patch("/{id}/status", h.changeStatus)
 	})
 }

@@ -1,4 +1,4 @@
-// Package paymentreceiptstore adapts sqlc queries to payment receipt use cases.
+﻿// Package paymentreceiptstore adapts sqlc queries to payment receipt use cases.
 package paymentreceiptstore
 
 import (
@@ -29,3 +29,70 @@ func (s *Store)List(ctx context.Context,f paymentreceipt.Filters)([]paymentrecei
 func (s *Store)Get(ctx context.Context,id int64)(paymentreceipt.Receipt,error){row,err:=s.q.GetPaymentReceipt(ctx,id);if errors.Is(err,pgx.ErrNoRows){return paymentreceipt.Receipt{},paymentreceipt.ErrNotFound};if err!=nil{return paymentreceipt.Receipt{},err};return fromGet(row),nil}
 func numeric(v *string)pgtype.Numeric{if v==nil||*v==""{return pgtype.Numeric{}};var n pgtype.Numeric;if err:=n.Scan(*v);err!=nil{return pgtype.Numeric{}};return n}
 func (s *Store)Create(ctx context.Context,in paymentreceipt.CreateInput)(paymentreceipt.Receipt,error){created,err:=s.q.CreatePaymentReceipt(ctx,dbgen.CreatePaymentReceiptParams{RequestID:in.RequestID,DepartmentID:in.DepartmentID,SourceID:optID(in.SourceID),CategoryID:optID(in.CategoryID),UnitID:optID(in.UnitID),TanggalPembelian:pgtype.Date{Time:in.TanggalPembelian,Valid:true},Usage:in.Usage,DeskripsiItems:in.DeskripsiItems,JumlahItems:in.JumlahItems,Hargaitems:in.HargaItems,PriceEstimate:numeric(in.PriceEstimate),Keterangan:in.Keterangan});if err!=nil{return paymentreceipt.Receipt{},err};return s.Get(ctx,created.ID)}
+func (s *Store) Update(ctx context.Context, id int64, in paymentreceipt.CreateInput) (paymentreceipt.Receipt, error) {
+	created, err := s.q.UpdatePaymentReceipt(ctx, dbgen.UpdatePaymentReceiptParams{
+		RequestID: in.RequestID, DepartmentID: in.DepartmentID, SourceID: optID(in.SourceID), CategoryID: optID(in.CategoryID), UnitID: optID(in.UnitID),
+		TanggalPembelian: pgtype.Date{Time: in.TanggalPembelian, Valid: true}, Usage: in.Usage, DeskripsiItems: in.DeskripsiItems,
+		JumlahItems: in.JumlahItems, Hargaitems: in.HargaItems, PriceEstimate: numeric(in.PriceEstimate), Keterangan: in.Keterangan, ID: id,
+	})
+	if err != nil {
+		return paymentreceipt.Receipt{}, err
+	}
+	return s.Get(ctx, created.ID)
+}
+func (s *Store) Delete(ctx context.Context, id int64) error {
+	return s.q.DeletePaymentReceipt(ctx, id)
+}
+func (s *Store) UpdateStatus(ctx context.Context, id int64, status string) (paymentreceipt.Receipt, error) {
+	created, err := s.q.UpdatePaymentReceiptStatus(ctx, dbgen.UpdatePaymentReceiptStatusParams{ID: id, Status: dbgen.PaymentStatus(status)})
+	if err != nil {
+		return paymentreceipt.Receipt{}, err
+	}
+	return s.Get(ctx, created.ID)
+}
+func (s *Store) InsertStatusHistory(ctx context.Context, receiptID int64, from, to string, changedBy int64, note string) error {
+	_, err := s.q.CreateStatusHistory(ctx, dbgen.CreateStatusHistoryParams{
+		PaymentReceiptID: receiptID, FromStatus: nullableStatus(from), ToStatus: dbgen.PaymentStatus(to), ChangedBy: changedBy, Note: note,
+	})
+	return err
+}
+func (s *Store) ListStatusHistory(ctx context.Context, receiptID int64) ([]paymentreceipt.StatusHistory, error) {
+	rows, err := s.q.ListStatusHistoryByReceipt(ctx, receiptID)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]paymentreceipt.StatusHistory, 0, len(rows))
+	for _, row := range rows {
+		var from *string
+		if row.FromStatus.Valid {
+			s := string(row.FromStatus.PaymentStatus)
+			from = &s
+		}
+		out = append(out, paymentreceipt.StatusHistory{
+			ID: row.ID, PaymentReceiptID: row.PaymentReceiptID, FromStatus: from,
+			ToStatus: string(row.ToStatus), ChangedBy: row.ChangedBy, ChangedByNama: row.ChangedByUsername,
+			Note: row.Note, CreatedAt: row.CreatedAt,
+		})
+	}
+	return out, nil
+}
+func (s *Store) GetRequestDepartmentID(ctx context.Context, requestID int64) (int64, error) {
+	r, err := s.q.GetRequestByID(ctx, requestID)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return 0, paymentreceipt.ErrNotFound
+	}
+	if err != nil {
+		return 0, err
+	}
+	return r.DepartmentID, nil
+}
+func nullableStatus(s string) dbgen.NullPaymentStatus {
+	valid := s == "pending" || s == "checked" || s == "processed" || s == "finished" || s == "cancelled"
+	r := dbgen.NullPaymentStatus{Valid: valid}
+	if valid {
+		r.PaymentStatus = dbgen.PaymentStatus(s)
+	}
+	return r
+}
+
+

@@ -115,6 +115,15 @@ func (q *Queries) CreatePaymentReceipt(ctx context.Context, arg CreatePaymentRec
 	return i, err
 }
 
+const deletePaymentReceipt = `-- name: DeletePaymentReceipt :exec
+DELETE FROM payment_receipt WHERE id = $1
+`
+
+func (q *Queries) DeletePaymentReceipt(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, deletePaymentReceipt, id)
+	return err
+}
+
 const getPaymentReceipt = `-- name: GetPaymentReceipt :one
 SELECT
     p.id, p.kode, p.request_id, r.kode AS request_kode, r.nama AS request_nama,
@@ -327,4 +336,122 @@ func (q *Queries) ListPaymentReceipts(ctx context.Context, arg ListPaymentReceip
 		return nil, err
 	}
 	return items, nil
+}
+
+const updatePaymentReceipt = `-- name: UpdatePaymentReceipt :one
+UPDATE payment_receipt
+SET request_id = $1,
+    department_id = $2,
+    source_id = $3,
+    category_id = $4,
+    unit_id = $5,
+    tanggal_pembelian = $6,
+    usage = $7,
+    deskripsi_items = $8,
+    jumlah_items = $9,
+    hargaitems = $10,
+    price_estimate = $11,
+    keterangan = $12
+WHERE id = $13
+RETURNING id, kode, request_id, department_id, source_id, category_id, unit_id,
+    tanggal_pembelian, usage, deskripsi_items, jumlah_items, hargaitems,
+    total_harga, price_estimate, keterangan, status, inputdate, created_at, updated_at
+`
+
+type UpdatePaymentReceiptParams struct {
+	RequestID        int64
+	DepartmentID     int64
+	SourceID         pgtype.Int8
+	CategoryID       pgtype.Int8
+	UnitID           pgtype.Int8
+	TanggalPembelian pgtype.Date
+	Usage            string
+	DeskripsiItems   string
+	JumlahItems      int32
+	Hargaitems       string
+	PriceEstimate    pgtype.Numeric
+	Keterangan       string
+	ID               int64
+}
+
+func (q *Queries) UpdatePaymentReceipt(ctx context.Context, arg UpdatePaymentReceiptParams) (PaymentReceipt, error) {
+	row := q.db.QueryRow(ctx, updatePaymentReceipt,
+		arg.RequestID,
+		arg.DepartmentID,
+		arg.SourceID,
+		arg.CategoryID,
+		arg.UnitID,
+		arg.TanggalPembelian,
+		arg.Usage,
+		arg.DeskripsiItems,
+		arg.JumlahItems,
+		arg.Hargaitems,
+		arg.PriceEstimate,
+		arg.Keterangan,
+		arg.ID,
+	)
+	var i PaymentReceipt
+	err := row.Scan(
+		&i.ID,
+		&i.Kode,
+		&i.RequestID,
+		&i.DepartmentID,
+		&i.SourceID,
+		&i.CategoryID,
+		&i.UnitID,
+		&i.TanggalPembelian,
+		&i.Usage,
+		&i.DeskripsiItems,
+		&i.JumlahItems,
+		&i.Hargaitems,
+		&i.TotalHarga,
+		&i.PriceEstimate,
+		&i.Keterangan,
+		&i.Status,
+		&i.Inputdate,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updatePaymentReceiptStatus = `-- name: UpdatePaymentReceiptStatus :one
+UPDATE payment_receipt
+SET status = $1
+WHERE id = $2
+RETURNING id, kode, request_id, department_id, source_id, category_id, unit_id,
+    tanggal_pembelian, usage, deskripsi_items, jumlah_items, hargaitems,
+    total_harga, price_estimate, keterangan, status, inputdate, created_at, updated_at
+`
+
+type UpdatePaymentReceiptStatusParams struct {
+	Status PaymentStatus
+	ID     int64
+}
+
+func (q *Queries) UpdatePaymentReceiptStatus(ctx context.Context, arg UpdatePaymentReceiptStatusParams) (PaymentReceipt, error) {
+	row := q.db.QueryRow(ctx, updatePaymentReceiptStatus, arg.Status, arg.ID)
+	var i PaymentReceipt
+	err := row.Scan(
+		&i.ID,
+		&i.Kode,
+		&i.RequestID,
+		&i.DepartmentID,
+		&i.SourceID,
+		&i.CategoryID,
+		&i.UnitID,
+		&i.TanggalPembelian,
+		&i.Usage,
+		&i.DeskripsiItems,
+		&i.JumlahItems,
+		&i.Hargaitems,
+		&i.TotalHarga,
+		&i.PriceEstimate,
+		&i.Keterangan,
+		&i.Status,
+		&i.Inputdate,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }

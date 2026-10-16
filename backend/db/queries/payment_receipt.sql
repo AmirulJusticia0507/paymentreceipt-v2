@@ -67,3 +67,33 @@ INSERT INTO payment_receipt (
   @price_estimate, @keterangan
 )
 RETURNING *;
+
+-- name: UpdatePaymentReceipt :one
+UPDATE payment_receipt
+SET request_id = @request_id,
+    department_id = @department_id,
+    source_id = @source_id,
+    category_id = @category_id,
+    unit_id = @unit_id,
+    tanggal_pembelian = @tanggal_pembelian,
+    usage = @usage,
+    deskripsi_items = @deskripsi_items,
+    jumlah_items = @jumlah_items,
+    hargaitems = @hargaitems,
+    price_estimate = @price_estimate,
+    keterangan = @keterangan
+WHERE id = @id
+RETURNING id, kode, request_id, department_id, source_id, category_id, unit_id,
+    tanggal_pembelian, usage, deskripsi_items, jumlah_items, hargaitems,
+    total_harga, price_estimate, keterangan, status, inputdate, created_at, updated_at;
+
+-- name: UpdatePaymentReceiptStatus :one
+UPDATE payment_receipt
+SET status = @status
+WHERE id = @id
+RETURNING id, kode, request_id, department_id, source_id, category_id, unit_id,
+    tanggal_pembelian, usage, deskripsi_items, jumlah_items, hargaitems,
+    total_harga, price_estimate, keterangan, status, inputdate, created_at, updated_at;
+
+-- name: DeletePaymentReceipt :exec
+DELETE FROM payment_receipt WHERE id = @id;

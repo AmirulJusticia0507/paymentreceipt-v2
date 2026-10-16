@@ -301,24 +301,24 @@ Pola yang diulang untuk semua modul master: **CRUD + paginated list + search + s
 
 Ini inti aplikasi. Paling banyak perhatian.
 
-- [ ] **T6.1** Query sqlc `payment_receipt.sql` — list dengan join + filter + sort + paginate
-- [ ] **T6.2** Repository + Service Payment Receipt
-- [ ] **T6.3** `POST /api/v1/payment-receipts`
-- [ ] **T6.4** `GET /api/v1/payment-receipts` — filter: status, department, request, date range, q
-- [ ] **T6.5** `GET /api/v1/payment-receipts/:id`
-- [ ] **T6.6** `PUT /api/v1/payment-receipts/:id`
-- [ ] **T6.7** `DELETE /api/v1/payment-receipts/:id` — **soft delete** atau guard "tidak bisa hapus jika sudah Processed"
-- [ ] **T6.8** `PATCH /api/v1/payment-receipts/:id/status` — ubah status (transition tervalidasi)
-- [ ] **T6.9** **State machine status** di domain:
-  - [ ] Peta transisi legal (mis. `processed` → `finished`/`cancelled`; `cancelled` terminal)
-  - [ ] Tolak transisi ilegal dengan 409 + pesan jelas
-  - [ ] Audit trail `status_history` (from, to, by, at, note)
-- [ ] **T6.10** Validasi business rules:
-  - [ ] `jumlah > 0`, `harga >= 0`
-  - [ ] `tanggal_pembelian` tidak boleh lebih dari 90 hari ke belakang (lihat legacy bug)
-  - [ ] Department & request harus konsisten (request milik department tsb)
-  - [ ] Kategori & satuan harus ada
-- [ ] **T6.11** Endpoint aggregate untuk detail — items per receipt (perbaiki `GROUP BY` legacy yang salah)
+- [x] **T6.1** Query sqlc `payment_receipt.sql` — list dengan join + filter + sort + paginate
+- [x] **T6.2** Repository + Service Payment Receipt
+- [x] **T6.3** `POST /api/v1/payment-receipts`
+- [x] **T6.4** `GET /api/v1/payment-receipts` — filter: status, department, request, date range, q
+- [x] **T6.5** `GET /api/v1/payment-receipts/:id`
+- [x] **T6.6** `PUT /api/v1/payment-receipts/:id`
+- [x] **T6.7** `DELETE /api/v1/payment-receipts/:id` — guard: tidak bisa hapus jika sudah processed / finished
+- [x] **T6.8** `PATCH /api/v1/payment-receipts/:id/status` — ubah status (transition tervalidasi)
+- [x] **T6.9** **State machine status** di domain:
+  - [x] Peta transisi legal (mis. `processed` → `finished`/`cancelled`; `cancelled` terminal)
+  - [x] Tolak transisi ilegal dengan 409 + pesan jelas
+  - [x] Audit trail `status_history` (from, to, by, at, note)
+- [x] **T6.10** Validasi business rules:
+  - [x] `jumlah > 0`, `harga >= 0`
+  - [x] `tanggal_pembelian` tidak boleh lebih dari 90 hari ke belakang (lihat legacy bug)
+  - [x] Department & request harus konsisten (request milik department tsb)
+  - [x] Kategori & satuan harus ada (FK)
+- [x] **T6.11** Endpoint aggregate untuk detail — items per receipt (perbaiki `GROUP BY` legacy yang salah)
 - [ ] **T6.12** Halaman Vue: list + filter + status badge colored
 - [ ] **T6.13** Form create/edit dengan validasi zod yang cermin aturan server
 - [ ] **T6.14** Auto-hitung total harga (computed, live) + input mask Rupiah

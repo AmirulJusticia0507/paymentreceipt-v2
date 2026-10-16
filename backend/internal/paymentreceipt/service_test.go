@@ -22,6 +22,22 @@ func (f *fakeStore) Create(_ context.Context, in CreateInput) (Receipt, error) {
 	f.createCalls++
 	return Receipt{ID: 1, Kode: "PR-2026-000001"}, nil
 }
+func (f *fakeStore) Update(_ context.Context, id int64, in CreateInput) (Receipt, error) {
+	return Receipt{ID: id, Kode: "PR-2026-000001"}, nil
+}
+func (f *fakeStore) Delete(_ context.Context, id int64) error { return nil }
+func (f *fakeStore) UpdateStatus(_ context.Context, id int64, status string) (Receipt, error) {
+	return Receipt{ID: id, Kode: "PR-2026-000001", Status: status}, nil
+}
+func (f *fakeStore) InsertStatusHistory(_ context.Context, receiptID int64, from, to string, changedBy int64, note string) error {
+	return nil
+}
+func (f *fakeStore) ListStatusHistory(_ context.Context, receiptID int64) ([]StatusHistory, error) {
+	return nil, nil
+}
+func (f *fakeStore) GetRequestDepartmentID(_ context.Context, requestID int64) (int64, error) {
+	return 2, nil
+}
 
 func TestServiceCreate_ValidatesRequiredAndNumericFields(t *testing.T) {
 	store := &fakeStore{}
