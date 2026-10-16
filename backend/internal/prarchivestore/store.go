@@ -45,17 +45,6 @@ func intPtr(v pgtype.Int8) *int64 {
 	return &n
 }
 
-func numericPtr(v *string) pgtype.Numeric {
-	if v == nil || *v == "" {
-		return pgtype.Numeric{}
-	}
-	var n pgtype.Numeric
-	if err := n.Scan(*v); err != nil {
-		return pgtype.Numeric{}
-	}
-	return n
-}
-
 func fromList(r dbgen.ListPrArchivesRow) prarchive.PrArchive {
 	approvedByNama := ""
 	if s, ok := r.ApprovedByUsername.(string); ok {
@@ -122,13 +111,6 @@ func fromPrArchive(r dbgen.PrArchive) prarchive.PrArchive {
 	}
 }
 
-func stringPtr(v interface{}) string {
-	if s, ok := v.(string); ok {
-		return s
-	}
-	return ""
-}
-
 func (s *Store) List(ctx context.Context, f prarchive.Filters) ([]prarchive.PrArchive, int64, error) {
 	params := dbgen.ListPrArchivesParams{
 		DateFrom: datePtr(f.DateFrom),
@@ -191,13 +173,13 @@ func (s *Store) Create(ctx context.Context, in prarchive.CreateInput) (prarchive
 
 func (s *Store) Update(ctx context.Context, id int64, in prarchive.CreateInput) (prarchive.PrArchive, error) {
 	r, err := s.q.UpdatePrArchive(ctx, dbgen.UpdatePrArchiveParams{
-		ID:             id,
-		NamaRequest:      in.NamaRequest,
-		ManagerApproved:  in.ManagerApproved,
-		Description:      in.Description,
-		Quantity:         in.Quantity,
-		HargaRencana:     in.HargaRencana,
-		HargaAktual:      in.HargaAktual,
+		ID:              id,
+		NamaRequest:     in.NamaRequest,
+		ManagerApproved: in.ManagerApproved,
+		Description:     in.Description,
+		Quantity:        in.Quantity,
+		HargaRencana:    in.HargaRencana,
+		HargaAktual:     in.HargaAktual,
 	})
 	if err != nil {
 		return prarchive.PrArchive{}, err

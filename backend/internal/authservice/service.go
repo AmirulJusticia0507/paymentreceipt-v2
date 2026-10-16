@@ -115,7 +115,6 @@ func (s *Service) Login(ctx context.Context, username, password, ip, userAgent s
 	}
 
 	user, err := s.users.GetUserByUsername(ctx, username)
-
 	if err != nil {
 		// Samakan jalur dengan password salah.
 		s.loginFail.Fail(username, ip)

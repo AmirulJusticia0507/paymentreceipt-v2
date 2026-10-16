@@ -131,7 +131,6 @@ func (m *TokenManager) Parse(tokenString string) (*Claims, error) {
 		jwt.WithLeeway(m.leeway),
 		jwt.WithTimeFunc(func() time.Time { return time.Now() }),
 	)
-
 	if err != nil {
 		switch {
 		case errors.Is(err, jwt.ErrTokenExpired):

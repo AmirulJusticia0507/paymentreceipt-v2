@@ -94,13 +94,13 @@ func (s *Service) Create(ctx context.Context, in CreateInput) (PrArchive, error)
 
 	validation := apperror.New(apperror.KindValidation, "pr_archive.validation", "Data PR archive belum valid")
 	if in.PaymentReceiptID <= 0 {
-		validation.WithField("payment_receipt_id", "Payment receipt wajib dipilih", "required")
+		_ = validation.WithField("payment_receipt_id", "Payment receipt wajib dipilih", "required")
 	}
 	if in.NamaRequest == "" {
-		validation.WithField("nama_request", "Nama request wajib diisi", "required")
+		_ = validation.WithField("nama_request", "Nama request wajib diisi", "required")
 	}
 	if in.HargaAktual == "" {
-		validation.WithField("harga_aktual", "Harga aktual wajib diisi", "required")
+		_ = validation.WithField("harga_aktual", "Harga aktual wajib diisi", "required")
 	}
 	if len(validation.Fields) > 0 {
 		return PrArchive{}, validation

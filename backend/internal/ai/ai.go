@@ -137,7 +137,9 @@ func toFloat(v any) float64 {
 			return 0
 		}
 		var f float64
-		fmt.Sscanf(n, "%f", &f)
+		if _, err := fmt.Sscanf(n, "%f", &f); err != nil {
+			return 0
+		}
 		return f
 	case nil:
 		return 0

@@ -11,20 +11,20 @@ import (
 // dari satu payment receipt.
 type ReceiptData struct {
 	// Pengajuan
-	Kode           string
-	DepartmentKode string
-	DepartmentNama string
-	RequestKode    string
-	RequestNama    string
-	NamaBarang     string // deskripsi item
-	DeskripsiItems string
-	KategoriNama   string
-	SatuanNama     string
-	JumlahItems    int32
-	HargaItems     string
-	TotalHarga     string
-	Usage          string
-	Keterangan     string
+	Kode             string
+	DepartmentKode   string
+	DepartmentNama   string
+	RequestKode      string
+	RequestNama      string
+	NamaBarang       string // deskripsi item
+	DeskripsiItems   string
+	KategoriNama     string
+	SatuanNama       string
+	JumlahItems      int32
+	HargaItems       string
+	TotalHarga       string
+	Usage            string
+	Keterangan       string
 	TanggalPembelian time.Time
 
 	// Perusahaan / pihak

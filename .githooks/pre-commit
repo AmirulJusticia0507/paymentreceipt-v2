@@ -1,0 +1,27 @@
+#!/usr/bin/env sh
+set -e
+
+echo "Running pre-commit checks..."
+
+# Go format check
+echo "=> gofmt"
+cd backend && gofmt -l . | tee /tmp/gofmt.txt
+if [ -s /tmp/gofmt.txt ]; then
+  echo "gofmt: file belum terformat. Jalankan: gofmt -w ."
+  exit 1
+fi
+
+# Go vet
+echo "=> go vet"
+go vet ./...
+
+# Backend build + tests
+echo "=> backend build+tests"
+cd .. 2>/dev/null || true
+cd backend && go build ./... && go test ./...
+
+# Frontend type check
+echo "=> frontend type check"
+cd ../frontend && npm run build
+
+echo "Pre-commit checks passed."

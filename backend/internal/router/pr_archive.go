@@ -29,13 +29,13 @@ type prArchiveHandler struct {
 
 // bulkArchiveInput adalah body POST /pr-archives/bulk-archive.
 type bulkArchiveInput struct {
-	Kode              string   `json:"kode"`
-	TanggalSelesai    string   `json:"tanggal_selesai"` // RFC3339
-	NamaRequest       string   `json:"nama_request"`
-	ManagerApproved   string   `json:"manager_approved"`
-	Description       string   `json:"description"`
-	HargaRencana      string   `json:"harga_rencana"`
-	PaymentReceiptIDs []int64  `json:"payment_receipt_ids"`
+	Kode              string  `json:"kode"`
+	TanggalSelesai    string  `json:"tanggal_selesai"` // RFC3339
+	NamaRequest       string  `json:"nama_request"`
+	ManagerApproved   string  `json:"manager_approved"`
+	Description       string  `json:"description"`
+	HargaRencana      string  `json:"harga_rencana"`
+	PaymentReceiptIDs []int64 `json:"payment_receipt_ids"`
 }
 
 // List menangani GET /pr-archives.
@@ -158,7 +158,7 @@ func (h *prArchiveHandler) pdf(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/pdf")
 	w.Header().Set("Content-Disposition", "inline; filename=\"PR-Archive-"+item.Kode+".pdf\"")
-	w.Write(buf)
+	_, _ = w.Write(buf)
 }
 
 // Delete menangani DELETE /pr-archives/{id}.
@@ -180,10 +180,10 @@ func (h *prArchiveHandler) Delete(w http.ResponseWriter, r *http.Request) {
 // BulkArchive menangani POST /pr-archives/bulk-archive.
 //
 // Dalam satu transaksi:
-//   1. Validasi semua payment_receipt_ids ada, sudah finished, dan belum diarsipkan.
-//   2. Hitung harga_aktual = jumlah total_harga dari receipt yang dipilih.
-//   3. Buat satu pr_archive.
-//   4. Tandai semua receipt sebagai diarsipkan (archived_at = NOW()).
+//  1. Validasi semua payment_receipt_ids ada, sudah finished, dan belum diarsipkan.
+//  2. Hitung harga_aktual = jumlah total_harga dari receipt yang dipilih.
+//  3. Buat satu pr_archive.
+//  4. Tandai semua receipt sebagai diarsipkan (archived_at = NOW()).
 func (h *prArchiveHandler) BulkArchive(w http.ResponseWriter, r *http.Request) {
 	var body bulkArchiveInput
 	if err := httputil.DecodeJSON(w, r, &body); err != nil {
@@ -273,7 +273,6 @@ func (h *prArchiveHandler) BulkArchive(w http.ResponseWriter, r *http.Request) {
 		`, body.PaymentReceiptIDs)
 		return err
 	})
-
 	if err != nil {
 		httputil.Problemf(w, r, err)
 		return

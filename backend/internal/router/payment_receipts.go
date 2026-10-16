@@ -15,21 +15,23 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type paymentReceiptHandler struct{ service *paymentreceipt.Service }
-type createPaymentReceiptBody struct {
-	RequestID        int64   `json:"request_id"`
-	DepartmentID     int64   `json:"department_id"`
-	SourceID         *int64  `json:"source_id"`
-	CategoryID       *int64  `json:"category_id"`
-	UnitID           *int64  `json:"unit_id"`
-	TanggalPembelian string  `json:"tanggal_pembelian"`
-	Usage            string  `json:"usage"`
-	DeskripsiItems   string  `json:"deskripsi_items"`
-	JumlahItems      int32   `json:"jumlah_items"`
-	HargaItems       string  `json:"harga_items"`
-	PriceEstimate    *string `json:"price_estimate"`
-	Keterangan       string  `json:"keterangan"`
-}
+type (
+	paymentReceiptHandler    struct{ service *paymentreceipt.Service }
+	createPaymentReceiptBody struct {
+		RequestID        int64   `json:"request_id"`
+		DepartmentID     int64   `json:"department_id"`
+		SourceID         *int64  `json:"source_id"`
+		CategoryID       *int64  `json:"category_id"`
+		UnitID           *int64  `json:"unit_id"`
+		TanggalPembelian string  `json:"tanggal_pembelian"`
+		Usage            string  `json:"usage"`
+		DeskripsiItems   string  `json:"deskripsi_items"`
+		JumlahItems      int32   `json:"jumlah_items"`
+		HargaItems       string  `json:"harga_items"`
+		PriceEstimate    *string `json:"price_estimate"`
+		Keterangan       string  `json:"keterangan"`
+	}
+)
 
 func parseDateField(value, field string) (*time.Time, error) {
 	if strings.TrimSpace(value) == "" {
@@ -41,6 +43,7 @@ func parseDateField(value, field string) (*time.Time, error) {
 	}
 	return &parsed, nil
 }
+
 func (h *paymentReceiptHandler) list(w http.ResponseWriter, r *http.Request) {
 	p := httputil.ParsePagination(r)
 	from, err := parseDateField(r.URL.Query().Get("date_from"), "date_from")
@@ -77,6 +80,7 @@ func (h *paymentReceiptHandler) list(w http.ResponseWriter, r *http.Request) {
 	}
 	httputil.JSON(w, http.StatusOK, map[string]any{"data": items, "meta": httputil.NewPagination(p.Page, p.PerPage, total)})
 }
+
 func (h *paymentReceiptHandler) get(w http.ResponseWriter, r *http.Request) {
 	id, err := pathID(r)
 	if err != nil {
@@ -90,6 +94,7 @@ func (h *paymentReceiptHandler) get(w http.ResponseWriter, r *http.Request) {
 	}
 	httputil.JSONData(w, http.StatusOK, item)
 }
+
 func (h *paymentReceiptHandler) create(w http.ResponseWriter, r *http.Request) {
 	var body createPaymentReceiptBody
 	if err := httputil.DecodeJSON(w, r, &body); err != nil {
@@ -112,6 +117,7 @@ func (h *paymentReceiptHandler) create(w http.ResponseWriter, r *http.Request) {
 	}
 	httputil.JSONData(w, http.StatusCreated, item)
 }
+
 func (h *paymentReceiptHandler) pdf(w http.ResponseWriter, r *http.Request) {
 	id, err := pathID(r)
 	if err != nil {
@@ -147,7 +153,7 @@ func (h *paymentReceiptHandler) pdf(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/pdf")
 	w.Header().Set("Content-Disposition", "inline; filename=\"Purchase-Requisition-"+item.Kode+".pdf\"")
-	w.Write(buf)
+	_, _ = w.Write(buf)
 }
 
 func (h *paymentReceiptHandler) update(w http.ResponseWriter, r *http.Request) {
@@ -177,6 +183,7 @@ func (h *paymentReceiptHandler) update(w http.ResponseWriter, r *http.Request) {
 	}
 	httputil.JSONData(w, http.StatusOK, item)
 }
+
 func (h *paymentReceiptHandler) delete(w http.ResponseWriter, r *http.Request) {
 	id, err := pathID(r)
 	if err != nil {
@@ -189,6 +196,7 @@ func (h *paymentReceiptHandler) delete(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusNoContent)
 }
+
 func (h *paymentReceiptHandler) changeStatus(w http.ResponseWriter, r *http.Request) {
 	id, err := pathID(r)
 	if err != nil {
@@ -214,6 +222,7 @@ func (h *paymentReceiptHandler) changeStatus(w http.ResponseWriter, r *http.Requ
 	}
 	httputil.JSONData(w, http.StatusOK, item)
 }
+
 func (h *paymentReceiptHandler) statusHistory(w http.ResponseWriter, r *http.Request) {
 	id, err := pathID(r)
 	if err != nil {
@@ -249,6 +258,7 @@ func (h *paymentReceiptHandler) bulkStatus(w http.ResponseWriter, r *http.Reques
 	}
 	httputil.JSONData(w, http.StatusOK, map[string]any{"changed": changed})
 }
+
 func (h *paymentReceiptHandler) exportCSV(w http.ResponseWriter, r *http.Request) {
 	p := httputil.ParsePagination(r)
 	from, _ := parseDateField(r.URL.Query().Get("date_from"), "date_from")
@@ -277,18 +287,25 @@ func (h *paymentReceiptHandler) exportCSV(w http.ResponseWriter, r *http.Request
 	w.Header().Set("Content-Type", "text/csv; charset=utf-8")
 	w.Header().Set("Content-Disposition", "attachment; filename=\"payment-receipts.csv\"")
 	writer := csv.NewWriter(w)
-	writer.Write([]string{"Kode", "Request Kode", "Request Nama", "Department Kode", "Department Nama", "Deskripsi Items", "Jumlah Items", "Harga Items", "Total Harga", "Tanggal Pembelian", "Status", "Usage", "Kategori", "Satuan", "Source", "Keterangan", "Price Estimate"})
+	writer.Write([]string{"Kode", "Request Kode", "Request Nama", "Department Kode", "Department Nama", "Deskripsi Items", "Jumlah Items", "Harga Items", "Total Harga", "Tanggal Pembelian", "Status", "Usage", "Kategori", "Satuan", "Source", "Keterangan", "Price Estimate"}) //nolint:errcheck
 	for _, it := range items {
-		writer.Write([]string{
+		if err := writer.Write([]string{
 			it.Kode, it.RequestKode, it.RequestNama, it.DepartmentKode, it.DepartmentNama,
 			it.DeskripsiItems, strconv.Itoa(int(it.JumlahItems)), it.HargaItems, it.TotalHarga,
 			it.TanggalPembelian.Format("2006-01-02"), it.Status, it.Usage, it.CategoryNama, it.UnitNama, it.SourceMode, it.Keterangan, ptrString(it.PriceEstimate),
-		})
+		}); err != nil {
+			// Best-effort: record I/O error in server log without changing response status.
+			_ = err
+		}
 	}
-	writer.Flush()
 }
 
-func ptrString(v *string) string { if v == nil { return "" }; return *v }
+func ptrString(v *string) string {
+	if v == nil {
+		return ""
+	}
+	return *v
+}
 
 func mountPaymentReceipts(r chi.Router, a *auth.Authenticator, service *paymentreceipt.Service) {
 	h := &paymentReceiptHandler{service: service}

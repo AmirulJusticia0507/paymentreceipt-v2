@@ -28,8 +28,8 @@ func (h *handler) summary(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	httputil.JSONData(w, http.StatusOK, map[string]any{
-		"total_requests":          counts.TotalRequests,
-		"total_payment_receipts":  counts.TotalPaymentReceipts,
+		"total_requests":         counts.TotalRequests,
+		"total_payment_receipts": counts.TotalPaymentReceipts,
 		"total_bases":            counts.TotalBases,
 		"total_departments":      counts.TotalDepartments,
 	})
