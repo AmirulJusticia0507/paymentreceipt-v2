@@ -239,18 +239,18 @@ Tujuan: API hidup, healthcheck jalan, logging rapi.
 
 Tujuan: login/logout/refresh + proteksi seluruh endpoint.
 
-- [ ] **T3.1** `sqlc.yaml` + query `users.sql` (findByUsername, findByID, updatePassword)
-- [ ] **T3.2** Password hashing argon2id + parameter cost yang benar
-- [ ] **T3.3** `POST /api/v1/auth/login` — validasi, Issue access (15m) + refresh (7d)
-- [ ] **T3.4** Refresh token disimpan **hash** di DB tabel `refresh_tokens` (rotasi tiap pakai)
-- [ ] **T3.5** `POST /api/v1/auth/logout` — revoke refresh token
-- [ ] **T3.6** `POST /api/v1/auth/refresh`
-- [ ] **T3.7** `GET /api/v1/auth/me` — profil user
-- [ ] **T3.8** Middleware JWT — verifikasi signature + expiry + cek user masih aktif
-- [ ] **T3.9** RBAC middleware + role: `admin`, `ga_staff`, `approver`, `viewer`
-- [ ] **T3.10** Rate limit login: 5 percobaan / 15 menit per username+IP
-- [ ] **T3.11** Cookie flags: `HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/`
-- [ ] **T3.12** Test: hash/verify password, issue/parse token, RBAC matrix
+- [x] **T3.1** `sqlc.yaml` + query `users.sql` (findByUsername, findByID, updatePassword)
+- [x] **T3.2** Password hashing argon2id + parameter cost yang benar
+- [x] **T3.3** `POST /api/v1/auth/login` — validasi, Issue access (15m) + refresh (7d)
+- [x] **T3.4** Refresh token disimpan **hash** di DB tabel `refresh_tokens` (rotasi tiap pakai)
+- [x] **T3.5** `POST /api/v1/auth/logout` — revoke refresh token
+- [x] **T3.6** `POST /api/v1/auth/refresh`
+- [x] **T3.7** `GET /api/v1/auth/me` — profil user
+- [x] **T3.8** Middleware JWT — verifikasi signature + expiry + cek user masih aktif
+- [x] **T3.9** RBAC middleware + role: `admin`, `ga_staff`, `approver`, `viewer`
+- [x] **T3.10** Rate limit login: 5 percobaan / 15 menit per username+IP
+- [x] **T3.11** Cookie flags: `HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/`
+- [x] **T3.12** Test: hash/verify password, issue/parse token, RBAC matrix
 - [ ] **T3.13** Halaman Login (Vue) — desain modern, tanpa kedokutang "password"!
 
 ---
