@@ -132,3 +132,23 @@
     scrollbar-color: var(--color-default) transparent;
   }
 }
+
+@media print {
+  /* T8.10 Quick print: sidebar, topbar, dan tombol interaktif disembunyikan. */
+  aside,
+  header,
+  footer,
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: white;
+  }
+  .card {
+    border: 1px solid #ccc;
+    box-shadow: none;
+  }
+  table {
+    page-break-inside: avoid;
+  }
+}

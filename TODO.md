@@ -345,18 +345,18 @@ Ini inti aplikasi. Paling banyak perhatian.
 
 Keputusan architecture ada di ADR-0004. RencANA awal: **server-side PDF** supaya output konsisten & bisa diarsipkan.
 
-- [ ] **T8.1** Buat ADR-0004, finalisasi pilihan library
-- [ ] **T8.2** Template dokumen Purchase Requisition — header perusahaan, "To: General Affair Department", tanggal, received by
-- [ ] **T8.3** Tabel item: No, Description, Qty, Satuan, Harga, Total, Usage
-- [ ] **T8.4** Baris total keseluruhan
-- [ ] **T8.5** Blok tanda tangan: Department, Approved by (Manager/Director), Approved by (GA Dept)
-- [ ] **T8.6** Format angka Rupiah (`1.250.000`), format tanggal `dd-MMM-yyyy`
-- [ ] **T8.7** `GET /api/v1/payment-receipts/:id/pdf` — stream PDF
-- [ ] **T8.8** `GET /api/v1/reports/pr-archive/:id/pdf`
-- [ ] **T8.9** Frontend: tombol Cetak → buka/embed PDF, fallback `window.print()`
-- [ ] **T8.10** **Template print CSS** (`@media print`) untuk halaman list — untuk quick print
-- [ ] **T8.11** Test: generate PDF → assert teks & total benar
-- [ ] **T8.12** Perbaiki bug legacy: PDF harus **filter by ID** (legacy selalu cetak semua data)
+- [x] **T8.1** Buat ADR-0004, finalisasi pilihan library
+- [x] **T8.2** Template dokumen Purchase Requisition — header perusahaan, "To: General Affair Department", tanggal, received by
+- [x] **T8.3** Tabel item: No, Description, Qty, Satuan, Harga, Total, Usage
+- [x] **T8.4** Baris total keseluruhan
+- [x] **T8.5** Blok tanda tangan: Department, Approved by (Manager/Director), Approved by (GA Dept)
+- [x] **T8.6** Format angka Rupiah (`1.250.000`), format tanggal `dd-MMM-yyyy`
+- [x] **T8.7** `GET /api/v1/payment-receipts/:id/pdf` — stream PDF
+- [x] **T8.8** `GET /api/v1/reports/pr-archive/:id/pdf`
+- [ ] **T8.9** Frontend: tombol Cetak → buka/embed PDF, fallback `window.print()` (tinggal menunggu halaman payment receipt / list siap)
+- [x] **T8.10** **Template print CSS** (`@media print`) untuk halaman list — untuk quick print
+- [x] **T8.11** Test: generate PDF → assert teks & total benar
+- [x] **T8.12** Perbaiki bug legacy: PDF harus **filter by ID** (legacy selalu cetak semua data)
 
 ---
 

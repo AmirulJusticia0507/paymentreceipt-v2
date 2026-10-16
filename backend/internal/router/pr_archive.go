@@ -15,6 +15,7 @@ import (
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/database"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/dbgen"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/httputil"
+	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/platform/pdf"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/prarchive"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/prarchivestore"
 )
@@ -124,6 +125,40 @@ func (h *prArchiveHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	httputil.JSONData(w, http.StatusOK, item)
+}
+
+// pdf menangani GET /pr-archives/{id}/pdf.
+func (h *prArchiveHandler) pdf(w http.ResponseWriter, r *http.Request) {
+	id, err := pathID(r)
+	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	item, err := h.svc.Get(r.Context(), id)
+	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	data := pdf.ArchiveData{
+		Kode:             item.Kode,
+		PaymentReceiptID: item.PaymentReceiptID,
+		ReceiptKode:      item.ReceiptKode,
+		TanggalSelesai:   item.TanggalSelesai,
+		NamaRequest:      item.NamaRequest,
+		ManagerApproved:  item.ManagerApproved,
+		Description:      item.Description,
+		Quantity:         item.Quantity,
+		HargaRencana:     item.HargaRencana,
+		HargaAktual:      item.HargaAktual,
+	}
+	buf, err := pdf.RenderArchive(data)
+	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/pdf")
+	w.Header().Set("Content-Disposition", "inline; filename=\"PR-Archive-"+item.Kode+".pdf\"")
+	w.Write(buf)
 }
 
 // Delete menangani DELETE /pr-archives/{id}.
@@ -299,6 +334,7 @@ func mountPrArchive(
 	r.Route("/pr-archives", func(r chi.Router) {
 		r.Get("/", h.List)
 		r.Get("/{id}", h.GetByID)
+		r.Get("/{id}/pdf", h.pdf)
 
 		r.With(admin).Post("/", h.Create)
 		r.With(admin).Put("/{id}", h.Update)

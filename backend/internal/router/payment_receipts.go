@@ -9,6 +9,7 @@ import (
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/auth"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/httputil"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/paymentreceipt"
+	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/platform/pdf"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -109,11 +110,50 @@ func (h *paymentReceiptHandler) create(w http.ResponseWriter, r *http.Request) {
 	}
 	httputil.JSONData(w, http.StatusCreated, item)
 }
+func (h *paymentReceiptHandler) pdf(w http.ResponseWriter, r *http.Request) {
+	id, err := pathID(r)
+	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	item, err := h.service.Get(r.Context(), id)
+	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	data := pdf.ReceiptData{
+		Kode:             item.Kode,
+		DepartmentKode:   item.DepartmentKode,
+		DepartmentNama:   item.DepartmentNama,
+		RequestKode:      item.RequestKode,
+		RequestNama:      item.RequestNama,
+		NamaBarang:       item.DeskripsiItems,
+		DeskripsiItems:   item.DeskripsiItems,
+		KategoriNama:     item.CategoryNama,
+		SatuanNama:       item.UnitNama,
+		JumlahItems:      item.JumlahItems,
+		HargaItems:       item.HargaItems,
+		TotalHarga:       item.TotalHarga,
+		Usage:            item.Usage,
+		Keterangan:       item.Keterangan,
+		TanggalPembelian: item.TanggalPembelian,
+	}
+	buf, err := pdf.RenderReceipt(data)
+	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/pdf")
+	w.Header().Set("Content-Disposition", "inline; filename=\"Purchase-Requisition-"+item.Kode+".pdf\"")
+	w.Write(buf)
+}
+
 func mountPaymentReceipts(r chi.Router, a *auth.Authenticator, service *paymentreceipt.Service) {
 	h := &paymentReceiptHandler{service: service}
 	r.Route("/payment-receipts", func(r chi.Router) {
 		r.Get("/", h.list)
 		r.Get("/{id}", h.get)
+		r.Get("/{id}/pdf", h.pdf)
 		r.With(a.RequireRole(auth.RoleAdmin, auth.RoleGAStaff)).Post("/", h.create)
 	})
 }
