@@ -49,6 +49,19 @@ Thumbs.db
 ehthumbs.db
 Desktop.ini
 
+# --- Curl / test artifacts ---
+# File ini dibuat saat pengujian manual dengan curl dan TIDAK boleh masuk repo.
+# c.txt berisi cookie sesi yang masih hidup.
+*.json.tmp
+cookies.txt
+c.txt
+v.txt
+*-cookies.txt
+curl-*.json
+body.json
+bad.json
+login.json
+
 # --- Logs ---
 *.log
 logs/
