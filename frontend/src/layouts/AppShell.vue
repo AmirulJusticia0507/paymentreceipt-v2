@@ -77,6 +77,23 @@ const route = useRoute()
 const router = useRouter()
 
 const sidebarOpen = ref(false)
+const collapsed = ref(localStorage.getItem('pr-sidebar-collapsed') === 'true')
+const userMenuOpen = ref(false)
+
+function toggleCollapse(): void {
+  collapsed.value = !collapsed.value
+  localStorage.setItem('pr-sidebar-collapsed', String(collapsed.value))
+}
+
+function toggleUserMenu(): void {
+  userMenuOpen.value = !userMenuOpen.value
+}
+
+// Tutup user menu saat pindah halaman.
+watch(() => route.fullPath, () => {
+  userMenuOpen.value = false
+  sidebarOpen.value = false
+})
 
 /**
  * Keluar lalu kembali ke halaman login.
@@ -134,7 +151,7 @@ const roleLabel: Record<UserRole, string> = {
     <!-- Sidebar -->
     <aside
       class="fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-default bg-raised transition-transform-[var(--transition-fast)] lg:translate-x-0"
-      :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+      :class="[sidebarOpen ? 'translate-x-0' : '-translate-x-full', collapsed ? 'lg:w-16' : 'lg:w-64']"
       aria-label="Navigasi utama"
     >
       <!-- Brand -->
@@ -142,7 +159,7 @@ const roleLabel: Record<UserRole, string> = {
         <div class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-brand-600 text-white">
           <BarChart3 class="size-4" aria-hidden="true" />
         </div>
-        <div class="min-w-0">
+        <div v-if="!collapsed" class="min-w-0">
           <p class="truncate text-sm font-semibold text-ink">Payment Receipt</p>
           <p class="truncate text-xs text-ink-muted">General Affairs</p>
         </div>
@@ -153,6 +170,14 @@ const roleLabel: Record<UserRole, string> = {
           @click="sidebarOpen = false"
         >
           <X class="size-5" aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          class="hidden lg:block ml-auto rounded-md p-1 text-ink-muted hover:text-ink"
+          :aria-label="collapsed ? 'Buka sidebar' : 'Tutup sidebar'"
+          @click="toggleCollapse"
+        >
+          <Menu class="size-5" aria-hidden="true" />
         </button>
       </div>
 
@@ -171,7 +196,7 @@ const roleLabel: Record<UserRole, string> = {
                 active-class="!bg-brand-50 !text-brand-700 dark:!bg-brand-950/50 dark:!text-brand-300"
               >
                 <component :is="item.icon" class="size-4 shrink-0" aria-hidden="true" />
-                {{ item.label }}
+                <span v-if="!collapsed">{{ item.label }}</span>
               </RouterLink>
               <div
                 v-else
@@ -179,7 +204,7 @@ const roleLabel: Record<UserRole, string> = {
                 :title="`${item.label} - sedang dibangun`"
               >
                 <component :is="item.icon" class="size-4 shrink-0" aria-hidden="true" />
-                {{ item.label }}
+                <span v-if="!collapsed">{{ item.label }}</span>
                 <span
                   class="ml-auto rounded bg-default px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide"
                 >
@@ -234,19 +259,71 @@ const roleLabel: Record<UserRole, string> = {
           <Menu class="size-5" aria-hidden="true" />
         </button>
 
-        <h1 class="truncate text-base font-semibold text-ink">
+        <nav v-if="!collapsed" class="hidden lg:flex items-center gap-1 text-xs text-ink-muted" aria-label="Breadcrumb">
+          <RouterLink to="/" class="hover:text-brand-600 transition-colors">Home</RouterLink>
+          <span class="text-ink-muted/50">/</span>
+          <span class="font-medium text-ink">{{ route.meta.title ?? 'Dashboard' }}</span>
+        </nav>
+
+        <h1 class="lg:hidden truncate text-base font-semibold text-ink">
           {{ route.meta.title ?? 'Dashboard' }}
         </h1>
 
-        <button
-          type="button"
-          class="ml-auto rounded-md p-2 text-ink-muted transition-colors hover:bg-default hover:text-ink"
-          :aria-label="theme.theme === 'dark' ? 'Mode terang' : 'Mode gelap'"
-          @click="theme.toggle()"
-        >
-          <Sun v-if="theme.theme === 'dark'" class="size-5" aria-hidden="true" />
-          <Moon v-else class="size-5" aria-hidden="true" />
-        </button>
+        <div class="ml-auto flex items-center gap-2 relative">
+          <button
+            type="button"
+            class="rounded-md p-2 text-ink-muted transition-colors hover:bg-default hover:text-ink"
+            :aria-label="theme.theme === 'dark' ? 'Mode terang' : 'Mode gelap'"
+            @click="theme.toggle()"
+          >
+            <Sun v-if="theme.theme === 'dark'" class="size-5" aria-hidden="true" />
+            <Moon v-else class="size-5" aria-hidden="true" />
+          </button>
+
+          <!-- User menu -->
+          <button
+            type="button"
+            class="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-ink transition-colors hover:bg-default"
+            @click="toggleUserMenu"
+          >
+            <span class="flex size-7 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-700 dark:bg-brand-950 dark:text-brand-300">
+              {{ initials }}
+            </span>
+            <span class="hidden sm:inline">{{ auth.user?.username }}</span>
+            <span class="rounded-md bg-default px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-ink-muted">
+              {{ auth.user?.role }}
+            </span>
+          </button>
+
+          <div
+            v-if="userMenuOpen"
+            class="absolute top-full right-0 mt-2 w-56 rounded-xl border border-default bg-raised shadow-lg z-50"
+          >
+            <div class="px-4 py-3 border-b border-default">
+              <p class="text-sm font-medium text-ink truncate">{{ auth.user?.full_name || auth.user?.username }}</p>
+              <p class="text-xs text-ink-muted truncate">{{ auth.user ? roleLabel[auth.user.role] : '' }}</p>
+            </div>
+            <div class="py-1">
+              <button
+                type="button"
+                class="flex w-full items-center gap-3 px-4 py-2 text-sm text-ink-muted hover:bg-default hover:text-ink"
+                @click="theme.toggle()"
+              >
+                <Moon v-if="theme.theme === 'dark'" class="size-4" aria-hidden="true" />
+                <Sun v-else class="size-4" aria-hidden="true" />
+                {{ theme.theme === 'dark' ? 'Mode terang' : 'Mode gelap' }}
+              </button>
+              <button
+                type="button"
+                class="flex w-full items-center gap-3 px-4 py-2 text-sm text-status-cancelled hover:bg-status-cancelled/10"
+                @click="handleLogout"
+              >
+                <LogOut class="size-4" aria-hidden="true" />
+                Keluar
+              </button>
+            </div>
+          </div>
+        </div>
       </header>
 
       <main class="p-4 sm:p-6">

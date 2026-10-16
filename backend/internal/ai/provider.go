@@ -157,6 +157,7 @@ Pastikan semua angka adalah tipe numerik (bukan string). Tanggal gunakan format 
 	req.Header.Set("Authorization", "Bearer "+p.apiKey)
 	// Header tambahan yang diperlukan oleh beberapa proxy (mis. Griphub).
 	// Tanpa header ini, proxy dapat menolak request dengan "Invalid JSON body".
+	req.Header.Set("Accept", "application/json")
 	req.Header.Set("User-Agent", "OpenAI/Python 1.50.0")
 	req.Header.Set("X-Stainless-Lang", "go")
 	req.Header.Set("X-Stainless-Package-Version", "1.50.0")
@@ -165,6 +166,7 @@ Pastikan semua angka adalah tipe numerik (bukan string). Tanggal gunakan format 
 	req.Header.Set("X-Stainless-Runtime", "Go")
 	req.Header.Set("X-Stainless-Runtime-Version", "1.26")
 	req.Header.Set("X-Stainless-Async", "false")
+	req.Header.Set("X-Stainless-Retry-Count", "0")
 
 	resp, err := p.httpClient.Do(req)
 	if err != nil {

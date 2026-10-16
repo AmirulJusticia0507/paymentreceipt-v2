@@ -378,17 +378,17 @@ Keputusan architecture ada di ADR-0004. RencANA awal: **server-side PDF** supaya
 - [x] **T10.1** Setup Tailwind 4 + `@theme` tokens (warna brand, status, surface)
 - [x] **T10.2** Palet warna — derive dari warna legacy (biru AdminLTE) tapi lebih lembut
 - [x] **T10.3** Font — Inter (variable) via `fontsource`, fallback system
-- [ ] **T10.4** `AppShell` — sidebar collapsible + topbar + breadcrumbs
-- [ ] **T10.5** Sidebar: grouped menu, active state, badge count (mis. jumlah pending)
-- [ ] **T10.6** Topbar: user menu, role badge, toggle tema, logout
+- [x] **T10.4** `AppShell` — sidebar collapsible + topbar + breadcrumbs
+- [x] **T10.5** Sidebar: grouped menu, active state, badge count (mis. jumlah pending)
+- [x] **T10.6** Topbar: user menu, role badge, toggle tema, logout
 - [x] **T10.7** **Dark mode** — class strategy, persist ke localStorage, respect `prefers-color-scheme`
-- [ ] **T10.8** Responsif — mobile: sidebar jadi drawer, tabel jadi card list
-- [ ] **T10.9** Loading & error state di **semua** halaman (tidak ada "halaman kosong/error")
-- [ ] **T10.10** Animasi subtle — transisi 150–200ms, hormati `prefers-reduced-motion`
+- [x] **T10.8** Responsif — mobile: sidebar jadi drawer, tabel jadi card list
+- [x] **T10.9** Loading & error state di **semua** halaman (tidak ada "halaman kosong/error")
+- [x] **T10.10** Animasi subtle — transisi 150–200ms, hormati `prefers-reduced-motion`
 - [x] **T10.11** Accessibility — label form, focus ring, kontras warna, navigasi keyboard
-- [ ] **T10.12** Empty state yang informatif + CTA (bukan cuma "tidak ada data")
-- [ ] **T10.13** **Hapus dump aset legacy** — tidak ada AdminLTE, tidak ada bower, tidak ada jQuery
-- [ ] **T10.14** Optimasi bundle — code-split per route, lazy load komponen berat
+- [x] **T10.12** Empty state yang informatif + CTA (bukan cuma "tidak ada data")
+- [x] **T10.13** **Hapus dump aset legacy** — tidak ada AdminLTE, tidak ada bower, tidak ada jQuery
+- [x] **T10.14** Optimasi bundle — code-split per route, lazy load komponen berat
 
 ---
 
