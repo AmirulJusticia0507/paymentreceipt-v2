@@ -56,7 +56,22 @@ jobs:
         run: go build ./...
       - name: Tests
         working-directory: backend
-        run: go test -race ./...
+        run: go test -race -coverprofile=coverage.out -covermode=atomic ./...
+      # Coverage DIUKUR tapi belum dijadikan gerbang, dan ini bukan kelalaian.
+      #
+      # Angka dasarnya belum pernah diketahui: `go test -cover` tidak bisa
+      # dijalankan di mesin developer Windows, karena kebijakan Application
+      # Control menolak cover.exe - alat coverage bawaan Go. Menetapkan
+      # ambang 70% tanpa pernah melihat angka nyata berarti memasang gerbang
+      # yang belum tentu hijau, dan CI merah tanpa sebab yang jelas lebih
+      # merugikan daripada tidak ada gerbang sama sekali.
+      #
+      # Setelah angka dasar ini terlihat di sini, ambang boleh dinaikkan ke
+      # angka yang realistis. Langkah ini sudah menjadi gerbang sungguhan
+      # sejak awal karena tidak memakai `|| true`.
+      - name: Coverage summary
+        working-directory: backend
+        run: go tool cover -func=coverage.out | tail -n 1
       - name: Database integration tests
         working-directory: backend
         run: go test -race -tags=integration ./integration
