@@ -14,45 +14,45 @@ import (
 
 // Receipt is the API-facing payment receipt projection, including joined labels.
 type Receipt struct {
-	ID                int64     `json:"id"`
-	Kode              string    `json:"kode"`
-	RequestID         int64     `json:"request_id"`
-	RequestKode       string    `json:"request_kode"`
-	RequestNama       string    `json:"request_nama"`
-	DepartmentID      int64     `json:"department_id"`
-	DepartmentKode    string    `json:"department_kode"`
-	DepartmentNama    string    `json:"department_nama"`
-	SourceID          *int64    `json:"source_id"`
-	SourceMode        string    `json:"source_mode"`
-	SourceNamaBarang   string    `json:"source_nama_barang"`
-	CategoryID        *int64    `json:"category_id"`
-	CategoryNama      string    `json:"category_nama"`
-	UnitID            *int64    `json:"unit_id"`
-	UnitNama          string    `json:"unit_nama"`
-	TanggalPembelian  time.Time `json:"tanggal_pembelian"`
-	Usage             string    `json:"usage"`
-	DeskripsiItems    string    `json:"deskripsi_items"`
-	JumlahItems       int32     `json:"jumlah_items"`
-	HargaItems        string    `json:"harga_items"`
-	TotalHarga        string    `json:"total_harga"`
-	PriceEstimate     *string   `json:"price_estimate"`
-	Keterangan        string    `json:"keterangan"`
-	Status            string    `json:"status"`
-	InputDate         time.Time `json:"input_date"`
-	CreatedAt         time.Time `json:"created_at"`
-	UpdatedAt         time.Time `json:"updated_at"`
+	ID               int64     `json:"id"`
+	Kode             string    `json:"kode"`
+	RequestID        int64     `json:"request_id"`
+	RequestKode      string    `json:"request_kode"`
+	RequestNama      string    `json:"request_nama"`
+	DepartmentID     int64     `json:"department_id"`
+	DepartmentKode   string    `json:"department_kode"`
+	DepartmentNama   string    `json:"department_nama"`
+	SourceID         *int64    `json:"source_id"`
+	SourceMode       string    `json:"source_mode"`
+	SourceNamaBarang string    `json:"source_nama_barang"`
+	CategoryID       *int64    `json:"category_id"`
+	CategoryNama     string    `json:"category_nama"`
+	UnitID           *int64    `json:"unit_id"`
+	UnitNama         string    `json:"unit_nama"`
+	TanggalPembelian time.Time `json:"tanggal_pembelian"`
+	Usage            string    `json:"usage"`
+	DeskripsiItems   string    `json:"deskripsi_items"`
+	JumlahItems      int32     `json:"jumlah_items"`
+	HargaItems       string    `json:"harga_items"`
+	TotalHarga       string    `json:"total_harga"`
+	PriceEstimate    *string   `json:"price_estimate"`
+	Keterangan       string    `json:"keterangan"`
+	Status           string    `json:"status"`
+	InputDate        time.Time `json:"input_date"`
+	CreatedAt        time.Time `json:"created_at"`
+	UpdatedAt        time.Time `json:"updated_at"`
 }
 
 // StatusHistory merepresentasikan satu entri riwayat perubahan status.
 type StatusHistory struct {
-	ID              int64     `json:"id"`
-	PaymentReceiptID int64    `json:"payment_receipt_id"`
-	FromStatus      *string   `json:"from_status"`
-	ToStatus        string    `json:"to_status"`
-	ChangedBy       int64     `json:"changed_by"`
-	ChangedByNama   string    `json:"changed_by_nama"`
-	Note            string    `json:"note"`
-	CreatedAt       time.Time `json:"created_at"`
+	ID               int64     `json:"id"`
+	PaymentReceiptID int64     `json:"payment_receipt_id"`
+	FromStatus       *string   `json:"from_status"`
+	ToStatus         string    `json:"to_status"`
+	ChangedBy        int64     `json:"changed_by"`
+	ChangedByNama    string    `json:"changed_by_nama"`
+	Note             string    `json:"note"`
+	CreatedAt        time.Time `json:"created_at"`
 }
 
 // Filters controls list filtering and pagination.

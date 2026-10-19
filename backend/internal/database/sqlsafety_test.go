@@ -117,7 +117,6 @@ func TestNoSQLStringInterpolation(t *testing.T) {
 
 		return nil
 	})
-
 	if err != nil {
 		t.Fatalf("gagal memindai berkas: %v", err)
 	}

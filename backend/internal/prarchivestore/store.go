@@ -191,13 +191,13 @@ func (s *Store) Create(ctx context.Context, in prarchive.CreateInput) (prarchive
 
 func (s *Store) Update(ctx context.Context, id int64, in prarchive.CreateInput) (prarchive.PrArchive, error) {
 	r, err := s.q.UpdatePrArchive(ctx, dbgen.UpdatePrArchiveParams{
-		ID:             id,
-		NamaRequest:      in.NamaRequest,
-		ManagerApproved:  in.ManagerApproved,
-		Description:      in.Description,
-		Quantity:         in.Quantity,
-		HargaRencana:     in.HargaRencana,
-		HargaAktual:      in.HargaAktual,
+		ID:              id,
+		NamaRequest:     in.NamaRequest,
+		ManagerApproved: in.ManagerApproved,
+		Description:     in.Description,
+		Quantity:        in.Quantity,
+		HargaRencana:    in.HargaRencana,
+		HargaAktual:     in.HargaAktual,
 	})
 	if err != nil {
 		return prarchive.PrArchive{}, err

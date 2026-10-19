@@ -72,6 +72,7 @@ func nullable(value string) pgtype.Text { return pgtype.Text{String: value, Vali
 func sourceDTO(s dbgen.Source) any {
 	return map[string]any{"id": s.ID, "source": s.Source, "nama_barang": s.NamaBarang, "nama_toko": s.NamaToko.String, "no_telp": s.NoTelp.String, "no_rekening": s.NoRekening.String, "link_pembelian": s.LinkPembelian.String, "keterangan": s.Keterangan}
 }
+
 func (h *sourceHandler) list(w http.ResponseWriter, r *http.Request) {
 	p := httputil.ParsePagination(r)
 	mode := strings.ToLower(r.URL.Query().Get("source"))
@@ -96,6 +97,7 @@ func (h *sourceHandler) list(w http.ResponseWriter, r *http.Request) {
 	}
 	httputil.JSON(w, http.StatusOK, map[string]any{"data": data, "meta": httputil.NewPagination(p.Page, p.PerPage, total)})
 }
+
 func (h *sourceHandler) get(w http.ResponseWriter, r *http.Request) {
 	id, err := pathID(r)
 	if err != nil {
@@ -112,6 +114,7 @@ func (h *sourceHandler) get(w http.ResponseWriter, r *http.Request) {
 	}
 	httputil.JSONData(w, http.StatusOK, sourceDTO(item))
 }
+
 func (h *sourceHandler) decode(w http.ResponseWriter, r *http.Request) (sourceBody, bool) {
 	var body sourceBody
 	if err := httputil.DecodeJSON(w, r, &body); err != nil {
@@ -124,9 +127,11 @@ func (h *sourceHandler) decode(w http.ResponseWriter, r *http.Request) (sourceBo
 	}
 	return body, true
 }
+
 func params(body sourceBody) dbgen.CreateSourceParams {
 	return dbgen.CreateSourceParams{Source: dbgen.SourceType(body.Source), NamaBarang: body.NamaBarang, NamaToko: nullable(body.NamaToko), NoTelp: nullable(body.NoTelp), NoRekening: nullable(body.NoRekening), LinkPembelian: nullable(body.LinkPembelian), Keterangan: body.Keterangan}
 }
+
 func (h *sourceHandler) create(w http.ResponseWriter, r *http.Request) {
 	body, ok := h.decode(w, r)
 	if !ok {
@@ -139,6 +144,7 @@ func (h *sourceHandler) create(w http.ResponseWriter, r *http.Request) {
 	}
 	httputil.JSONData(w, http.StatusCreated, sourceDTO(item))
 }
+
 func (h *sourceHandler) update(w http.ResponseWriter, r *http.Request) {
 	id, err := pathID(r)
 	if err != nil {
@@ -160,6 +166,7 @@ func (h *sourceHandler) update(w http.ResponseWriter, r *http.Request) {
 	}
 	httputil.JSONData(w, http.StatusOK, sourceDTO(item))
 }
+
 func (h *sourceHandler) delete(w http.ResponseWriter, r *http.Request) {
 	id, err := pathID(r)
 	if err != nil {
@@ -176,6 +183,7 @@ func (h *sourceHandler) delete(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusNoContent)
 }
+
 func mountSources(r chi.Router, a *auth.Authenticator, q *dbgen.Queries) {
 	h := &sourceHandler{q: q}
 	r.Route("/sources", func(r chi.Router) {

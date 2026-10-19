@@ -18,10 +18,10 @@ const (
 
 // legalTransitions adalah peta transisi status yang diizinkan.
 //
-//   pending → checked
-//   checked → processed / cancelled
-//   processed → finished / cancelled
-//   finished, cancelled → (terminal)
+//	pending → checked
+//	checked → processed / cancelled
+//	processed → finished / cancelled
+//	finished, cancelled → (terminal)
 var legalTransitions = map[PaymentReceiptStatus]map[PaymentReceiptStatus]bool{
 	StatusPending:   {StatusChecked: true},
 	StatusChecked:   {StatusProcessed: true, StatusCancelled: true},

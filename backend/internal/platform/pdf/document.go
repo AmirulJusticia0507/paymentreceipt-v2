@@ -3,8 +3,10 @@ package pdf
 import "github.com/jung-kurt/gofpdf"
 
 // pageWidth adalah lebar halaman A4 dalam mm.
-const pageWidth = 210.0
-const pageHeight = 297.0
+const (
+	pageWidth  = 210.0
+	pageHeight = 297.0
+)
 
 // margins konsisten.
 const (

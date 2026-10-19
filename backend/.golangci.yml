@@ -21,11 +21,22 @@
 #                    menambah pengecualian.
 #     unused       - menemukan 6 fungsi helper mati di store.
 #     revive       - menemukan komentar exported yang tidak sesuai format.
-#     gofumpt      - sebagian besar tree belum diformat (~75 file).
 #
 # Setiap linter yang ditunda akan diaktifkan begitu pembersihannya selesai,
 # di commit yang sama dengan perbaikannya. Menunda dengan catatan tertulis
 # lebih baik daripada mematikan senyap.
+#
+# Catatan soal gofumpt dan Windows: gofumpt kini AKTIF sebagai formatter.
+# Dulu dikira "75 file belum diformat" - ternyata itu sebagian besar artefak
+# CRLF: `core.autocrlf=true` menyimpan working tree sebagai CRLF sementara
+# git menyimpan blob-nya sebagai LF, jadi formatter yang membaca working tree
+# melaporkan hampir semua file hanya karena akhir baris. Setelah diukur
+# dengan konten LF yang sudah dinormalisasi, file yang BENAR-BENAR belum
+# diformat cuma 13, dan ke-13nya sudah dibersihkan.
+#
+# Karena CI berjalan di ubuntu (git checkout mengeluarkan LF), formatter di CI
+# melihat bentuk yang benar. Di Windows, jalankan lewat pre-commit hook yang
+# memeriksa blob staged (LF), bukan working tree.
 
 version: "2"
 
@@ -57,6 +68,10 @@ linters:
         linters:
           - unused
           - staticcheck
+
+formatters:
+  enable:
+    - gofumpt
 
 run:
   timeout: 5m

@@ -49,10 +49,10 @@ jobs:
           go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
           golangci-lint run ./...
 
-      # Catatan: pengecekan format gofumpt belum diaktifkan di CI. Sebagian
-      # besar tree belum diformat gofumpt, dan memaksakannya di sini hanya
-      # akan membuat CI merah sejak awal. Pembersihan format dikerjakan
-      # terpisah (lihat T11.6), lalu step ini ditambahkan kembali.
+      # Format sudah ikut tercakup di step golangci-lint di atas: di
+      # golangci-lint v2, gofumpt adalah formatter yang dijalankan oleh
+      # `golangci-lint run`, jadi file yang tidak terformat membuat step itu
+      # gagal. Tidak perlu step terpisah. Lihat T11.6.
 
       - name: go test
         run: go test ./... -count=1

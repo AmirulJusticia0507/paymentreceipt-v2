@@ -17,11 +17,13 @@ type fakeStore struct {
 
 func (f *fakeStore) List(context.Context, Filters) ([]Receipt, int64, error) { return nil, 0, nil }
 func (f *fakeStore) Get(context.Context, int64) (Receipt, error)             { return Receipt{}, f.getErr }
+
 func (f *fakeStore) Create(_ context.Context, in CreateInput) (Receipt, error) {
 	f.created = in
 	f.createCalls++
 	return Receipt{ID: 1, Kode: "PR-2026-000001"}, nil
 }
+
 func (f *fakeStore) Update(_ context.Context, id int64, in CreateInput) (Receipt, error) {
 	return Receipt{ID: id, Kode: "PR-2026-000001"}, nil
 }
@@ -29,12 +31,15 @@ func (f *fakeStore) Delete(_ context.Context, id int64) error { return nil }
 func (f *fakeStore) UpdateStatus(_ context.Context, id int64, status string) (Receipt, error) {
 	return Receipt{ID: id, Kode: "PR-2026-000001", Status: status}, nil
 }
+
 func (f *fakeStore) InsertStatusHistory(_ context.Context, receiptID int64, from, to string, changedBy int64, note string) error {
 	return nil
 }
+
 func (f *fakeStore) ListStatusHistory(_ context.Context, receiptID int64) ([]StatusHistory, error) {
 	return nil, nil
 }
+
 func (f *fakeStore) GetRequestDepartmentID(_ context.Context, requestID int64) (int64, error) {
 	return 2, nil
 }
@@ -54,6 +59,7 @@ func TestServiceCreate_ValidatesRequiredAndNumericFields(t *testing.T) {
 		t.Fatal("store must not be called for invalid input")
 	}
 }
+
 func TestServiceCreate_TrimsAndCreates(t *testing.T) {
 	store := &fakeStore{}
 	service := NewService(store)
@@ -66,6 +72,7 @@ func TestServiceCreate_TrimsAndCreates(t *testing.T) {
 		t.Fatalf("unexpected result: %#v %#v", got, store.created)
 	}
 }
+
 func TestServiceGet_MapsNotFound(t *testing.T) {
 	_, err := NewService(&fakeStore{getErr: ErrNotFound}).Get(context.Background(), 99)
 	var appErr *apperror.Error
