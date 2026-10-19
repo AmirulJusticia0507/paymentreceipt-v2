@@ -45,17 +45,6 @@ func intPtr(v pgtype.Int8) *int64 {
 	return &n
 }
 
-func numericPtr(v *string) pgtype.Numeric {
-	if v == nil || *v == "" {
-		return pgtype.Numeric{}
-	}
-	var n pgtype.Numeric
-	if err := n.Scan(*v); err != nil {
-		return pgtype.Numeric{}
-	}
-	return n
-}
-
 func fromList(r dbgen.ListPrArchivesRow) prarchive.PrArchive {
 	approvedByNama := ""
 	if s, ok := r.ApprovedByUsername.(string); ok {
@@ -120,13 +109,6 @@ func fromPrArchive(r dbgen.PrArchive) prarchive.PrArchive {
 		CreatedAt:        r.CreatedAt,
 		UpdatedAt:        r.UpdatedAt,
 	}
-}
-
-func stringPtr(v interface{}) string {
-	if s, ok := v.(string); ok {
-		return s
-	}
-	return ""
 }
 
 func (s *Store) List(ctx context.Context, f prarchive.Filters) ([]prarchive.PrArchive, int64, error) {

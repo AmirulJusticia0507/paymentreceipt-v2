@@ -101,9 +101,10 @@ func TestLoad_RequiredFields(t *testing.T) {
 
 func TestLoad_ProductionRequiresSecureCookie(t *testing.T) {
 	setEnv(t, map[string]string{
-		"DB_URL":          "postgres://x",
+		"DB_URL":          "postgres://x/db?sslmode=require",
 		"AUTH_JWT_SECRET": strings.Repeat("a", 32),
 		"APP_ENV":         "production",
+		"APP_BASE_URL":    "https://receipt.example.com",
 		// AUTH_COOKIE_SECURE sengaja tidak di-set
 	})
 
@@ -113,6 +114,46 @@ func TestLoad_ProductionRequiresSecureCookie(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "AUTH_COOKIE_SECURE") {
 		t.Errorf("Load() error = %q, want it to mention AUTH_COOKIE_SECURE", err)
+	}
+}
+
+func TestLoad_ProductionRequiresEncryptedURLs(t *testing.T) {
+	tests := []struct {
+		name     string
+		override map[string]string
+		wantErr  string
+	}{
+		{
+			name:     "application URL must use HTTPS",
+			override: map[string]string{"APP_BASE_URL": "http://receipt.example.com"},
+			wantErr:  "APP_BASE_URL",
+		},
+		{
+			name:     "database connection must use TLS",
+			override: map[string]string{"DB_URL": "postgres://db.example.com/paymentreceipt?sslmode=disable"},
+			wantErr:  "sslmode",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			environment := map[string]string{
+				"APP_ENV":            "production",
+				"APP_BASE_URL":       "https://receipt.example.com",
+				"DB_URL":             "postgres://db.example.com/paymentreceipt?sslmode=verify-full",
+				"AUTH_JWT_SECRET":    strings.Repeat("a", 32),
+				"AUTH_COOKIE_SECURE": "true",
+			}
+			for key, value := range test.override {
+				environment[key] = value
+			}
+			setEnv(t, environment)
+
+			_, err := Load()
+			if err == nil || !strings.Contains(err.Error(), test.wantErr) {
+				t.Fatalf("Load() error = %v, want error containing %q", err, test.wantErr)
+			}
+		})
 	}
 }
 

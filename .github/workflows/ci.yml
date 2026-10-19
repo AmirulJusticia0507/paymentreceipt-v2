@@ -7,80 +7,121 @@ name: CI
 # menjalankan build secara otomatis. Build yang rusak di main membuat setiap
 # pekerjaan berikutnya dimulai dari keadaan yang tidak bisa dikompilasi.
 #
-# Job frontend dan backend berjalan paralel: keduanya independen, jadi tidak
-# ada alun untuk menunggu satu sama lain.
+# Job backend, frontend, dan security berjalan paralel: keduanya independen,
+# jadi tidak ada alasan untuk menunggu satu sama lain.
+#
+# Aturan untuk step di sini: sebuah step yang dilaporkan "Lint" tapi
+# diakhiri `|| true` TIDAK bisa gagal - CI selalu hijau dan orang akan
+# percaya padahal tidak ada yang diperiksa. Kalau sebuah pemeriksaan belum
+# siap jadi gerbang, tulis eksplisit bahwa dia informasional. Jangan
+# menyamarkan gerbang yang mati.
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
 
 jobs:
   backend:
-    name: Backend (Go)
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
-
-    # Catatan: service postgres belum dipasang. Saat ini seluruh test backend
-    # adalah unit test dengan stub dan tidak membuka koneksi database, jadi
-    # service itu hanya memperlambat CI dan menambah titik gagal. Service ini
-    # dipasang kembali saat T11.4 menambahkan integration test yang benar-benar
-    # butuh database.
-
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: paymentreceipt_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d paymentreceipt_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/paymentreceipt_test?sslmode=disable
     steps:
       - uses: actions/checkout@v4
-
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version: "1.26"
-          cache-dependency-path: backend/go.sum
-
-      - name: go build
+          cache: true
+      - name: Build
+        working-directory: backend
         run: go build ./...
-
-      - name: go vet
-        run: go vet ./...
-
-      - name: golangci-lint
+      - name: Tests
+        working-directory: backend
+        run: go test -race ./...
+      - name: Database integration tests
+        working-directory: backend
+        run: go test -race -tags=integration ./integration
+      # Versi dipasang tetap, bukan @latest: hasil CI harus bisa direproduksi.
+      # @latest bisa tiba-tiba menarik versi linter baru yang melaporkan temuan
+      # pada kode yang tidak berubah, dan sulit dibedakan dari regresi nyata.
+      #
+      # Step ini juga menangkap format: di golangci-lint v2, gofumpt adalah
+      # formatter yang dijalankan oleh `golangci-lint run`, jadi file yang
+      # belum diformat membuat step ini gagal. Lihat T11.6.
+      - name: Lint
+        working-directory: backend
         run: |
-          go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
-          golangci-lint run ./...
-
-      # Format sudah ikut tercakup di step golangci-lint di atas: di
-      # golangci-lint v2, gofumpt adalah formatter yang dijalankan oleh
-      # `golangci-lint run`, jadi file yang tidak terformat membuat step itu
-      # gagal. Tidak perlu step terpisah. Lihat T11.6.
-
-      - name: go test
-        run: go test ./... -count=1
-
-      - name: go test -race
-        run: go test ./... -count=1 -race
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/v2.14.0/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.14.0
+          golangci-lint run
 
   frontend:
-    name: Frontend (Vue)
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
-
     steps:
       - uses: actions/checkout@v4
-
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: npm
+          cache: "npm"
           cache-dependency-path: frontend/package-lock.json
-
-      - name: npm ci
+      - name: Install dependencies
+        working-directory: frontend
         run: npm ci
-
-      # vue-tsc mengetikkan seluruh codebase. Tanpa step ini, error tipe baru
-      # diketahui hanya saat orang membuka filenya di editor.
-      - name: type-check + build
+      - name: Type check
+        working-directory: frontend
         run: npm run build
+      # Gerbang lint yang SEBENARNYA. `npm run lint` memakai --max-warnings
+      # di package.json: peringatan masih diizinkan (biar tidak memblokir
+      # pengembangan), tapi satu pun error akan membuat job ini merah.
+      #
+      # Sebelumnya step ini ditulis `npx eslint src || true` - bentuk yang
+      # tidak pernah bisa gagal, sehingga centang hijau di CI tidak
+      # berarti apa pun.
+      - name: Lint
+        working-directory: frontend
+        run: npm run lint
+      # Sengaja TIDAK dijadikan gerbang, dan ini bukan kecelakaan: saat
+      # ditulis, `npm audit` melaporkan 4 temuan high yang semuanya ada di
+      # rantai devDependencies (alat build), bukan kode yang dijalankan di
+      # production. Memasang `|| true` di sini TAPI melabelinya jujur lebih
+      # baik daripada menghapus `|| true` sehingga CI merah permanen untuk
+      # masalah yang belum bisa diselesaikan sekarang.
+      #
+      # Saat temuan itu tertangani, hapus `|| true` supaya langkah ini
+      # menjadi gerbang sungguhan.
+      - name: Audit (informational, bukan gerbang)
+        working-directory: frontend
+        run: npm audit --audit-level=high || true
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+      - name: Vulnerability scan
+        working-directory: backend
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          govulncheck ./...

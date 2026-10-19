@@ -202,6 +202,18 @@ func (c *Config) validate() error {
 	if c.DB.URL == "" {
 		errs = append(errs, errors.New("DB_URL wajib diisi"))
 	}
+	if c.App.IsProduction() && c.DB.URL != "" {
+		databaseURL, err := url.Parse(c.DB.URL)
+		if err != nil || databaseURL.Scheme != "postgres" && databaseURL.Scheme != "postgresql" {
+			errs = append(errs, errors.New("DB_URL: production wajib memakai URL PostgreSQL yang valid"))
+		} else {
+			switch databaseURL.Query().Get("sslmode") {
+			case "require", "verify-ca", "verify-full":
+			default:
+				errs = append(errs, errors.New("DB_URL: production wajib memakai sslmode=require, verify-ca, atau verify-full"))
+			}
+		}
+	}
 
 	if c.Server.Port < 1 || c.Server.Port > 65535 {
 		errs = append(errs, fmt.Errorf("SERVER_PORT: %d di luar rentang 1-65535", c.Server.Port))
@@ -229,6 +241,12 @@ func (c *Config) validate() error {
 
 	if c.App.IsProduction() && !c.Auth.CookieSecure {
 		errs = append(errs, errors.New("AUTH_COOKIE_SECURE: harus true di production, kalau tidak token bisa bocor lewat HTTP"))
+	}
+	if c.App.IsProduction() {
+		baseURL, err := url.Parse(c.App.BaseURL)
+		if err != nil || baseURL.Scheme != "https" || baseURL.Host == "" {
+			errs = append(errs, errors.New("APP_BASE_URL: production wajib memakai URL HTTPS yang valid"))
+		}
 	}
 
 	switch strings.ToLower(c.Auth.CookieSameSite) {

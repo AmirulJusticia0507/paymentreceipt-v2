@@ -4,7 +4,6 @@ package paymentreceiptstore
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/dbgen"
@@ -43,25 +42,6 @@ func intPtr(v pgtype.Int8) *int64 {
 	}
 	n := v.Int64
 	return &n
-}
-
-func numericString(v pgtype.Numeric) string {
-	if !v.Valid {
-		return ""
-	}
-	value, err := v.Value()
-	if err != nil {
-		return ""
-	}
-	return fmt.Sprint(value)
-}
-
-func numericPtr(v pgtype.Numeric) *string {
-	value := numericString(v)
-	if value == "" {
-		return nil
-	}
-	return &value
 }
 
 func fromList(v dbgen.ListPaymentReceiptsRow) paymentreceipt.Receipt {

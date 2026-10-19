@@ -1,16 +1,22 @@
 #!/usr/bin/env bash
 # Pre-commit hook.
 #
-# Menjalankan pemeriksaan dasar sebelum commit dibuat. Tujuannya adalah
-# menangkap kelas masalah yang sudah benar-benar terjadi di repo ini, bukan
-# menjadi gerbang yang memblokir setiap commit:
+# Menjalankan pemeriksaan dasar sebelum commit dibuat. Tujuannya menangkap
+# kelas masalah yang SUDAH benar-benar terjadi di repo ini, bukan menjadi
+# gerbang yang memblokir setiap commit:
 #
-#   1. gofmt     — file Go yang staged harus sudah diformat.
-#   2. secret    — tidak ada credential yang ikut ter-commit.
+#   1. gofmt    — file Go yang staged harus sudah diformat.
+#   2. secret   — tidak ada credential yang ikut ter-commit.
+#   3. build    — backend harus terkompilasi (dua kali main sempat membawa
+#                 commit yang build-nya rusak) dan lolos go vet.
+#   4. types    — frontend harus lolos vue-tsc.
 #
-# Sengaja TIDAK menjalankan `go test` atau `go vet` di sini: keduanya butuh
-# lebih dari satu detik dan akan membuat orang menghindari commit sama sekali.
-# Itu tugas CI (T11.9).
+# `go test` sengaja dibiarkan untuk CI. Selain membuat hook jauh lebih lambat,
+# test di mesin Windows ini bisa ditolak kebijakan Application Control yang
+# memblokir binary hasil build - kegagalan yang acak. Hook yang gagal tanpa
+# sebab kode akan di-bypass orang lewat --no-verify, dan hook yang di-bypass
+# tidak melindungi apa pun. CI menjalankan test di ubuntu, di mana hasilnya
+# deterministik, dan CI-lah yang menjadi keputusan akhir.
 #
 # Memakai hook ini: jalankan sekali per clone
 #
@@ -19,6 +25,8 @@
 # atau salin ke .git/hooks/pre-commit.
 
 set -euo pipefail
+
+root=$(git rev-parse --show-toplevel)
 
 staged() {
   git diff --cached --name-only --diff-filter=ACM
@@ -104,4 +112,27 @@ if [ -n "$staged_files" ]; then
   fi
 fi
 
-exit 0
+# --- 3. backend: vet + build ---------------------------------------------
+#
+# Subshell ( ... ) supaya `cd` tidak bocor ke pemerikahan berikutnya.
+
+if [ -n "$(staged | grep '^backend/' || true)" ]; then
+  echo "=> go vet + go build (backend)"
+  (
+    cd "$root/backend"
+    go vet ./...
+    go build ./...
+  )
+fi
+
+# --- 4. frontend: type check ---------------------------------------------
+
+if [ -n "$(staged | grep '^frontend/' || true)" ]; then
+  echo "=> type-check (frontend)"
+  (
+    cd "$root/frontend"
+    npm run build >/dev/null
+  )
+fi
+
+echo "Pre-commit checks passed."

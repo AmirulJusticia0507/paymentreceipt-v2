@@ -97,11 +97,4 @@ func nullableText(s string) pgtype.Text {
 	return pgtype.Text{String: s, Valid: true}
 }
 
-// nullableInt64 mengubah 0 menjadi NULL. Departemen tidak pernah punya id 0,
-// jadi 0 berarti "tidak ada filter departemen".
-func nullableInt64(v int64) pgtype.Int8 {
-	if v == 0 {
-		return pgtype.Int8{}
-	}
-	return pgtype.Int8{Int64: v, Valid: true}
-}
+// nullableInt64 dihapus (unused) setelah refactor; pgtype.Int8{} dipakai langsung.

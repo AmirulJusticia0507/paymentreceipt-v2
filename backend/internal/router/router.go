@@ -15,6 +15,7 @@ import (
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/authservice"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/basestore"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/config"
+	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/dashboard"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/database"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/dbgen"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/health"
@@ -151,6 +152,9 @@ func New(d Deps) http.Handler {
 
 			// Arsip PR (Phase 7).
 			mountPrArchive(r, authenticator, d.DB, d.Queries)
+
+			// Dashboard (Phase 9).
+			dashboard.Mount(r, authenticator, d.Queries)
 
 			// Modul bisnis lain menyusul di Phase 5-7.
 		})

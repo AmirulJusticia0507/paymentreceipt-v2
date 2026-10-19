@@ -127,38 +127,38 @@ func (s *Service) Create(ctx context.Context, in CreateInput) (Receipt, error) {
 	validation := apperror.New(apperror.KindValidation, "payment_receipt.validation", "Data payment receipt belum valid")
 
 	if in.RequestID <= 0 {
-		validation.WithField("request_id", "Request wajib dipilih", "required")
+		_ = validation.WithField("request_id", "Request wajib dipilih", "required")
 	}
 	if in.DepartmentID <= 0 {
-		validation.WithField("department_id", "Department wajib dipilih", "required")
+		_ = validation.WithField("department_id", "Department wajib dipilih", "required")
 	}
 	if in.TanggalPembelian.IsZero() {
-		validation.WithField("tanggal_pembelian", "Tanggal pembelian wajib diisi", "required")
+		_ = validation.WithField("tanggal_pembelian", "Tanggal pembelian wajib diisi", "required")
 	}
 	if in.TanggalPembelian.After(time.Now()) {
-		validation.WithField("tanggal_pembelian", "Tanggal pembelian tidak boleh di masa depan", "max")
+		_ = validation.WithField("tanggal_pembelian", "Tanggal pembelian tidak boleh di masa depan", "max")
 	}
 	if !in.TanggalPembelian.IsZero() && in.TanggalPembelian.Before(time.Now().AddDate(0, 0, -90)) {
-		validation.WithField("tanggal_pembelian", "Tanggal pembelian tidak boleh lebih dari 90 hari ke belakang", "range")
+		_ = validation.WithField("tanggal_pembelian", "Tanggal pembelian tidak boleh lebih dari 90 hari ke belakang", "range")
 	}
 	if in.DeskripsiItems == "" {
-		validation.WithField("deskripsi_items", "Deskripsi item wajib diisi", "required")
+		_ = validation.WithField("deskripsi_items", "Deskripsi item wajib diisi", "required")
 	}
 	if len(in.DeskripsiItems) > 255 {
-		validation.WithField("deskripsi_items", "Deskripsi item maksimal 255 karakter", "maxlen")
+		_ = validation.WithField("deskripsi_items", "Deskripsi item maksimal 255 karakter", "maxlen")
 	}
 	if in.JumlahItems <= 0 {
-		validation.WithField("jumlah_items", "Jumlah harus lebih dari 0", "positive")
+		_ = validation.WithField("jumlah_items", "Jumlah harus lebih dari 0", "positive")
 	}
 	price, priceErr := strconv.ParseFloat(in.HargaItems, 64)
 	if priceErr != nil || price <= 0 {
-		validation.WithField("harga_items", "Harga harus berupa angka lebih dari 0", "positive")
+		_ = validation.WithField("harga_items", "Harga harus berupa angka lebih dari 0", "positive")
 	}
 	if in.HargaItems == "" {
-		validation.WithField("harga_items", "Harga wajib diisi", "required")
+		_ = validation.WithField("harga_items", "Harga wajib diisi", "required")
 	}
 	if in.Usage != "" && len(in.Usage) > 150 {
-		validation.WithField("usage", "Usage maksimal 150 karakter", "maxlen")
+		_ = validation.WithField("usage", "Usage maksimal 150 karakter", "maxlen")
 	}
 	if len(validation.Fields) > 0 {
 		return Receipt{}, validation
@@ -169,13 +169,13 @@ func (s *Service) Create(ctx context.Context, in CreateInput) (Receipt, error) {
 		depID, err := s.store.GetRequestDepartmentID(ctx, in.RequestID)
 		if err != nil {
 			if errors.Is(err, ErrNotFound) {
-				validation.WithField("request_id", "Request tidak ditemukan", "not_found")
+				_ = validation.WithField("request_id", "Request tidak ditemukan", "not_found")
 				return Receipt{}, validation
 			}
 			return Receipt{}, apperror.New(apperror.KindInternal, "payment_receipt.request_lookup_failed", "Gagal memvalidasi request")
 		}
 		if depID != in.DepartmentID {
-			validation.WithField("request_id", "Request tidak milik department yang dipilih", "consistency")
+			_ = validation.WithField("request_id", "Request tidak milik department yang dipilih", "consistency")
 			return Receipt{}, validation
 		}
 	}
@@ -197,38 +197,38 @@ func (s *Service) Update(ctx context.Context, id int64, in CreateInput) (Receipt
 	validation := apperror.New(apperror.KindValidation, "payment_receipt.validation", "Data payment receipt belum valid")
 
 	if in.RequestID <= 0 {
-		validation.WithField("request_id", "Request wajib dipilih", "required")
+		_ = validation.WithField("request_id", "Request wajib dipilih", "required")
 	}
 	if in.DepartmentID <= 0 {
-		validation.WithField("department_id", "Department wajib dipilih", "required")
+		_ = validation.WithField("department_id", "Department wajib dipilih", "required")
 	}
 	if in.TanggalPembelian.IsZero() {
-		validation.WithField("tanggal_pembelian", "Tanggal pembelian wajib diisi", "required")
+		_ = validation.WithField("tanggal_pembelian", "Tanggal pembelian wajib diisi", "required")
 	}
 	if in.TanggalPembelian.After(time.Now()) {
-		validation.WithField("tanggal_pembelian", "Tanggal pembelian tidak boleh di masa depan", "max")
+		_ = validation.WithField("tanggal_pembelian", "Tanggal pembelian tidak boleh di masa depan", "max")
 	}
 	if !in.TanggalPembelian.IsZero() && in.TanggalPembelian.Before(time.Now().AddDate(0, 0, -90)) {
-		validation.WithField("tanggal_pembelian", "Tanggal pembelian tidak boleh lebih dari 90 hari ke belakang", "range")
+		_ = validation.WithField("tanggal_pembelian", "Tanggal pembelian tidak boleh lebih dari 90 hari ke belakang", "range")
 	}
 	if in.DeskripsiItems == "" {
-		validation.WithField("deskripsi_items", "Deskripsi item wajib diisi", "required")
+		_ = validation.WithField("deskripsi_items", "Deskripsi item wajib diisi", "required")
 	}
 	if len(in.DeskripsiItems) > 255 {
-		validation.WithField("deskripsi_items", "Deskripsi item maksimal 255 karakter", "maxlen")
+		_ = validation.WithField("deskripsi_items", "Deskripsi item maksimal 255 karakter", "maxlen")
 	}
 	if in.JumlahItems <= 0 {
-		validation.WithField("jumlah_items", "Jumlah harus lebih dari 0", "positive")
+		_ = validation.WithField("jumlah_items", "Jumlah harus lebih dari 0", "positive")
 	}
 	price, priceErr := strconv.ParseFloat(in.HargaItems, 64)
 	if priceErr != nil || price <= 0 {
-		validation.WithField("harga_items", "Harga harus berupa angka lebih dari 0", "positive")
+		_ = validation.WithField("harga_items", "Harga harus berupa angka lebih dari 0", "positive")
 	}
 	if in.HargaItems == "" {
-		validation.WithField("harga_items", "Harga wajib diisi", "required")
+		_ = validation.WithField("harga_items", "Harga wajib diisi", "required")
 	}
 	if in.Usage != "" && len(in.Usage) > 150 {
-		validation.WithField("usage", "Usage maksimal 150 karakter", "maxlen")
+		_ = validation.WithField("usage", "Usage maksimal 150 karakter", "maxlen")
 	}
 	if len(validation.Fields) > 0 {
 		return Receipt{}, validation
@@ -238,13 +238,13 @@ func (s *Service) Update(ctx context.Context, id int64, in CreateInput) (Receipt
 		depID, err := s.store.GetRequestDepartmentID(ctx, in.RequestID)
 		if err != nil {
 			if errors.Is(err, ErrNotFound) {
-				validation.WithField("request_id", "Request tidak ditemukan", "not_found")
+				_ = validation.WithField("request_id", "Request tidak ditemukan", "not_found")
 				return Receipt{}, validation
 			}
 			return Receipt{}, apperror.New(apperror.KindInternal, "payment_receipt.request_lookup_failed", "Gagal memvalidasi request")
 		}
 		if depID != in.DepartmentID {
-			validation.WithField("request_id", "Request tidak milik department yang dipilih", "consistency")
+			_ = validation.WithField("request_id", "Request tidak milik department yang dipilih", "consistency")
 			return Receipt{}, validation
 		}
 	}
@@ -314,6 +314,47 @@ func (s *Service) StatusHistory(ctx context.Context, receiptID int64) ([]StatusH
 	}
 	_ = item
 	return s.store.ListStatusHistory(ctx, receiptID)
+}
+
+// BulkChangeStatus mengubah status banyak receipt sekaligus. Transisi tiap
+// receipt divalidasi; suatu transisi ilegal atau status tidak valid akan
+// menggagalkan seluruh permintaan (best-effort, partial failure mungkin
+// terjadi kalau perubahan pertama berhasil sebelum yang kedua gagal).
+func (s *Service) BulkChangeStatus(ctx context.Context, ids []int64, status string, changedBy int64, note string) (int, error) {
+	if len(ids) == 0 {
+		return 0, apperror.New(apperror.KindValidation, "payment_receipt.bulk_invalid", "Minimal satu receipt harus dipilih")
+	}
+	if !domain.ValidStatus(status) {
+		return 0, apperror.New(apperror.KindValidation, "payment_receipt.invalid_status", "Status tidak valid")
+	}
+	for _, id := range ids {
+		item, err := s.store.Get(ctx, id)
+		if err != nil {
+			if errors.Is(err, ErrNotFound) {
+				return 0, apperror.New(apperror.KindNotFound, "payment_receipt.not_found", "Payment receipt tidak ditemukan")
+			}
+			return 0, err
+		}
+		if !domain.CanTransition(domain.PaymentReceiptStatus(item.Status), domain.PaymentReceiptStatus(status)) {
+			return 0, apperror.New(apperror.KindConflict, "payment_receipt.illegal_transition", "Transisi status tidak diizinkan")
+		}
+	}
+
+	changed := 0
+	for _, id := range ids {
+		item, err := s.store.Get(ctx, id)
+		if err != nil {
+			return changed, err
+		}
+		if err := s.store.InsertStatusHistory(ctx, id, item.Status, status, changedBy, note); err != nil {
+			return changed, err
+		}
+		if _, err := s.store.UpdateStatus(ctx, id, status); err != nil {
+			return changed, err
+		}
+		changed++
+	}
+	return changed, nil
 }
 
 // ErrNotFound indicates that a receipt does not exist.

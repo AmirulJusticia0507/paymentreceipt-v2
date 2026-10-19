@@ -158,7 +158,7 @@ func (h *prArchiveHandler) pdf(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/pdf")
 	w.Header().Set("Content-Disposition", "inline; filename=\"PR-Archive-"+item.Kode+".pdf\"")
-	w.Write(buf)
+	_, _ = w.Write(buf)
 }
 
 // Delete menangani DELETE /pr-archives/{id}.

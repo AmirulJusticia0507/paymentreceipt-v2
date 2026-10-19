@@ -59,7 +59,7 @@ func (h *Handler) ExtractReceipt(w http.ResponseWriter, r *http.Request) {
 		httputil.Problemf(w, r, apperror.FieldValidation("file", "Berkas struk/faktur wajib diunggah", "required"))
 		return
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	data, err := io.ReadAll(file)
 	if err != nil {

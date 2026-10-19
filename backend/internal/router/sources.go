@@ -33,32 +33,32 @@ func validateSource(body *sourceBody) error {
 	body.LinkPembelian, body.Keterangan = strings.TrimSpace(body.LinkPembelian), strings.TrimSpace(body.Keterangan)
 	err := apperror.New(apperror.KindValidation, "source.validation", "Data sumber pembelian belum valid")
 	if body.NamaBarang == "" {
-		err.WithField("nama_barang", "Nama barang wajib diisi", "required")
+		_ = err.WithField("nama_barang", "Nama barang wajib diisi", "required")
 	}
 	if len(body.NamaBarang) > 200 {
-		err.WithField("nama_barang", "Nama barang maksimal 200 karakter", "maxlen")
+		_ = err.WithField("nama_barang", "Nama barang maksimal 200 karakter", "maxlen")
 	}
 	switch body.Source {
 	case "online":
 		if body.LinkPembelian == "" {
-			err.WithField("link_pembelian", "Link pembelian wajib diisi", "required")
+			_ = err.WithField("link_pembelian", "Link pembelian wajib diisi", "required")
 		} else if parsed, parseErr := url.ParseRequestURI(body.LinkPembelian); parseErr != nil || (parsed.Scheme != "http" && parsed.Scheme != "https") {
-			err.WithField("link_pembelian", "Link pembelian harus berupa URL HTTP/HTTPS", "url")
+			_ = err.WithField("link_pembelian", "Link pembelian harus berupa URL HTTP/HTTPS", "url")
 		}
 		body.NamaToko, body.NoTelp, body.NoRekening = "", "", ""
 	case "offline":
 		if body.NamaToko == "" {
-			err.WithField("nama_toko", "Nama toko wajib diisi", "required")
+			_ = err.WithField("nama_toko", "Nama toko wajib diisi", "required")
 		}
 		if body.NoTelp == "" {
-			err.WithField("no_telp", "Nomor telepon wajib diisi", "required")
+			_ = err.WithField("no_telp", "Nomor telepon wajib diisi", "required")
 		}
 		if body.NoRekening == "" {
-			err.WithField("no_rekening", "Nomor rekening wajib diisi", "required")
+			_ = err.WithField("no_rekening", "Nomor rekening wajib diisi", "required")
 		}
 		body.LinkPembelian = ""
 	default:
-		err.WithField("source", "Mode harus online atau offline", "enum")
+		_ = err.WithField("source", "Mode harus online atau offline", "enum")
 	}
 	if len(err.Fields) > 0 {
 		return err
