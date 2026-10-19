@@ -394,7 +394,7 @@ Keputusan architecture ada di ADR-0004. RencANA awal: **server-side PDF** supaya
 
 ### Phase 11 â€” Kualitas
 
-- [ ] **T11.1** Test handler â€” happy path + validasi error + authz
+- [x] **T11.1** Test handler â€” happy path + validasi error + authz
 -[x] **T11.2** Test service â€” business rule & state machine status
 - [x] **T11.3** Test domain (pure, cepat)
 - [ ] **T11.4** Integration test dengan testcontainer/test DB
