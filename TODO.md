@@ -1,4 +1,4 @@
-﻿# TODO â€” Payment Receipt v2
+# TODO â€” Payment Receipt v2
 
 Rewrite (greenfield) dari aplikasi **Payment Receipt / Purchase Requisition** PT. Asi Pudjiastuti Aviation (Susi Air)
 bagian General Affairs. Proyek PHP lama ada di repo `AmirulJusticia0507/paymentreceipt` dan dipakai
@@ -29,6 +29,7 @@ bagian General Affairs. Proyek PHP lama ada di repo `AmirulJusticia0507/paymentr
   - [Phase 10 â€” Design System & Polish](#phase-10--design-system--polish)
   - [Phase 11 â€” Kualitas](#phase-11--kualitas)
   - [Phase 12 â€” Deploy](#phase-12--deploy)
+  - [Phase 13 - Kebijakan & Panduan Pengguna](#phase-13---kebijakan--panduan-pengguna)
 - [Bug Legacy yang Tidak Boleh Diulang](#bug-legacy-yang-tidak-boleh-diulang)
 - [Desain](#desain)
 - [Definition of Done](#definition-of-done)
@@ -420,6 +421,14 @@ Keputusan architecture ada di ADR-0004. RencANA awal: **server-side PDF** supaya
 - [x] **T12.9** Pasang `AI_MAX_REQUEST_BODY` sebagai batas upload endpoint AI
 - [x] **T12.10** Kembalikan kode hasil generate pada respons `bulk-archive`
 - [x] **T12.11** Bersihkan komentar kode yang terkontaminasi teks asing
+
+### Phase 13 - Kebijakan & Panduan Pengguna
+
+Tujuan: dokumen kebijakan internal dan panduan pemakaian untuk pengguna akhir.
+
+- [x] **T13.1** `docs/confidentiality.md` - kebijakan kerahasiaan internal
+- [x] **T13.2** `docs/privacy-policy.md` - kebijakan privasi data karyawan
+- [x] **T13.3** `docs/user-guide.md` - petunjuk pengguna per role
 
 ---
 

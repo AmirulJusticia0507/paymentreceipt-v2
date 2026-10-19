@@ -218,6 +218,8 @@ cd backend && DB_URL=... go run ./cmd/migrate down -steps 1   # rollback 1 versi
 Deploy, rollback, dan troubleshooting produksi: [docs/runbook-deploy.md](docs/runbook-deploy.md).
 Skema log & agregator: [docs/logging.md](docs/logging.md).
 Referensi endpoint API: [docs/api.md](docs/api.md).
+Petunjuk pengguna: [docs/user-guide.md](docs/user-guide.md).
+Kebijakan internal: [docs/confidentiality.md](docs/confidentiality.md) — privasi: [docs/privacy-policy.md](docs/privacy-policy.md).
 
 ---
 
