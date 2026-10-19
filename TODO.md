@@ -414,7 +414,7 @@ Keputusan architecture ada di ADR-0004. RencANA awal: **server-side PDF** supaya
 - [x] **T12.3** Konfigurasi environment production (secret via env, bukan file)
 - [x] **T12.4** Migration strategy — jalankan saat deploy, sebelum app start
 - [x] **T12.5** Health check untuk orchestrator
-- [ ] **T12.6** Logging terstruktur + agregator
+- [x] **T12.6** Logging terstruktur + agregator
 - [ ] **T12.7** Dokumentasi runbook deploy & rollback
 - [ ] **T12.8** `docs/api.md` atau OpenAPI spec
 
