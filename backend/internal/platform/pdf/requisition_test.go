@@ -36,7 +36,7 @@ func TestRenderReceipt_ContainsCompanyNameAndTotal(t *testing.T) {
 		t.Fatalf("PDF terlalu kecil: %d bytes", len(buf))
 	}
 	text := string(buf)
-	for _, want := range []string{"PT. ASI PUDJIASTUTI AVIATION", "PURCHASE REQUISITION", data.Kode, "Kertas A4", "100.000"} {
+	for _, want := range []string{"PT. ASI PUDJIASTUTI AVIATION", "Jl Merdeka 312 Pangandaran", "West Java Indonesia 46396", "PURCHASE REQUISITION", data.Kode, "Kertas A4", "100.000", "User", "GA", "Direktur Operasional"} {
 		if !strings.Contains(text, want) {
 			t.Errorf("PDF tidak mengandung %q", want)
 		}

@@ -62,10 +62,11 @@ func RenderRequisition(pdf *gofpdf.Fpdf, data ReceiptData) {
 
 func drawHeader(pdf *gofpdf.Fpdf) {
 	centerText(pdf, marginTop, "PT. ASI PUDJIASTUTI AVIATION", 14, true)
-	centerText(pdf, marginTop+6, "General Affairs Department", 10, false)
+	centerText(pdf, marginTop+6, "Head Office: Jl Merdeka 312 Pangandaran, West Java Indonesia 46396", 8, false)
+	centerText(pdf, marginTop+11, "General Affairs Department", 10, false)
 	// garis bawah
 	pdf.SetDrawColor(60, 60, 60)
-	pdf.Line(marginLeft, marginTop+12, pageWidth-marginRight, marginTop+12)
+	pdf.Line(marginLeft, marginTop+17, pageWidth-marginRight, marginTop+17)
 	pdf.SetDrawColor(0, 0, 0)
 }
 
@@ -135,9 +136,9 @@ func drawItemTable(pdf *gofpdf.Fpdf, data ReceiptData) {
 func drawSignatures(pdf *gofpdf.Fpdf) {
 	sigY := pdf.GetY()
 	pdf.SetFont("Helvetica", "", 9)
-	// tiga kolom blok tanda tangan
+	// tiga kolom blok tanda tangan: User, GA, Direktur Operasional
 	blockW := (pageWidth - marginLeft - marginRight) / 3
-	for i, label := range []string{"Department", "Approved by\n(Manager-Director)", "Approved by\n(GA Dept.)"} {
+	for i, label := range []string{"User", "GA", "Direktur Operasional"} {
 		x := marginLeft + float64(i)*blockW
 		pdf.SetXY(x, sigY)
 		pdf.MultiCell(blockW, 4, label, "", "C", false)
