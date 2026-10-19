@@ -57,7 +57,9 @@ onMounted(load)
         </div>
         <div>
           <p class="text-ink-muted">Tanggal Selesai</p>
-          <p class="text-ink">{{ archive.tanggal_selesai ? new Date(archive.tanggal_selesai).toLocaleString('id-ID') : '-' }}</p>
+          <p class="text-ink">
+            {{ archive.tanggal_selesai ? new Date(archive.tanggal_selesai).toLocaleString('id-ID') : '-' }}
+          </p>
         </div>
         <div>
           <p class="text-ink-muted">Keterangan</p>

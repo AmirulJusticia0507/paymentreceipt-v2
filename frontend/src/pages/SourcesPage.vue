@@ -1,24 +1,269 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { Pencil, Plus, Trash2 } from 'lucide-vue-next'
-import BaseButton from '@/components/ui/BaseButton.vue'; import BaseModal from '@/components/ui/BaseModal.vue'; import BaseTable from '@/components/ui/BaseTable.vue'
-import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'; import SearchInput from '@/components/ui/SearchInput.vue'; import ToastNotification from '@/components/ui/ToastNotification.vue'
-import type { Column, TableState } from '@/components/ui/tableTypes'; import { http, requestWithMeta, qs } from '@/lib/http'; import type { PageMeta } from '@/lib/types'; import { useAuthStore } from '@/stores/auth'
+import BaseButton from '@/components/ui/BaseButton.vue'
+import BaseModal from '@/components/ui/BaseModal.vue'
+import BaseTable from '@/components/ui/BaseTable.vue'
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
+import SearchInput from '@/components/ui/SearchInput.vue'
+import ToastNotification from '@/components/ui/ToastNotification.vue'
+import type { Column, TableState } from '@/components/ui/tableTypes'
+import { http, requestWithMeta, qs } from '@/lib/http'
+import type { PageMeta } from '@/lib/types'
+import { useAuthStore } from '@/stores/auth'
 type Mode = 'online' | 'offline'
-interface Source { id:number; source:Mode; nama_barang:string; nama_toko:string; no_telp:string; no_rekening:string; link_pembelian:string; keterangan:string }
-const empty = ():Source => ({id:0,source:'online',nama_barang:'',nama_toko:'',no_telp:'',no_rekening:'',link_pembelian:'',keterangan:''})
-const auth=useAuthStore(), rows=ref<Source[]>([]), meta=ref<PageMeta>(), state=ref<TableState>('loading'), errorMessage=ref<string|null>(null)
-const search=ref(''), mode=ref(''), page=ref(1), editing=ref<Source|null>(null), saving=ref(false), deleting=ref<Source|null>(null), deleteBusy=ref(false)
-const toast=ref<{kind:'success'|'error';title:string;description?:string}|null>(null), canManage=computed(()=>auth.hasRole('admin'))
-const columns:Column<Source>[]=[{key:'source',label:'Mode',width:'w-24'},{key:'nama_barang',label:'Barang'},{key:'detail',label:'Toko / Link'},{key:'aksi',label:'Aksi',align:'right',width:'w-24'}]
-async function fetchList(){state.value='loading';try{const r=await requestWithMeta<Source[]>(`/api/v1/sources${qs({page:page.value,per_page:20,q:search.value.trim(),source:mode.value})}`);rows.value=r.data;meta.value=r.meta as PageMeta;state.value='ready';errorMessage.value=null}catch(e){state.value='error';errorMessage.value=e instanceof Error?e.message:'Gagal memuat data.'}}
-watch([search,mode],()=>{page.value=1;void fetchList()});watch(page,()=>void fetchList());onMounted(fetchList)
-function changeMode(){if(!editing.value)return;if(editing.value.source==='online'){editing.value.nama_toko='';editing.value.no_telp='';editing.value.no_rekening=''}else editing.value.link_pembelian=''}
-async function save(){const item=editing.value;if(!item)return;if(!item.nama_barang.trim()||(item.source==='online'?!item.link_pembelian.trim():!item.nama_toko.trim()||!item.no_telp.trim()||!item.no_rekening.trim())){toast.value={kind:'error',title:'Form belum lengkap',description:'Lengkapi field wajib sesuai mode.'};return}saving.value=true;try{await requestWithMeta(item.id?`/api/v1/sources/${item.id}`:'/api/v1/sources',{method:item.id?'PUT':'POST',body:item});toast.value={kind:'success',title:item.id?'Sumber diperbarui':'Sumber ditambahkan'};editing.value=null;await fetchList()}catch(e){toast.value={kind:'error',title:'Gagal menyimpan',description:e instanceof Error?e.message:'Terjadi kesalahan.'}}finally{saving.value=false}}
-async function remove(){if(!deleting.value)return;deleteBusy.value=true;try{await http.delete(`/api/v1/sources/${deleting.value.id}`);deleting.value=null;toast.value={kind:'success',title:'Sumber dihapus'};await fetchList()}catch(e){toast.value={kind:'error',title:'Tidak bisa dihapus',description:e instanceof Error?e.message:'Terjadi kesalahan.'}}finally{deleteBusy.value=false}}
+interface Source {
+  id: number
+  source: Mode
+  nama_barang: string
+  nama_toko: string
+  no_telp: string
+  no_rekening: string
+  link_pembelian: string
+  keterangan: string
+}
+const empty = (): Source => ({
+  id: 0,
+  source: 'online',
+  nama_barang: '',
+  nama_toko: '',
+  no_telp: '',
+  no_rekening: '',
+  link_pembelian: '',
+  keterangan: '',
+})
+const auth = useAuthStore(),
+  rows = ref<Source[]>([]),
+  meta = ref<PageMeta>(),
+  state = ref<TableState>('loading'),
+  errorMessage = ref<string | null>(null)
+const search = ref(''),
+  mode = ref(''),
+  page = ref(1),
+  editing = ref<Source | null>(null),
+  saving = ref(false),
+  deleting = ref<Source | null>(null),
+  deleteBusy = ref(false)
+const toast = ref<{ kind: 'success' | 'error'; title: string; description?: string } | null>(null),
+  canManage = computed(() => auth.hasRole('admin'))
+const columns: Column<Source>[] = [
+  { key: 'source', label: 'Mode', width: 'w-24' },
+  { key: 'nama_barang', label: 'Barang' },
+  { key: 'detail', label: 'Toko / Link' },
+  { key: 'aksi', label: 'Aksi', align: 'right', width: 'w-24' },
+]
+async function fetchList() {
+  state.value = 'loading'
+  try {
+    const r = await requestWithMeta<Source[]>(
+      `/api/v1/sources${qs({ page: page.value, per_page: 20, q: search.value.trim(), source: mode.value })}`,
+    )
+    rows.value = r.data
+    meta.value = r.meta as PageMeta
+    state.value = 'ready'
+    errorMessage.value = null
+  } catch (e) {
+    state.value = 'error'
+    errorMessage.value = e instanceof Error ? e.message : 'Gagal memuat data.'
+  }
+}
+watch([search, mode], () => {
+  page.value = 1
+  void fetchList()
+})
+watch(page, () => void fetchList())
+onMounted(fetchList)
+function changeMode() {
+  if (!editing.value) return
+  if (editing.value.source === 'online') {
+    editing.value.nama_toko = ''
+    editing.value.no_telp = ''
+    editing.value.no_rekening = ''
+  } else editing.value.link_pembelian = ''
+}
+async function save() {
+  const item = editing.value
+  if (!item) return
+  if (
+    !item.nama_barang.trim() ||
+    (item.source === 'online'
+      ? !item.link_pembelian.trim()
+      : !item.nama_toko.trim() || !item.no_telp.trim() || !item.no_rekening.trim())
+  ) {
+    toast.value = {
+      kind: 'error',
+      title: 'Form belum lengkap',
+      description: 'Lengkapi field wajib sesuai mode.',
+    }
+    return
+  }
+  saving.value = true
+  try {
+    await requestWithMeta(item.id ? `/api/v1/sources/${item.id}` : '/api/v1/sources', {
+      method: item.id ? 'PUT' : 'POST',
+      body: item,
+    })
+    toast.value = { kind: 'success', title: item.id ? 'Sumber diperbarui' : 'Sumber ditambahkan' }
+    editing.value = null
+    await fetchList()
+  } catch (e) {
+    toast.value = {
+      kind: 'error',
+      title: 'Gagal menyimpan',
+      description: e instanceof Error ? e.message : 'Terjadi kesalahan.',
+    }
+  } finally {
+    saving.value = false
+  }
+}
+async function remove() {
+  if (!deleting.value) return
+  deleteBusy.value = true
+  try {
+    await http.delete(`/api/v1/sources/${deleting.value.id}`)
+    deleting.value = null
+    toast.value = { kind: 'success', title: 'Sumber dihapus' }
+    await fetchList()
+  } catch (e) {
+    toast.value = {
+      kind: 'error',
+      title: 'Tidak bisa dihapus',
+      description: e instanceof Error ? e.message : 'Terjadi kesalahan.',
+    }
+  } finally {
+    deleteBusy.value = false
+  }
+}
 </script>
-<template><div class="space-y-4"><div class="flex flex-wrap items-center justify-between gap-3"><div><h1 class="text-lg font-semibold text-ink">Sumber Beli</h1><p class="text-sm text-ink-muted">Kelola toko offline dan tautan pembelian online.</p></div><BaseButton v-if="canManage" @click="editing=empty()"><template #icon><Plus class="size-4" /></template>Tambah Sumber</BaseButton></div>
-<div class="flex flex-wrap gap-3"><select v-model="mode" class="rounded-lg border border-default bg-raised px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500"><option value="">Semua mode</option><option value="online">Online</option><option value="offline">Offline</option></select><SearchInput v-model="search" placeholder="Cari barang atau toko..." /></div>
-<BaseTable :columns="columns" :rows="rows" :meta="meta" :state="state" :error-message="errorMessage" @update:page="page=$event" @retry="fetchList"><template #cell-source="{row}"><span class="rounded-full bg-default px-2 py-1 text-xs font-medium capitalize">{{row.source}}</span></template><template #cell-detail="{row}"><a v-if="row.source==='online'" :href="row.link_pembelian" target="_blank" rel="noopener noreferrer" class="text-brand-600 hover:underline">{{row.link_pembelian}}</a><span v-else>{{row.nama_toko}} · {{row.no_telp}}</span></template><template #cell-aksi="{row}"><div v-if="canManage" class="flex justify-end gap-1"><button class="rounded p-1.5 hover:bg-default focus-visible:ring-2 focus-visible:ring-brand-500" :aria-label="`Ubah ${row.nama_barang}`" @click="editing={...row}"><Pencil class="size-4" /></button><button class="rounded p-1.5 hover:bg-status-cancelled/10 focus-visible:ring-2 focus-visible:ring-status-cancelled" :aria-label="`Hapus ${row.nama_barang}`" @click="deleting=row"><Trash2 class="size-4" /></button></div></template></BaseTable>
-<BaseModal :open="!!editing" :title="editing?.id?'Ubah Sumber':'Tambah Sumber'" :busy="saving" @close="editing=null"><form v-if="editing" id="source-form" class="space-y-4" @submit.prevent="save"><label class="block text-sm font-medium">Mode *<select v-model="editing.source" class="mt-1 block w-full rounded-lg border border-default bg-raised px-3 py-2" @change="changeMode"><option value="online">Online</option><option value="offline">Offline</option></select></label><label class="block text-sm font-medium">Nama barang *<input v-model="editing.nama_barang" maxlength="200" class="mt-1 block w-full rounded-lg border border-default bg-raised px-3 py-2" /></label><template v-if="editing.source==='online'"><label class="block text-sm font-medium">Link pembelian *<input v-model="editing.link_pembelian" type="url" class="mt-1 block w-full rounded-lg border border-default bg-raised px-3 py-2" /></label></template><template v-else><label class="block text-sm font-medium">Nama toko *<input v-model="editing.nama_toko" maxlength="150" class="mt-1 block w-full rounded-lg border border-default bg-raised px-3 py-2" /></label><label class="block text-sm font-medium">No. telepon *<input v-model="editing.no_telp" maxlength="30" class="mt-1 block w-full rounded-lg border border-default bg-raised px-3 py-2" /></label><label class="block text-sm font-medium">No. rekening *<input v-model="editing.no_rekening" maxlength="50" class="mt-1 block w-full rounded-lg border border-default bg-raised px-3 py-2" /></label></template><label class="block text-sm font-medium">Keterangan<textarea v-model="editing.keterangan" class="mt-1 block w-full rounded-lg border border-default bg-raised px-3 py-2" /></label></form><template #footer><BaseButton variant="secondary" :disabled="saving" @click="editing=null">Batal</BaseButton><BaseButton type="submit" form="source-form" :loading="saving">Simpan</BaseButton></template></BaseModal>
-<ConfirmDialog :open="!!deleting" title="Hapus Sumber?" :message="`${deleting?.nama_barang??''} akan dinonaktifkan.`" :busy="deleteBusy" confirm-label="Hapus" @confirm="remove" @cancel="deleting=null"/><div class="fixed right-4 bottom-4 z-40 w-full max-w-sm"><ToastNotification v-if="toast" :kind="toast.kind" :title="toast.title" :description="toast.description" @close="toast=null"/></div></div></template>
+<template>
+  <div class="space-y-4">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <h1 class="text-lg font-semibold text-ink">Sumber Beli</h1>
+        <p class="text-sm text-ink-muted">Kelola toko offline dan tautan pembelian online.</p>
+      </div>
+      <BaseButton v-if="canManage" @click="editing = empty()"
+        ><template #icon><Plus class="size-4" /></template>Tambah Sumber</BaseButton
+      >
+    </div>
+    <div class="flex flex-wrap gap-3">
+      <select
+        v-model="mode"
+        class="rounded-lg border border-default bg-raised px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500"
+      >
+        <option value="">Semua mode</option>
+        <option value="online">Online</option>
+        <option value="offline">Offline</option></select
+      ><SearchInput v-model="search" placeholder="Cari barang atau toko..." />
+    </div>
+    <BaseTable
+      :columns="columns"
+      :rows="rows"
+      :meta="meta"
+      :state="state"
+      :error-message="errorMessage"
+      @update:page="page = $event"
+      @retry="fetchList"
+      ><template #cell-source="{ row }"
+        ><span class="rounded-full bg-default px-2 py-1 text-xs font-medium capitalize">{{
+          row.source
+        }}</span></template
+      ><template #cell-detail="{ row }"
+        ><a
+          v-if="row.source === 'online'"
+          :href="row.link_pembelian"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-brand-600 hover:underline"
+          >{{ row.link_pembelian }}</a
+        ><span v-else>{{ row.nama_toko }} · {{ row.no_telp }}</span></template
+      ><template #cell-aksi="{ row }"
+        ><div v-if="canManage" class="flex justify-end gap-1">
+          <button
+            class="rounded p-1.5 hover:bg-default focus-visible:ring-2 focus-visible:ring-brand-500"
+            :aria-label="`Ubah ${row.nama_barang}`"
+            @click="editing = { ...row }"
+          >
+            <Pencil class="size-4" /></button
+          ><button
+            class="rounded p-1.5 hover:bg-status-cancelled/10 focus-visible:ring-2 focus-visible:ring-status-cancelled"
+            :aria-label="`Hapus ${row.nama_barang}`"
+            @click="deleting = row"
+          >
+            <Trash2 class="size-4" />
+          </button></div></template
+    ></BaseTable>
+    <BaseModal
+      :open="!!editing"
+      :title="editing?.id ? 'Ubah Sumber' : 'Tambah Sumber'"
+      :busy="saving"
+      @close="editing = null"
+      ><form v-if="editing" id="source-form" class="space-y-4" @submit.prevent="save">
+        <label class="block text-sm font-medium"
+          >Mode *<select
+            v-model="editing.source"
+            class="mt-1 block w-full rounded-lg border border-default bg-raised px-3 py-2"
+            @change="changeMode"
+          >
+            <option value="online">Online</option>
+            <option value="offline">Offline</option>
+          </select></label
+        ><label class="block text-sm font-medium"
+          >Nama barang *<input
+            v-model="editing.nama_barang"
+            maxlength="200"
+            class="mt-1 block w-full rounded-lg border border-default bg-raised px-3 py-2" /></label
+        ><template v-if="editing.source === 'online'"
+          ><label class="block text-sm font-medium"
+            >Link pembelian *<input
+              v-model="editing.link_pembelian"
+              type="url"
+              class="mt-1 block w-full rounded-lg border border-default bg-raised px-3 py-2" /></label></template
+        ><template v-else
+          ><label class="block text-sm font-medium"
+            >Nama toko *<input
+              v-model="editing.nama_toko"
+              maxlength="150"
+              class="mt-1 block w-full rounded-lg border border-default bg-raised px-3 py-2" /></label
+          ><label class="block text-sm font-medium"
+            >No. telepon *<input
+              v-model="editing.no_telp"
+              maxlength="30"
+              class="mt-1 block w-full rounded-lg border border-default bg-raised px-3 py-2" /></label
+          ><label class="block text-sm font-medium"
+            >No. rekening *<input
+              v-model="editing.no_rekening"
+              maxlength="50"
+              class="mt-1 block w-full rounded-lg border border-default bg-raised px-3 py-2" /></label></template
+        ><label class="block text-sm font-medium"
+          >Keterangan<textarea
+            v-model="editing.keterangan"
+            class="mt-1 block w-full rounded-lg border border-default bg-raised px-3 py-2"
+          />
+        </label>
+      </form>
+      <template #footer
+        ><BaseButton variant="secondary" :disabled="saving" @click="editing = null">Batal</BaseButton
+        ><BaseButton type="submit" form="source-form" :loading="saving">Simpan</BaseButton></template
+      ></BaseModal
+    >
+    <ConfirmDialog
+      :open="!!deleting"
+      title="Hapus Sumber?"
+      :message="`${deleting?.nama_barang ?? ''} akan dinonaktifkan.`"
+      :busy="deleteBusy"
+      confirm-label="Hapus"
+      @confirm="remove"
+      @cancel="deleting = null"
+    />
+    <div class="fixed right-4 bottom-4 z-40 w-full max-w-sm">
+      <ToastNotification
+        v-if="toast"
+        :kind="toast.kind"
+        :title="toast.title"
+        :description="toast.description"
+        @close="toast = null"
+      />
+    </div>
+  </div>
+</template>

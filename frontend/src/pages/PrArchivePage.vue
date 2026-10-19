@@ -33,7 +33,11 @@ const formOpen = ref(false)
 const saving = ref(false)
 const editing = ref<any>(null)
 
-const toast = ref<{ kind: 'success' | 'error' | 'info'; title: string; description?: string } | null>(null)
+const toast = ref<{
+  kind: 'success' | 'error' | 'info'
+  title: string
+  description?: string
+} | null>(null)
 
 const canManage = computed(() => auth.hasRole('admin'))
 
@@ -91,8 +95,8 @@ function toggleBulk(id: number): void {
 const bulkTotal = computed(() => {
   let total = 0
   for (const id of bulkSelected.value) {
-    const r = bulkReceipts.value.find(x => x.id === id)
-    if (r) total += (r.total_harga ? parseFloat(r.total_harga) : 0)
+    const r = bulkReceipts.value.find((x) => x.id === id)
+    if (r) total += r.total_harga ? parseFloat(r.total_harga) : 0
   }
   return total
 })
@@ -116,7 +120,11 @@ async function submitBulk(): Promise<void> {
     bulkOpen.value = false
     await fetchList()
   } catch (err: any) {
-    toast.value = { kind: 'error', title: 'Gagal bulk archive', description: err?.message ?? 'Error' }
+    toast.value = {
+      kind: 'error',
+      title: 'Gagal bulk archive',
+      description: err?.message ?? 'Error',
+    }
   } finally {
     bulkSaving.value = false
   }
@@ -151,7 +159,18 @@ async function confirmDelete(): Promise<void> {
 }
 
 function openCreate(): void {
-  editing.value = { id: 0, kode: '', payment_receipt_id: 0, nama_request: '', manager_approved: '', description: '', quantity: 0, harga_rencana: '0', harga_aktual: '0', tanggal_selesai: new Date().toISOString() }
+  editing.value = {
+    id: 0,
+    kode: '',
+    payment_receipt_id: 0,
+    nama_request: '',
+    manager_approved: '',
+    description: '',
+    quantity: 0,
+    harga_rencana: '0',
+    harga_aktual: '0',
+    tanggal_selesai: new Date().toISOString(),
+  }
   formOpen.value = true
 }
 
@@ -202,8 +221,16 @@ async function saveForm(): Promise<void> {
 
     <div class="flex flex-wrap items-center gap-3">
       <SearchInput v-model="search" placeholder="Cari kode, nama request, approver..." />
-      <input v-model="dateFrom" type="date" class="rounded-lg border border-default bg-raised px-3 py-2 text-sm text-ink focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none" />
-      <input v-model="dateTo" type="date" class="rounded-lg border border-default bg-raised px-3 py-2 text-sm text-ink focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none" />
+      <input
+        v-model="dateFrom"
+        type="date"
+        class="rounded-lg border border-default bg-raised px-3 py-2 text-sm text-ink focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none"
+      />
+      <input
+        v-model="dateTo"
+        type="date"
+        class="rounded-lg border border-default bg-raised px-3 py-2 text-sm text-ink focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none"
+      />
       <BaseButton variant="secondary" size="sm" @click="fetchList()">Cari</BaseButton>
     </div>
 
@@ -213,7 +240,12 @@ async function saveForm(): Promise<void> {
       :meta="meta"
       :state="state"
       :error-message="null"
-      @update:page="(e: number) => { page = e; fetchList() }"
+      @update:page="
+        (e: number) => {
+          page = e
+          fetchList()
+        }
+      "
     >
       <template #cell-kode="{ row }">
         <span class="font-mono text-xs font-medium text-ink">{{ row.kode }}</span>
@@ -232,15 +264,27 @@ async function saveForm(): Promise<void> {
       </template>
 
       <template #cell-tanggal_selesai="{ row }">
-        <span class="text-xs text-ink-muted">{{ row.tanggal_selesai ? new Date(row.tanggal_selesai).toLocaleDateString('id-ID') : '-' }}</span>
+        <span class="text-xs text-ink-muted">{{
+          row.tanggal_selesai ? new Date(row.tanggal_selesai).toLocaleDateString('id-ID') : '-'
+        }}</span>
       </template>
 
       <template #cell-aksi="{ row }">
         <div v-if="canManage" class="flex justify-end gap-1">
-          <button type="button" class="rounded-md p-1.5 text-ink-muted transition-colors hover:bg-default hover:text-brand-600" :aria-label="`Ubah ${row.kode}`" @click="() => {}">
+          <button
+            type="button"
+            class="rounded-md p-1.5 text-ink-muted transition-colors hover:bg-default hover:text-brand-600"
+            :aria-label="`Ubah ${row.kode}`"
+            @click="() => {}"
+          >
             <Pencil class="size-4" aria-hidden="true" />
           </button>
-          <button type="button" class="rounded-md p-1.5 text-ink-muted transition-colors hover:bg-status-cancelled/10 hover:text-status-cancelled" :aria-label="`Hapus ${row.kode}`" @click="askDelete(row)">
+          <button
+            type="button"
+            class="rounded-md p-1.5 text-ink-muted transition-colors hover:bg-status-cancelled/10 hover:text-status-cancelled"
+            :aria-label="`Hapus ${row.kode}`"
+            @click="askDelete(row)"
+          >
             <Trash2 class="size-4" aria-hidden="true" />
           </button>
         </div>
@@ -254,39 +298,75 @@ async function saveForm(): Promise<void> {
     </BaseTable>
 
     <!-- Modal create -->
-    <BaseModal :open="formOpen" :title="editing?.id ? 'Ubah Arsip PR' : 'Tambah Arsip PR'" :busy="saving" @close="closeForm()">
+    <BaseModal
+      :open="formOpen"
+      :title="editing?.id ? 'Ubah Arsip PR' : 'Tambah Arsip PR'"
+      :busy="saving"
+      @close="closeForm()"
+    >
       <div class="space-y-4">
         <div class="relative">
           <label class="block text-sm font-medium text-ink">Kode</label>
-          <input v-model="editing.kode" type="text" class="block w-full rounded-lg border bg-raised px-3 py-2 text-sm text-ink transition-[var(--transition-fast)] focus:ring-2 focus:outline-none focus:border-brand-500 focus:ring-brand-500/20" />
+          <input
+            v-model="editing.kode"
+            type="text"
+            class="block w-full rounded-lg border bg-raised px-3 py-2 text-sm text-ink transition-[var(--transition-fast)] focus:ring-2 focus:outline-none focus:border-brand-500 focus:ring-brand-500/20"
+          />
         </div>
         <div class="relative">
           <label class="block text-sm font-medium text-ink">Payment Receipt ID</label>
-          <input v-model.number="editing.payment_receipt_id" type="number" class="block w-full rounded-lg border bg-raised px-3 py-2 text-sm text-ink transition-[var(--transition-fast)] focus:ring-2 focus:outline-none focus:border-brand-500 focus:ring-brand-500/20" />
+          <input
+            v-model.number="editing.payment_receipt_id"
+            type="number"
+            class="block w-full rounded-lg border bg-raised px-3 py-2 text-sm text-ink transition-[var(--transition-fast)] focus:ring-2 focus:outline-none focus:border-brand-500 focus:ring-brand-500/20"
+          />
         </div>
         <div class="relative">
           <label class="block text-sm font-medium text-ink">Nama Request</label>
-          <input v-model="editing.nama_request" type="text" class="block w-full rounded-lg border bg-raised px-3 py-2 text-sm text-ink transition-[var(--transition-fast)] focus:ring-2 focus:outline-none focus:border-brand-500 focus:ring-brand-500/20" />
+          <input
+            v-model="editing.nama_request"
+            type="text"
+            class="block w-full rounded-lg border bg-raised px-3 py-2 text-sm text-ink transition-[var(--transition-fast)] focus:ring-2 focus:outline-none focus:border-brand-500 focus:ring-brand-500/20"
+          />
         </div>
         <div class="relative">
           <label class="block text-sm font-medium text-ink">Manager Approved</label>
-          <input v-model="editing.manager_approved" type="text" class="block w-full rounded-lg border bg-raised px-3 py-2 text-sm text-ink transition-[var(--transition-fast)] focus:ring-2 focus:outline-none focus:border-brand-500 focus:ring-brand-500/20" />
+          <input
+            v-model="editing.manager_approved"
+            type="text"
+            class="block w-full rounded-lg border bg-raised px-3 py-2 text-sm text-ink transition-[var(--transition-fast)] focus:ring-2 focus:outline-none focus:border-brand-500 focus:ring-brand-500/20"
+          />
         </div>
         <div class="relative">
           <label class="block text-sm font-medium text-ink">Deskripsi</label>
-          <textarea v-model="editing.description" class="block w-full rounded-lg border bg-raised px-3 py-2 text-sm text-ink transition-[var(--transition-fast)] focus:ring-2 focus:outline-none focus:border-brand-500 focus:ring-brand-500/20" />
+          <textarea
+            v-model="editing.description"
+            class="block w-full rounded-lg border bg-raised px-3 py-2 text-sm text-ink transition-[var(--transition-fast)] focus:ring-2 focus:outline-none focus:border-brand-500 focus:ring-brand-500/20"
+          />
         </div>
         <div class="relative">
           <label class="block text-sm font-medium text-ink">Qty</label>
-          <input v-model.number="editing.quantity" type="number" class="block w-full rounded-lg border bg-raised px-3 py-2 text-sm text-ink transition-[var(--transition-fast)] focus:ring-2 focus:outline-none focus:border-brand-500 focus:ring-brand-500/20" />
+          <input
+            v-model.number="editing.quantity"
+            type="number"
+            class="block w-full rounded-lg border bg-raised px-3 py-2 text-sm text-ink transition-[var(--transition-fast)] focus:ring-2 focus:outline-none focus:border-brand-500 focus:ring-brand-500/20"
+          />
         </div>
         <div class="relative">
           <label class="block text-sm font-medium text-ink">Harga Rencana</label>
-          <input v-model="editing.harga_rencana" type="text" class="block w-full rounded-lg border bg-raised px-3 py-2 text-sm text-ink transition-[var(--transition-fast)] focus:ring-2 focus:outline-none focus:border-brand-500 focus:ring-brand-500/20" />
+          <input
+            v-model="editing.harga_rencana"
+            type="text"
+            class="block w-full rounded-lg border bg-raised px-3 py-2 text-sm text-ink transition-[var(--transition-fast)] focus:ring-2 focus:outline-none focus:border-brand-500 focus:ring-brand-500/20"
+          />
         </div>
         <div class="relative">
           <label class="block text-sm font-medium text-ink">Harga Aktual</label>
-          <input v-model="editing.harga_aktual" type="text" class="block w-full rounded-lg border bg-raised px-3 py-2 text-sm text-ink transition-[var(--transition-fast)] focus:ring-2 focus:outline-none focus:border-brand-500 focus:ring-brand-500/20" />
+          <input
+            v-model="editing.harga_aktual"
+            type="text"
+            class="block w-full rounded-lg border bg-raised px-3 py-2 text-sm text-ink transition-[var(--transition-fast)] focus:ring-2 focus:outline-none focus:border-brand-500 focus:ring-brand-500/20"
+          />
         </div>
       </div>
       <template #footer>
@@ -346,9 +426,12 @@ async function saveForm(): Promise<void> {
 
 <style scoped>
 .toast-enter-active,
-.toast-leave-active { transition: all var(--transition-fast); }
+.toast-leave-active {
+  transition: all var(--transition-fast);
+}
 .toast-enter-from,
-.toast-leave-to { opacity: 0; transform: translateY(0.5rem); }
+.toast-leave-to {
+  opacity: 0;
+  transform: translateY(0.5rem);
+}
 </style>
-
-

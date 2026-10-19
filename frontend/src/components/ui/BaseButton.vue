@@ -34,12 +34,9 @@ const emit = defineEmits<{ click: [MouseEvent] }>()
 // Satu sumber kebenaran untuk semua variant, bukan kelas utility yang
 // disusun ulang di setiap pemakai. Konsistensi visual jadi otomatis.
 const VARIANTS: Record<Variant, string> = {
-  primary:
-    'bg-brand-600 text-white shadow-sm hover:bg-brand-700 active:bg-brand-800 disabled:hover:bg-brand-600',
-  secondary:
-    'border border-default bg-raised text-ink shadow-sm hover:bg-default active:bg-default/80',
-  danger:
-    'bg-status-cancelled text-white shadow-sm hover:bg-status-cancelled/90 active:bg-status-cancelled/80',
+  primary: 'bg-brand-600 text-white shadow-sm hover:bg-brand-700 active:bg-brand-800 disabled:hover:bg-brand-600',
+  secondary: 'border border-default bg-raised text-ink shadow-sm hover:bg-default active:bg-default/80',
+  danger: 'bg-status-cancelled text-white shadow-sm hover:bg-status-cancelled/90 active:bg-status-cancelled/80',
   ghost: 'text-ink-muted hover:bg-default hover:text-ink active:bg-default/80',
 }
 

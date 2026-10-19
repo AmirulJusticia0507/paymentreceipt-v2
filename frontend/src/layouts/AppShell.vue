@@ -90,10 +90,13 @@ function toggleUserMenu(): void {
 }
 
 // Tutup user menu saat pindah halaman.
-watch(() => route.fullPath, () => {
-  userMenuOpen.value = false
-  sidebarOpen.value = false
-})
+watch(
+  () => route.fullPath,
+  () => {
+    userMenuOpen.value = false
+    sidebarOpen.value = false
+  },
+)
 
 /**
  * Keluar lalu kembali ke halaman login.
@@ -116,9 +119,12 @@ const visibleGroups = computed(() =>
 
 // Tutup drawer setiap pindah halaman - kalau tidak, di mobile sidebar akan
 // tetap menutupi konten setelah user memilih menu.
-watch(() => route.fullPath, () => {
-  sidebarOpen.value = false
-})
+watch(
+  () => route.fullPath,
+  () => {
+    sidebarOpen.value = false
+  },
+)
 
 const initials = computed(() => {
   const name = auth.user?.full_name || auth.user?.username || '?'
@@ -205,9 +211,7 @@ const roleLabel: Record<UserRole, string> = {
               >
                 <component :is="item.icon" class="size-4 shrink-0" aria-hidden="true" />
                 <span v-if="!collapsed">{{ item.label }}</span>
-                <span
-                  class="ml-auto rounded bg-default px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide"
-                >
+                <span class="ml-auto rounded bg-default px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide">
                   Soon
                 </span>
               </div>
@@ -286,11 +290,15 @@ const roleLabel: Record<UserRole, string> = {
             class="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-ink transition-colors hover:bg-default"
             @click="toggleUserMenu"
           >
-            <span class="flex size-7 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-700 dark:bg-brand-950 dark:text-brand-300">
+            <span
+              class="flex size-7 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-700 dark:bg-brand-950 dark:text-brand-300"
+            >
               {{ initials }}
             </span>
             <span class="hidden sm:inline">{{ auth.user?.username }}</span>
-            <span class="rounded-md bg-default px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-ink-muted">
+            <span
+              class="rounded-md bg-default px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-ink-muted"
+            >
               {{ auth.user?.role }}
             </span>
           </button>
@@ -300,8 +308,12 @@ const roleLabel: Record<UserRole, string> = {
             class="absolute top-full right-0 mt-2 w-56 rounded-xl border border-default bg-raised shadow-lg z-50"
           >
             <div class="px-4 py-3 border-b border-default">
-              <p class="text-sm font-medium text-ink truncate">{{ auth.user?.full_name || auth.user?.username }}</p>
-              <p class="text-xs text-ink-muted truncate">{{ auth.user ? roleLabel[auth.user.role] : '' }}</p>
+              <p class="text-sm font-medium text-ink truncate">
+                {{ auth.user?.full_name || auth.user?.username }}
+              </p>
+              <p class="text-xs text-ink-muted truncate">
+                {{ auth.user ? roleLabel[auth.user.role] : '' }}
+              </p>
             </div>
             <div class="py-1">
               <button

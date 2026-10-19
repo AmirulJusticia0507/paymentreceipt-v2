@@ -178,8 +178,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 }
 
 export const http = {
-  get: <T>(path: string, options: RequestOptions = {}) =>
-    request<T>(path, { ...options, method: 'GET' }),
+  get: <T>(path: string, options: RequestOptions = {}) => request<T>(path, { ...options, method: 'GET' }),
 
   post: <T>(path: string, body?: unknown, options: RequestOptions = {}) =>
     request<T>(path, { ...options, method: 'POST', body }),
@@ -190,8 +189,7 @@ export const http = {
   patch: <T>(path: string, body?: unknown, options: RequestOptions = {}) =>
     request<T>(path, { ...options, method: 'PATCH', body }),
 
-  delete: <T>(path: string, options: RequestOptions = {}) =>
-    request<T>(path, { ...options, method: 'DELETE' }),
+  delete: <T>(path: string, options: RequestOptions = {}) => request<T>(path, { ...options, method: 'DELETE' }),
 }
 
 /** Versi yang mengembalikan respons penuh - untuk endpoint dengan metadata. */

@@ -9,7 +9,11 @@ import { Printer } from 'lucide-vue-next'
 
 const route = useRoute()
 const receipt = ref<any>(null)
-const toast = ref<{ kind: 'success' | 'error' | 'info'; title: string; description?: string } | null>(null)
+const toast = ref<{
+  kind: 'success' | 'error' | 'info'
+  title: string
+  description?: string
+} | null>(null)
 
 async function load(): Promise<void> {
   const id = route.params.id
@@ -28,7 +32,11 @@ async function cetak(): Promise<void> {
     window.open(url, '_blank')
     URL.revokeObjectURL(url)
   } catch {
-    toast.value = { kind: 'info', title: 'Membuka print window', description: 'Menampilkan halaman untuk print (Ctrl/Cmd + P).' }
+    toast.value = {
+      kind: 'info',
+      title: 'Membuka print window',
+      description: 'Menampilkan halaman untuk print (Ctrl/Cmd + P).',
+    }
     window.print()
   }
 }
@@ -51,7 +59,13 @@ onMounted(load)
   </div>
   <div class="fixed right-4 bottom-4 z-40 w-full max-w-sm">
     <Transition name="toast">
-      <ToastNotification v-if="toast" :kind="toast.kind" :title="toast.title" :description="toast.description" @close="toast = null" />
+      <ToastNotification
+        v-if="toast"
+        :kind="toast.kind"
+        :title="toast.title"
+        :description="toast.description"
+        @close="toast = null"
+      />
     </Transition>
   </div>
 </template>

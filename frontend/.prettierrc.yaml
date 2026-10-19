@@ -9,8 +9,16 @@
 # bukan sebaliknya - mayoritas file sudah menulis tanpa titik koma dan memakai
 # kutip tunggal. Memaksa gaya lain berarti merewrite ratusan baris yang sudah
 # terbaca baik.
+#
+# printWidth 120, bukan 100 (nilai yang lebih umum). Angkanya diambil dari
+# codebase SEBELUM diformat: 144 baris memang lebih panjang dari 110 karakter,
+# kebanyakan daftar kelas Tailwind dan import yang panjang. Memakai 100
+# memecah baris-baris itu jadi beberapa baris sehingga format menambah sekitar
+# 775 baris - churn yang tidak perlu, dan setiap baris tambahan adalah potensi
+# konflik dengan agent lain yang sedang mengedit file yang sama. 120 tetap
+# membatasi lebar tanpa memaksakan gaya yang bukan milik codebase ini.
 
-printWidth: 100
+printWidth: 120
 singleQuote: true
 semi: false
 trailingComma: all

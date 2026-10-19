@@ -30,23 +30,31 @@ const perPage = ref(20)
 const departments = ref<MasterItem[]>([])
 const departmentsLoaded = ref(false)
 
-const editing = ref<{ id: number; kode: string; nama: string; keterangan: string; department_id: number } | null>(null)
+const editing = ref<{
+  id: number
+  kode: string
+  nama: string
+  keterangan: string
+  department_id: number
+} | null>(null)
 const formOpen = ref(false)
 const saving = ref(false)
 
 const deleting = ref<{ id: number; kode: string } | null>(null)
 const deleteBusy = ref(false)
 
-const toast = ref<{ kind: 'success' | 'error' | 'info'; title: string; description?: string } | null>(null)
+const toast = ref<{
+  kind: 'success' | 'error' | 'info'
+  title: string
+  description?: string
+} | null>(null)
 
 const canManage = computed(() => auth.hasRole('admin'))
 
 async function loadDepartments(): Promise<void> {
   if (departmentsLoaded.value) return
   try {
-    const data = await requestWithMeta<MasterItem[]>(
-      `/api/v1/departments?${qs({ page: 1, per_page: 200 })}`,
-    )
+    const data = await requestWithMeta<MasterItem[]>(`/api/v1/departments?${qs({ page: 1, per_page: 200 })}`)
     departments.value = data.data
   } catch {
     departments.value = []
@@ -94,7 +102,11 @@ const state: TableState = 'ready'
 async function save(): Promise<void> {
   const item = editing.value!
   if (!item.kode || item.kode.trim().length < 2) {
-    toast.value = { kind: 'error', title: 'Gagal menyimpan', description: 'Kode minimal 2 karakter.' }
+    toast.value = {
+      kind: 'error',
+      title: 'Gagal menyimpan',
+      description: 'Kode minimal 2 karakter.',
+    }
     return
   }
   if (!item.nama || !item.nama.trim()) {
@@ -102,7 +114,11 @@ async function save(): Promise<void> {
     return
   }
   if (!item.department_id || item.department_id <= 0) {
-    toast.value = { kind: 'error', title: 'Gagal menyimpan', description: 'Department wajib dipilih.' }
+    toast.value = {
+      kind: 'error',
+      title: 'Gagal menyimpan',
+      description: 'Department wajib dipilih.',
+    }
     return
   }
 
@@ -149,7 +165,15 @@ function openCreate(): void {
   formOpen.value = true
 }
 
-function openEdit(item: { id: number; kode: string; nama: string; keterangan: string; department_id?: number } | null): void {
+function openEdit(
+  item: {
+    id: number
+    kode: string
+    nama: string
+    keterangan: string
+    department_id?: number
+  } | null,
+): void {
   if (!item) return
   editing.value = {
     id: item.id,
@@ -202,8 +226,7 @@ async function confirmDelete(): Promise<void> {
       <div>
         <h1 class="text-lg font-semibold tracking-tight text-ink">Request</h1>
         <p class="mt-0.5 text-sm text-ink-muted">
-          Pengajuan pembelian milik satu departemen. Setiap request harus
-          memilih departemen pemohon.
+          Pengajuan pembelian milik satu departemen. Setiap request harus memilih departemen pemohon.
         </p>
       </div>
 
@@ -225,10 +248,7 @@ async function confirmDelete(): Promise<void> {
         </select>
       </div>
 
-      <SearchInput
-        v-model="search"
-        placeholder="Cari kode atau nama..."
-      />
+      <SearchInput v-model="search" placeholder="Cari kode atau nama..." />
     </div>
 
     <!-- Tabel -->
@@ -279,7 +299,11 @@ async function confirmDelete(): Promise<void> {
           {{ search || departmentFilter ? 'Tidak ada request yang cocok' : 'Belum ada request' }}
         </p>
         <p class="mt-1 text-sm text-ink-muted">
-          {{ search || departmentFilter ? 'Coba kata kunci lain atau ubah filter.' : 'Tambahkan request pertama untuk memulai.' }}
+          {{
+            search || departmentFilter
+              ? 'Coba kata kunci lain atau ubah filter.'
+              : 'Tambahkan request pertama untuk memulai.'
+          }}
         </p>
       </template>
     </BaseTable>
@@ -298,7 +322,9 @@ async function confirmDelete(): Promise<void> {
     >
       <div class="space-y-4">
         <div class="relative">
-          <label class="block text-sm font-medium text-ink">Kode <span class="text-status-cancelled" aria-hidden="true">*</span></label>
+          <label class="block text-sm font-medium text-ink"
+            >Kode <span class="text-status-cancelled" aria-hidden="true">*</span></label
+          >
           <input
             v-model="editing!.kode"
             type="text"
@@ -310,7 +336,9 @@ async function confirmDelete(): Promise<void> {
         </div>
 
         <div class="relative">
-          <label class="block text-sm font-medium text-ink">Nama <span class="text-status-cancelled" aria-hidden="true">*</span></label>
+          <label class="block text-sm font-medium text-ink"
+            >Nama <span class="text-status-cancelled" aria-hidden="true">*</span></label
+          >
           <input
             v-model="editing!.nama"
             type="text"
@@ -321,7 +349,9 @@ async function confirmDelete(): Promise<void> {
         </div>
 
         <div class="relative">
-          <label class="block text-sm font-medium text-ink">Department <span class="text-status-cancelled" aria-hidden="true">*</span></label>
+          <label class="block text-sm font-medium text-ink"
+            >Department <span class="text-status-cancelled" aria-hidden="true">*</span></label
+          >
           <select
             v-model="editing!.department_id"
             class="block w-full rounded-lg border bg-raised py-2 pr-9 pl-9 text-sm text-ink transition-[var(--transition-fast)] focus:ring-2 focus:outline-none focus:border-brand-500 focus:ring-brand-500/20"
@@ -343,12 +373,8 @@ async function confirmDelete(): Promise<void> {
       </div>
 
       <template #footer>
-        <BaseButton variant="secondary" :disabled="saving" @click="closeForm()">
-          Batal
-        </BaseButton>
-        <BaseButton :loading="saving" @click="save()">
-          Simpan
-        </BaseButton>
+        <BaseButton variant="secondary" :disabled="saving" @click="closeForm()"> Batal </BaseButton>
+        <BaseButton :loading="saving" @click="save()"> Simpan </BaseButton>
       </template>
     </BaseModal>
 

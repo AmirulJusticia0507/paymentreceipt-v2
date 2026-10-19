@@ -155,8 +155,7 @@ function recalcTotals(): void {
 }
 
 function onTotalChange(): void {
-  form.value.total =
-    (form.value.subtotal || 0) + (form.value.tax || 0) - (form.value.discount || 0)
+  form.value.total = (form.value.subtotal || 0) + (form.value.tax || 0) - (form.value.discount || 0)
 }
 
 function formatCurrency(value: number): string {
@@ -173,11 +172,7 @@ function hasMissingFields(): boolean {
 }
 
 const isFormValid = computed(() => {
-  return (
-    form.value.merchant_name.trim().length > 0 &&
-    form.value.total > 0 &&
-    form.value.items.length > 0
-  )
+  return form.value.merchant_name.trim().length > 0 && form.value.total > 0 && form.value.items.length > 0
 })
 </script>
 
@@ -186,21 +181,14 @@ const isFormValid = computed(() => {
     <!-- Header halaman -->
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h1 class="text-lg font-semibold tracking-tight text-ink">
-          Ekstraksi Struk &amp; Faktur
-        </h1>
+        <h1 class="text-lg font-semibold tracking-tight text-ink">Ekstraksi Struk &amp; Faktur</h1>
         <p class="mt-0.5 text-sm text-ink-muted">
-          Unggah gambar struk atau faktur. AI akan menarik data pembelian secara
-          otomatis untuk dicoret dan diedit sebelum disimpan.
+          Unggah gambar struk atau faktur. AI akan menarik data pembelian secara otomatis untuk dicoret dan diedit
+          sebelum disimpan.
         </p>
       </div>
 
-      <BaseButton
-        v-if="file && !extracting"
-        @click="removeFile"
-        variant="ghost"
-        size="sm"
-      >
+      <BaseButton v-if="file && !extracting" @click="removeFile" variant="ghost" size="sm">
         <template #icon><FileText class="size-4" aria-hidden="true" /></template>
         Bersihkan
       </BaseButton>
@@ -231,9 +219,7 @@ const isFormValid = computed(() => {
         >
           <Upload class="mx-auto mb-3 size-6 text-ink-muted" aria-hidden="true" />
           <p class="text-sm font-medium text-ink">Klik untuk memilih berkas</p>
-          <p class="mt-1 text-xs text-ink-muted">
-            JPG, PNG, WEBP · maksimal 10 MB
-          </p>
+          <p class="mt-1 text-xs text-ink-muted">JPG, PNG, WEBP · maksimal 10 MB</p>
           <input
             id="receipt-file"
             ref="fileInput"
@@ -255,17 +241,9 @@ const isFormValid = computed(() => {
             />
             <div class="flex-1">
               <p class="font-medium text-ink truncate">{{ file?.name }}</p>
-              <p class="text-xs text-ink-muted">
-                {{ (file?.size / 1024).toFixed(0) }} KB · {{ file?.type }}
-              </p>
+              <p class="text-xs text-ink-muted">{{ (file?.size / 1024).toFixed(0) }} KB · {{ file?.type }}</p>
             </div>
-            <BaseButton
-              @click="removeFile"
-              variant="danger"
-              size="sm"
-              class="ml-auto"
-              :loading="extracting"
-            >
+            <BaseButton @click="removeFile" variant="danger" size="sm" class="ml-auto" :loading="extracting">
               Hapus
             </BaseButton>
           </div>
@@ -273,11 +251,7 @@ const isFormValid = computed(() => {
 
         <!-- Tombol ekstraksi (muncul setelah file dipilih, sebelum hasil) -->
         <div v-if="file && !extracted && !extracting" class="pt-2">
-          <BaseButton
-            @click="handleExtract"
-            variant="primary"
-            :loading="extracting"
-          >
+          <BaseButton @click="handleExtract" variant="primary" :loading="extracting">
             <template #icon><FileText class="size-4" aria-hidden="true" /></template>
             Ekstrak dengan AI
           </BaseButton>
@@ -294,11 +268,7 @@ const isFormValid = computed(() => {
         <div class="rounded-xl border border-default bg-raised p-4">
           <div class="flex items-center justify-between mb-3">
             <h2 class="text-sm font-semibold text-ink">Hasil ekstraksi</h2>
-            <BaseButton
-              @click="toggleEdit"
-              variant="ghost"
-              size="sm"
-            >
+            <BaseButton @click="toggleEdit" variant="ghost" size="sm">
               <template #icon><Edit2 class="size-4" aria-hidden="true" /></template>
               {{ editMode ? 'Selesai edit' : 'Edit data' }}
             </BaseButton>
@@ -310,9 +280,7 @@ const isFormValid = computed(() => {
             class="rounded-lg bg-status-cancelled/10 border border-status-cancelled/20 p-2 mb-3"
           >
             <AlertCircle class="size-4 mr-2 text-status-cancelled" aria-hidden="true" />
-            <span class="text-xs text-status-cancelled">
-              Perlu diperbaiki: {{ fieldsMissing.join(', ') }}
-            </span>
+            <span class="text-xs text-status-cancelled"> Perlu diperbaiki: {{ fieldsMissing.join(', ') }} </span>
           </div>
 
           <div class="space-y-3">
@@ -370,13 +338,7 @@ const isFormValid = computed(() => {
             v-model.number="form.subtotal"
             @blur="onTotalChange"
           />
-          <FormField
-            label="Pajak"
-            type="number"
-            inputmode="decimal"
-            v-model.number="form.tax"
-            @blur="onTotalChange"
-          />
+          <FormField label="Pajak" type="number" inputmode="decimal" v-model.number="form.tax" @blur="onTotalChange" />
           <FormField
             label="Diskon"
             type="number"
@@ -384,47 +346,21 @@ const isFormValid = computed(() => {
             v-model.number="form.discount"
             @blur="onTotalChange"
           />
-          <FormField
-            label="Total"
-            type="number"
-            inputmode="decimal"
-            v-model.number="form.total"
-          />
+          <FormField label="Total" type="number" inputmode="decimal" v-model.number="form.total" />
         </div>
 
         <div class="mt-4">
-          <h4 class="text-xs font-semibold text-ink uppercase tracking-wider mb-2">
-            Daftar Barang
-          </h4>
+          <h4 class="text-xs font-semibold text-ink uppercase tracking-wider mb-2">Daftar Barang</h4>
           <div class="space-y-2">
             <div
               v-for="(item, idx) in form.items"
               :key="idx"
               class="grid grid-cols-1 md:grid-cols-6 gap-2 items-center"
             >
-              <FormField
-                :label="`Barang ${idx + 1}`"
-                v-model="item.name"
-                :hint="item.unit || '-'"
-              />
-              <FormField
-                label="Qty"
-                type="number"
-                v-model.number="item.quantity"
-                @blur="recalcTotals"
-              />
-              <FormField
-                label="Harga Satuan"
-                type="number"
-                v-model.number="item.unit_price"
-                @blur="recalcTotals"
-              />
-              <FormField
-                label="Total"
-                type="number"
-                v-model.number="item.total_price"
-                @blur="recalcTotals"
-              />
+              <FormField :label="`Barang ${idx + 1}`" v-model="item.name" :hint="item.unit || '-'" />
+              <FormField label="Qty" type="number" v-model.number="item.quantity" @blur="recalcTotals" />
+              <FormField label="Harga Satuan" type="number" v-model.number="item.unit_price" @blur="recalcTotals" />
+              <FormField label="Total" type="number" v-model.number="item.total_price" @blur="recalcTotals" />
               <FormField label="Satuan" v-model="item.unit" />
               <BaseButton
                 variant="danger"
@@ -451,30 +387,20 @@ const isFormValid = computed(() => {
 
         <div class="mt-4 flex justify-end gap-2">
           <BaseButton variant="secondary" @click="toggleEdit">Batal</BaseButton>
-          <BaseButton
-            variant="primary"
-            :disabled="!isFormValid"
-            @click="toggleEdit"
-          >
-            Simpan perubahan
-          </BaseButton>
+          <BaseButton variant="primary" :disabled="!isFormValid" @click="toggleEdit"> Simpan perubahan </BaseButton>
         </div>
       </div>
     </div>
 
     <!-- Aksi selesai -->
     <div v-if="extracted && !editMode" class="pt-4 border-t border-default/50">
-      <BaseButton
-        variant="primary"
-        :disabled="!isFormValid"
-        @click="toggleEdit"
-      >
+      <BaseButton variant="primary" :disabled="!isFormValid" @click="toggleEdit">
         <template #icon><Save class="size-4" aria-hidden="true" /></template>
         Gunakan data ini untuk payment receipt
       </BaseButton>
       <p class="mt-2 text-xs text-ink-muted">
-        Modul pembuatan payment receipt masih dalam pengembangan (Phase 6).
-        Saat ini hasil ekstraksi bisa disalin dan diedit di atas.
+        Modul pembuatan payment receipt masih dalam pengembangan (Phase 6). Saat ini hasil ekstraksi bisa disalin dan
+        diedit di atas.
       </p>
     </div>
   </div>

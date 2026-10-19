@@ -32,13 +32,11 @@ const crud = useMasterCrud({
 
 const formId = 'master-form'
 
-const columns = computed<Column<{ id: number; kode: string; nama: string }>[]>(
-  () => [
-    { key: 'kode', label: 'Kode', width: 'w-28', sortable: false },
-    { key: 'nama', label: 'Nama' },
-    { key: 'aksi', label: 'Aksi', align: 'right', width: 'w-24' },
-  ],
-)
+const columns = computed<Column<{ id: number; kode: string; nama: string }>[]>(() => [
+  { key: 'kode', label: 'Kode', width: 'w-28', sortable: false },
+  { key: 'nama', label: 'Nama' },
+  { key: 'aksi', label: 'Aksi', align: 'right', width: 'w-24' },
+])
 
 const deleteTarget = computed(() => crud.deleting.value)
 const canManage = computed(() => auth.hasRole('admin'))
@@ -50,9 +48,7 @@ const canManage = computed(() => auth.hasRole('admin'))
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
         <h1 class="text-lg font-semibold tracking-tight text-ink">Satuan</h1>
-        <p class="mt-0.5 text-sm text-ink-muted">
-          Satuan ukuran barang, misal pcs, box, rim, atau lusin.
-        </p>
+        <p class="mt-0.5 text-sm text-ink-muted">Satuan ukuran barang, misal pcs, box, rim, atau lusin.</p>
       </div>
 
       <BaseButton v-if="canManage" @click="crud.openCreate()">
@@ -63,10 +59,7 @@ const canManage = computed(() => auth.hasRole('admin'))
 
     <!-- Toolbar -->
     <div class="flex flex-wrap items-center justify-between gap-3">
-      <SearchInput
-        v-model="crud.search.value"
-        placeholder="Cari kode atau nama..."
-      />
+      <SearchInput v-model="crud.search.value" placeholder="Cari kode atau nama..." />
     </div>
 
     <!-- Tabel -->
@@ -138,16 +131,8 @@ const canManage = computed(() => auth.hasRole('admin'))
       <MasterEditForm :item="crud.editing.value" :form-id="formId" :with-keterangan="false" @submit="crud.save" />
 
       <template #footer>
-        <BaseButton variant="secondary" :disabled="crud.saving.value" @click="crud.closeForm()">
-          Batal
-        </BaseButton>
-        <BaseButton
-          type="submit"
-          :form="formId"
-          :loading="crud.saving.value"
-        >
-          Simpan
-        </BaseButton>
+        <BaseButton variant="secondary" :disabled="crud.saving.value" @click="crud.closeForm()"> Batal </BaseButton>
+        <BaseButton type="submit" :form="formId" :loading="crud.saving.value"> Simpan </BaseButton>
       </template>
     </BaseModal>
 
@@ -163,8 +148,8 @@ const canManage = computed(() => auth.hasRole('admin'))
       @cancel="crud.cancelDelete()"
     >
       <p class="mt-3 rounded-lg bg-default p-3 text-xs text-ink-muted">
-        Ini soft delete: data tidak hilang permanen dan masih bisa direstore.
-        Satuan yang masih dipakai transaksi akan ditolak.
+        Ini soft delete: data tidak hilang permanen dan masih bisa direstore. Satuan yang masih dipakai transaksi akan
+        ditolak.
       </p>
     </ConfirmDialog>
 

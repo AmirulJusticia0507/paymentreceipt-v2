@@ -39,14 +39,12 @@ const formId = useId()
 // di sini. Menyalin bentuk datanya membuat halaman ikut harus diubah setiap
 // kali field di server bertambah - dan kalau lupa, errornya baru muncul saat
 // build, jauh dari tempat perubahannya.
-const columns = computed<Column<MasterItem>[]>(
-  () => [
-    { key: 'kode', label: 'Kode', width: 'w-28', sortable: false },
-    { key: 'nama', label: 'Nama' },
-    { key: 'keterangan', label: 'Keterangan', hideOnMobile: true },
-    { key: 'aksi', label: 'Aksi', align: 'right', width: 'w-24' },
-  ],
-)
+const columns = computed<Column<MasterItem>[]>(() => [
+  { key: 'kode', label: 'Kode', width: 'w-28', sortable: false },
+  { key: 'nama', label: 'Nama' },
+  { key: 'keterangan', label: 'Keterangan', hideOnMobile: true },
+  { key: 'aksi', label: 'Aksi', align: 'right', width: 'w-24' },
+])
 
 const deleteTarget = computed(() => crud.deleting.value)
 const canManage = computed(() => auth.hasRole('admin'))
@@ -58,9 +56,7 @@ const canManage = computed(() => auth.hasRole('admin'))
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
         <h1 class="text-lg font-semibold tracking-tight text-ink">{{ crud.label }}</h1>
-        <p class="mt-0.5 text-sm text-ink-muted">
-          Unit kerja pemohon pengajuan pembelian.
-        </p>
+        <p class="mt-0.5 text-sm text-ink-muted">Unit kerja pemohon pengajuan pembelian.</p>
       </div>
 
       <!-- Tombol tambah hanya untuk admin. Disembunyikan, bukan hanya
@@ -74,10 +70,7 @@ const canManage = computed(() => auth.hasRole('admin'))
 
     <!-- Toolbar -->
     <div class="flex flex-wrap items-center justify-between gap-3">
-      <SearchInput
-        v-model="crud.search.value"
-        placeholder="Cari kode atau nama..."
-      />
+      <SearchInput v-model="crud.search.value" placeholder="Cari kode atau nama..." />
     </div>
 
     <!-- Tabel -->
@@ -126,7 +119,11 @@ const canManage = computed(() => auth.hasRole('admin'))
 
       <template #empty>
         <p class="text-sm font-medium text-ink">
-          {{ crud.search.value ? 'Tidak ada ' + crud.label.toLowerCase() + ' yang cocok' : 'Belum ada ' + crud.label.toLowerCase() }}
+          {{
+            crud.search.value
+              ? 'Tidak ada ' + crud.label.toLowerCase() + ' yang cocok'
+              : 'Belum ada ' + crud.label.toLowerCase()
+          }}
         </p>
         <p class="mt-1 text-sm text-ink-muted">
           {{
@@ -141,7 +138,7 @@ const canManage = computed(() => auth.hasRole('admin'))
     <!-- Modal form -->
     <BaseModal
       :open="crud.formOpen.value"
-        :title="crud.editing.value ? 'Ubah ' + crud.label : 'Tambah ' + crud.label"
+      :title="crud.editing.value ? 'Ubah ' + crud.label : 'Tambah ' + crud.label"
       :description="
         crud.editing.value
           ? 'Perubahan langsung berlaku untuk pengajuan baru.'
@@ -150,19 +147,11 @@ const canManage = computed(() => auth.hasRole('admin'))
       :busy="crud.saving.value"
       @close="crud.closeForm()"
     >
-      <MasterEditForm
-        :form-id="formId"
-        :item="crud.editing.value"
-        @submit="crud.save"
-      />
+      <MasterEditForm :form-id="formId" :item="crud.editing.value" @submit="crud.save" />
 
       <template #footer>
-        <BaseButton variant="secondary" :disabled="crud.saving.value" @click="crud.closeForm()">
-          Batal
-        </BaseButton>
-        <BaseButton type="submit" :form="formId" :loading="crud.saving.value">
-          Simpan
-        </BaseButton>
+        <BaseButton variant="secondary" :disabled="crud.saving.value" @click="crud.closeForm()"> Batal </BaseButton>
+        <BaseButton type="submit" :form="formId" :loading="crud.saving.value"> Simpan </BaseButton>
       </template>
     </BaseModal>
 
@@ -178,8 +167,8 @@ const canManage = computed(() => auth.hasRole('admin'))
       @cancel="crud.cancelDelete()"
     >
       <p class="mt-3 rounded-lg bg-default p-3 text-xs text-ink-muted">
-        Ini soft delete: data tidak hilang permanen dan masih bisa direstore.
-        Department yang masih dipakai transaksi akan ditolak.
+        Ini soft delete: data tidak hilang permanen dan masih bisa direstore. Department yang masih dipakai transaksi
+        akan ditolak.
       </p>
     </ConfirmDialog>
 

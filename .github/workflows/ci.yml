@@ -99,6 +99,14 @@ jobs:
       - name: Lint
         working-directory: frontend
         run: npm run lint
+      # Gerbang format. Prettier sudah dipakai untuk memformat seluruh src,
+      # jadi sekarang tinggal dijaga. Langkah ini bukan hiasan: saat pertama
+      # kali diaktifkan, ia menemukan beberapa file yang isinya dirapatkan
+      # menjadi satu baris (banyak pernyataan dalam satu baris, tanpa spasi
+      # di sekitar operator) - gaya yang tidak mungkin dibaca atau ditinjau.
+      - name: Format
+        working-directory: frontend
+        run: npx prettier --check "src/**/*.{ts,vue,css}"
       # Sengaja TIDAK dijadikan gerbang, dan ini bukan kecelakaan: saat
       # ditulis, `npm audit` melaporkan 4 temuan high yang semuanya ada di
       # rantai devDependencies (alat build), bukan kode yang dijalankan di

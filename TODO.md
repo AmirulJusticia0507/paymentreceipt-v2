@@ -395,12 +395,12 @@ Keputusan architecture ada di ADR-0004. RencANA awal: **server-side PDF** supaya
 ### Phase 11 — Kualitas
 
 - [x] **T11.1** Test handler — happy path + validasi error + authz
--[x] **T11.2** Test service — business rule & state machine status
+- [x] **T11.2** Test service — business rule & state machine status
 - [x] **T11.3** Test domain (pure, cepat)
 - [x] **T11.4** Integration test dengan testcontainer/test DB
 - [x] **T11.5** **Race detector** — `go test -race ./...` hijau di CI Linux (lokal Windows tidak memiliki cgo + gcc)
 - [x] **T11.6** Lint & format — `golangci-lint` + `gofumpt` (0 issues)
-- [x] **T11.7** Frontend lint — ESLint + Prettier (konfigurasi flat belum final; `vue-tsc --noEmit` sudah bagian build)
+- [x] **T11.7** Frontend lint — ESLint + Prettier + `vue-tsc`, ketiganya jadi gerbang di CI (lint, format, type-check)
 - [x] **T11.8** **Pre-commit hook** — `.githooks/pre-commit` (gofmt, go vet, build + test, frontend build)
 - [x] **T11.9** **CI GitHub Actions** — `.github/workflows/ci.yml` (backend test/lint, frontend type-check/build/audit, govulncheck)
 - [x] **T11.10** SQL injection regression test - semua query wajib parameterized

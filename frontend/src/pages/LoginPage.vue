@@ -101,15 +101,11 @@ const isDemo = import.meta.env.DEV
 </script>
 
 <template>
-  <main
-    class="flex min-h-dvh items-center justify-center bg-surface px-4 py-12"
-  >
+  <main class="flex min-h-dvh items-center justify-center bg-surface px-4 py-12">
     <div class="w-full max-w-sm">
       <!-- Brand -->
       <div class="mb-8 text-center">
-        <div
-          class="mx-auto mb-4 flex size-12 items-center justify-center rounded-xl bg-brand-600 text-white shadow-sm"
-        >
+        <div class="mx-auto mb-4 flex size-12 items-center justify-center rounded-xl bg-brand-600 text-white shadow-sm">
           <LogIn class="size-6" aria-hidden="true" />
         </div>
         <h1 class="text-xl font-semibold tracking-tight text-ink">Payment Receipt</h1>
@@ -194,10 +190,7 @@ const isDemo = import.meta.env.DEV
       </div>
 
       <!-- Kredensial demo, hanya di development -->
-      <div
-        v-if="isDemo"
-        class="mt-4 rounded-lg border border-default bg-raised/60 p-3 text-xs text-ink-muted"
-      >
+      <div v-if="isDemo" class="mt-4 rounded-lg border border-default bg-raised/60 p-3 text-xs text-ink-muted">
         <p class="mb-1.5 font-medium text-ink">Akun demo (lokal saja)</p>
         <ul class="space-y-0.5">
           <li><code class="font-mono">admin</code> / <code class="font-mono">admin123</code></li>

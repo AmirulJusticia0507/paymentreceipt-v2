@@ -33,14 +33,12 @@ const crud = useMasterCrud({
 
 const formId = 'master-form'
 
-const columns = computed<Column<MasterItem>[]>(
-  () => [
-    { key: 'kode', label: 'Kode', width: 'w-28', sortable: false },
-    { key: 'nama', label: 'Nama' },
-    { key: 'keterangan', label: 'Keterangan', hideOnMobile: true },
-    { key: 'aksi', label: 'Aksi', align: 'right', width: 'w-24' },
-  ],
-)
+const columns = computed<Column<MasterItem>[]>(() => [
+  { key: 'kode', label: 'Kode', width: 'w-28', sortable: false },
+  { key: 'nama', label: 'Nama' },
+  { key: 'keterangan', label: 'Keterangan', hideOnMobile: true },
+  { key: 'aksi', label: 'Aksi', align: 'right', width: 'w-24' },
+])
 
 const deleteTarget = computed(() => crud.deleting.value)
 const canManage = computed(() => auth.hasRole('admin'))
@@ -65,10 +63,7 @@ const canManage = computed(() => auth.hasRole('admin'))
 
     <!-- Toolbar -->
     <div class="flex flex-wrap items-center justify-between gap-3">
-      <SearchInput
-        v-model="crud.search.value"
-        placeholder="Cari kode atau nama..."
-      />
+      <SearchInput v-model="crud.search.value" placeholder="Cari kode atau nama..." />
     </div>
 
     <!-- Tabel -->
@@ -144,16 +139,8 @@ const canManage = computed(() => auth.hasRole('admin'))
       <MasterEditForm :item="crud.editing.value" :form-id="formId" @submit="crud.save" />
 
       <template #footer>
-        <BaseButton variant="secondary" :disabled="crud.saving.value" @click="crud.closeForm()">
-          Batal
-        </BaseButton>
-        <BaseButton
-          type="submit"
-          :form="formId"
-          :loading="crud.saving.value"
-        >
-          Simpan
-        </BaseButton>
+        <BaseButton variant="secondary" :disabled="crud.saving.value" @click="crud.closeForm()"> Batal </BaseButton>
+        <BaseButton type="submit" :form="formId" :loading="crud.saving.value"> Simpan </BaseButton>
       </template>
     </BaseModal>
 
@@ -169,8 +156,8 @@ const canManage = computed(() => auth.hasRole('admin'))
       @cancel="crud.cancelDelete()"
     >
       <p class="mt-3 rounded-lg bg-default p-3 text-xs text-ink-muted">
-        Ini soft delete: data tidak hilang permanen dan masih bisa direstore.
-        Base yang masih dipakai request base akan ditolak.
+        Ini soft delete: data tidak hilang permanen dan masih bisa direstore. Base yang masih dipakai request base akan
+        ditolak.
       </p>
     </ConfirmDialog>
 

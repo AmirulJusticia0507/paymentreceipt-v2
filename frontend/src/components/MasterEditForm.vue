@@ -39,11 +39,7 @@ const schema = toTypedSchema(
       .min(2, 'Kode minimal 2 karakter')
       .max(30, 'Kode maksimal 30 karakter')
       .regex(/^[A-Za-z0-9-]+$/, 'Kode hanya boleh huruf, angka, dan tanda hubung'),
-    nama: z
-      .string()
-      .trim()
-      .min(1, 'Nama wajib diisi')
-      .max(100, 'Nama maksimal 100 karakter'),
+    nama: z.string().trim().min(1, 'Nama wajib diisi').max(100, 'Nama maksimal 100 karakter'),
     keterangan: z.string().trim().max(255, 'Keterangan maksimal 255 karakter'),
   }),
 )

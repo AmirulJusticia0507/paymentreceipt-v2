@@ -113,7 +113,9 @@ const topDeptChartData = computed(() => ({
         </div>
         <div class="card p-4">
           <p class="text-xs text-ink-muted">Total Payment Receipt</p>
-          <p class="text-2xl font-bold text-ink tabular-nums">{{ summary?.total_payment_receipts ?? 0 }}</p>
+          <p class="text-2xl font-bold text-ink tabular-nums">
+            {{ summary?.total_payment_receipts ?? 0 }}
+          </p>
         </div>
         <div class="card p-4">
           <p class="text-xs text-ink-muted">Total Base</p>
@@ -121,7 +123,9 @@ const topDeptChartData = computed(() => ({
         </div>
         <div class="card p-4">
           <p class="text-xs text-ink-muted">Total Department</p>
-          <p class="text-2xl font-bold text-ink tabular-nums">{{ summary?.total_departments ?? 0 }}</p>
+          <p class="text-2xl font-bold text-ink tabular-nums">
+            {{ summary?.total_departments ?? 0 }}
+          </p>
         </div>
       </div>
 
@@ -141,7 +145,14 @@ const topDeptChartData = computed(() => ({
 
         <div class="card p-4">
           <h2 class="text-sm font-semibold text-ink mb-3">Top Department (Total Belanja)</h2>
-          <Bar :data="topDeptChartData" :options="{ indexAxis: 'y' as const, responsive: true, plugins: { legend: { display: false } } }" />
+          <Bar
+            :data="topDeptChartData"
+            :options="{
+              indexAxis: 'y' as const,
+              responsive: true,
+              plugins: { legend: { display: false } },
+            }"
+          />
         </div>
       </div>
 
@@ -164,9 +175,13 @@ const topDeptChartData = computed(() => ({
               <td class="px-3 py-2 font-mono text-xs font-medium text-ink">{{ r.kode }}</td>
               <td class="px-3 py-2 text-ink-muted">{{ r.department_nama }}</td>
               <td class="px-3 py-2 text-ink truncate max-w-xs">{{ r.deskripsi_items }}</td>
-              <td class="px-3 py-2"><Badge :variant="r.status">{{ r.status }}</Badge></td>
+              <td class="px-3 py-2">
+                <Badge :variant="r.status">{{ r.status }}</Badge>
+              </td>
               <td class="px-3 py-2 text-right tabular-nums text-ink">{{ r.total_harga }}</td>
-              <td class="px-3 py-2 text-xs text-ink-muted">{{ r.tanggal_pembelian ? new Date(r.tanggal_pembelian).toLocaleDateString('id-ID') : '-' }}</td>
+              <td class="px-3 py-2 text-xs text-ink-muted">
+                {{ r.tanggal_pembelian ? new Date(r.tanggal_pembelian).toLocaleDateString('id-ID') : '-' }}
+              </td>
             </tr>
           </tbody>
         </table>
@@ -177,6 +192,13 @@ const topDeptChartData = computed(() => ({
 </template>
 
 <style scoped>
-.toast-enter-active, .toast-leave-active { transition: all var(--transition-fast); }
-.toast-enter-from, .toast-leave-to { opacity: 0; transform: translateY(0.5rem); }
+.toast-enter-active,
+.toast-leave-active {
+  transition: all var(--transition-fast);
+}
+.toast-enter-from,
+.toast-leave-to {
+  opacity: 0;
+  transform: translateY(0.5rem);
+}
 </style>

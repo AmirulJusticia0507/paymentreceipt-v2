@@ -78,7 +78,7 @@ const pageRange = computed(() => {
 })
 
 function keyFor(row: T, index: number): string | number {
-  return props.rowKey ? props.rowKey(row) : (row as { id: string | number }).id ?? index
+  return props.rowKey ? props.rowKey(row) : ((row as { id: string | number }).id ?? index)
 }
 
 /**
@@ -99,10 +99,7 @@ function cellValue(row: T, key: string): unknown {
 <template>
   <div class="card overflow-hidden shadow-sm">
     <!-- Error -->
-    <div
-      v-if="state === 'error'"
-      class="flex flex-col items-center gap-3 px-6 py-12 text-center"
-    >
+    <div v-if="state === 'error'" class="flex flex-col items-center gap-3 px-6 py-12 text-center">
       <AlertCircle class="size-8 text-status-cancelled" aria-hidden="true" />
       <div>
         <p class="text-sm font-medium text-ink">Gagal memuat data</p>
@@ -125,9 +122,7 @@ function cellValue(row: T, key: string): unknown {
             <template #icon><Inbox class="size-8" aria-hidden="true" /></template>
             <slot name="empty">
               <p class="text-sm font-medium text-ink">Belum ada data</p>
-              <p class="mt-1 text-sm text-ink-muted">
-                Data yang dibuat akan muncul di sini.
-              </p>
+              <p class="mt-1 text-sm text-ink-muted">Data yang dibuat akan muncul di sini.</p>
             </slot>
           </EmptyState>
         </div>
@@ -161,16 +156,8 @@ function cellValue(row: T, key: string): unknown {
                     @click="toggleSort(column)"
                   >
                     {{ column.label }}
-                    <ChevronUp
-                      v-if="sortDirection(column.key) === 'asc'"
-                      class="size-3.5"
-                      aria-hidden="true"
-                    />
-                    <ChevronDown
-                      v-else-if="sortDirection(column.key) === 'desc'"
-                      class="size-3.5"
-                      aria-hidden="true"
-                    />
+                    <ChevronUp v-if="sortDirection(column.key) === 'asc'" class="size-3.5" aria-hidden="true" />
+                    <ChevronDown v-else-if="sortDirection(column.key) === 'desc'" class="size-3.5" aria-hidden="true" />
                     <ChevronDown v-else class="size-3.5 opacity-30" aria-hidden="true" />
                   </button>
                   <span v-else>{{ column.label }}</span>
@@ -224,9 +211,7 @@ function cellValue(row: T, key: string): unknown {
           <ChevronLeft class="size-4" aria-hidden="true" />
         </BaseButton>
 
-        <span class="px-2 text-xs tabular-nums text-ink-muted">
-          {{ meta.page }} / {{ meta.total_pages }}
-        </span>
+        <span class="px-2 text-xs tabular-nums text-ink-muted"> {{ meta.page }} / {{ meta.total_pages }} </span>
 
         <BaseButton
           variant="ghost"

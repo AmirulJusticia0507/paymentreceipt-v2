@@ -17,12 +17,12 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const VARIANTS: Record<string, string> = {
-  pending:   'bg-status-pending/10 text-status-pending border border-status-pending/20',
-  checked:   'bg-status-checked/10 text-status-checked border border-status-checked/20',
+  pending: 'bg-status-pending/10 text-status-pending border border-status-pending/20',
+  checked: 'bg-status-checked/10 text-status-checked border border-status-checked/20',
   processed: 'bg-status-processed/10 text-status-processed border border-status-processed/20',
-  finished:  'bg-status-finished/10 text-status-finished border border-status-finished/20',
+  finished: 'bg-status-finished/10 text-status-finished border border-status-finished/20',
   cancelled: 'bg-status-cancelled/10 text-status-cancelled border border-status-cancelled/20',
-  neutral:   'bg-default text-ink-muted border border-default/60',
+  neutral: 'bg-default text-ink-muted border border-default/60',
 }
 
 const cls = computed(() => VARIANTS[props.variant ?? 'neutral'])

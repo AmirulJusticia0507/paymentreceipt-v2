@@ -46,11 +46,7 @@ export const useAuthStore = defineStore('auth', () => {
   async function login(username: string, password: string): Promise<void> {
     pending.value = true
     try {
-      const res = await http.post<LoginResponse>(
-        '/api/v1/auth/login',
-        { username, password },
-        { skipRefresh: true },
-      )
+      const res = await http.post<LoginResponse>('/api/v1/auth/login', { username, password }, { skipRefresh: true })
       user.value = res.user
       initialized.value = true
     } finally {

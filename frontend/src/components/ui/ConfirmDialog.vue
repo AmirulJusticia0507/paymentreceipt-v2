@@ -30,13 +30,7 @@ const emit = defineEmits<{ confirm: []; cancel: [] }>()
 </script>
 
 <template>
-  <BaseModal
-    :open="open"
-    :title="title"
-    size="sm"
-    :busy="busy"
-    @close="emit('cancel')"
-  >
+  <BaseModal :open="open" :title="title" size="sm" :busy="busy" @close="emit('cancel')">
     <div class="flex gap-3">
       <div class="shrink-0 rounded-lg bg-status-cancelled/10 p-2 text-status-cancelled">
         <AlertTriangle class="size-5" aria-hidden="true" />
@@ -51,9 +45,7 @@ const emit = defineEmits<{ confirm: []; cancel: [] }>()
     </div>
 
     <template #footer>
-      <BaseButton variant="secondary" :disabled="busy" @click="emit('cancel')">
-        Batal
-      </BaseButton>
+      <BaseButton variant="secondary" :disabled="busy" @click="emit('cancel')"> Batal </BaseButton>
       <BaseButton variant="danger" :loading="busy" @click="emit('confirm')">
         {{ confirmLabel }}
       </BaseButton>

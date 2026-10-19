@@ -20,11 +20,7 @@ withDefaults(
 <template>
   <div class="p-4" aria-hidden="true">
     <div class="space-y-3">
-      <div
-        v-for="row in rows"
-        :key="row"
-        class="flex items-center gap-4"
-      >
+      <div v-for="row in rows" :key="row" class="flex items-center gap-4">
         <div
           v-for="col in columns"
           :key="col"

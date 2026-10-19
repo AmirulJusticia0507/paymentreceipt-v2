@@ -68,11 +68,9 @@ export function useMasterCrud(config: MasterCrudConfig) {
 
   const displayField = config.displayField ?? 'nama'
 
-  const listKey = computed(() => [
-    config.resourceKey,
-    'list',
-    { q: search.value, page: page.value, per_page: perPage.value },
-  ] as const)
+  const listKey = computed(
+    () => [config.resourceKey, 'list', { q: search.value, page: page.value, per_page: perPage.value }] as const,
+  )
 
   const query = useQuery({
     queryKey: listKey,

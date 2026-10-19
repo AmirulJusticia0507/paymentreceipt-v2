@@ -80,11 +80,7 @@ function onInput(event: Event): void {
       />
 
       <span class="absolute top-1/2 right-3 -translate-y-1/2">
-        <AlertCircle
-          v-if="error"
-          class="pointer-events-none size-4 text-status-cancelled"
-          aria-hidden="true"
-        />
+        <AlertCircle v-if="error" class="pointer-events-none size-4 text-status-cancelled" aria-hidden="true" />
         <slot v-else name="suffix" />
       </span>
     </div>
