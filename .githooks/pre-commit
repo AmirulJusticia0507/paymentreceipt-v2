@@ -29,14 +29,30 @@ staged() {
 staged_go=$(staged | grep '\.go$' || true)
 
 if [ -n "$staged_go" ]; then
-  # gofmt -l mencetak nama file yang PERLU diformat. Kosong berarti semuanya
-  # sudah benar. Memeriksa hanya file yang staged, bukan seluruh tree, supaya
-  # hook ini tidak menuntut pembersihan yang belum dikerjakan siapa pun.
-  unformatted=$(printf '%s\n' "$staged_go" | xargs gofmt -l 2>/dev/null || true)
+  unformatted=""
+  for f in $staged_go; do
+    [ -f "$f" ] || continue
+
+    # PENTING: periksa versi STAGED (blob), bukan isi working tree.
+    #
+    # Pada Windows dengan `core.autocrlf=true`, file di working tree
+    # memakai CRLF sementara git menyimpannya sebagai LF. `gofmt -l`
+    # yang dibaca dari file akan melaporkan SELURUH file sebagai tidak
+    # terformat - bukan karena salah format, hanya karena akhir baris.
+    # Mengubah seluruh isi file tidak membetulkan itu.
+    #
+    # `git show :<path>` mengeluarkan blob staged (LF), yang memang
+    # bentuk yang akan ter-commit, jadi penilaiannya adil.
+    if ! git show ":$f" 2>/dev/null | gofmt -d 2>/dev/null | grep -q .; then
+      continue
+    fi
+    unformatted="$unformatted$f
+"
+  done
 
   if [ -n "$unformatted" ]; then
     echo "gofmt: file berikut belum diformat:"
-    printf '%s\n' "$unformatted" | sed 's/^/  /'
+    printf '%s' "$unformatted" | sed 's/^/  /'
     echo ""
     echo "Jalankan: gofmt -w <file>"
     exit 1
