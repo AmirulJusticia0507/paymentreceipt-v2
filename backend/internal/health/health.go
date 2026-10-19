@@ -4,11 +4,11 @@ package health
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"sync"
 	"time"
 
-	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/database"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/httputil"
 )
 
@@ -40,7 +40,7 @@ type Checker struct {
 }
 
 // DBChecker membuat Checker untuk koneksi database.
-func DBChecker(db *database.DB) Checker {
+func DBChecker(db Pinger) Checker {
 	return Checker{
 		Component: "database",
 		Check:     db.Ping,
@@ -114,11 +114,20 @@ func Liveness() http.HandlerFunc {
 // processStart diisi saat package di-init.
 var processStart = time.Now()
 
+// Pinger adalah kemampuan minimum yang dibutuhkan Readiness dari sebuah
+// dependensi.
+//
+// Dipisah sebagai interface supaya Readiness bisa diuji dengan fake tanpa
+// database sungguhan - pola yang sama dengan database.Querier.
+type Pinger interface {
+	Ping(ctx context.Context) error
+}
+
 // Readiness melaporkan apakah instance siap menerima traffic.
 //
 // Berbeda dari liveness, ini memeriksa dependensi. Kalau database tidak terjangkau,
 // load balancer sebaiknya menarik instance ini dari rotasi sampai sehat lagi.
-func Readiness(db *database.DB) http.HandlerFunc {
+func Readiness(db Pinger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
 		defer cancel()
@@ -137,4 +146,39 @@ func Readiness(db *database.DB) http.HandlerFunc {
 			"time":   time.Now().UTC(),
 		})
 	}
+}
+
+// Probe memeriksa satu URL endpoint health dan mengembalikan error bila tidak
+// sehat.
+//
+// Dipakai oleh flag -healthcheck pada binary api (lihat cmd/api): orchestrator
+// (Docker HEALTHCHECK / K8s probe) memanggil binary yang sama dengan mode ini
+// alih-alih mengandalkan curl/wget - image produksi distroless sengaja tidak
+// memuat shell maupun tools tambahan, jadi satu-satunya executable yang tersedia
+// adalah binary aplikasi itu sendiri.
+//
+// Probe dianggap gagal kalau:
+//   - koneksi tidak bisa dibuat (server belum siap / port salah),
+//   - respons bukan 2xx (endpoint melapor down), atau
+//   - melewati timeout.
+func Probe(url string, timeout time.Duration) error {
+	client := &http.Client{
+		Timeout: timeout,
+		// Probe tidak butuh isi body, jadi cukup HEAD... tapi beberapa server
+		// membalas HEAD berbeda dari GET. Pakai GET biasa dan buang body.
+		CheckRedirect: func(_ *http.Request, _ []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+
+	resp, err := client.Get(url)
+	if err != nil {
+		return fmt.Errorf("probe %s: %w", url, err)
+	}
+	defer resp.Body.Close() //nolint:errcheck // body probe tidak dibaca
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return fmt.Errorf("probe %s: status %d", url, resp.StatusCode)
+	}
+	return nil
 }
