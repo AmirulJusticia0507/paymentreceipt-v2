@@ -208,6 +208,10 @@ func (h *prArchiveHandler) BulkArchive(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// kode diisi di dalam transaksi: dari body kalau disediakan, atau
+	// digenerate oleh sekuens database. Diangkat keluar closure supaya respons
+	// bisa mengembalikan kode hasil generate - bukan string kosong dari body.
+	var kode string
 	err = database.WithTx(r.Context(), h.db, func(tx database.Tx) error {
 		// 1. Validasi dan hitung agregasi dalam satu query.
 		var qty int
@@ -228,7 +232,6 @@ func (h *prArchiveHandler) BulkArchive(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// 2. Generate kode otomatis kalau tidak disediakan.
-		var kode string
 		if body.Kode == "" {
 			err = tx.QueryRow(r.Context(),
 				"SELECT 'PR-' || to_char(CURRENT_DATE, 'YYYY') || '-' || lpad(nextval('seq_pr_archive_kode')::text, 6, '0')").
@@ -279,7 +282,7 @@ func (h *prArchiveHandler) BulkArchive(w http.ResponseWriter, r *http.Request) {
 	}
 
 	httputil.JSONData(w, http.StatusCreated, map[string]any{
-		"kode":     body.Kode,
+		"kode":     kode,
 		"status":   "archived",
 		"received": len(body.PaymentReceiptIDs),
 	})
