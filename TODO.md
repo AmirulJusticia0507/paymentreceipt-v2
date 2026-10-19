@@ -410,7 +410,7 @@ Keputusan architecture ada di ADR-0004. RencANA awal: **server-side PDF** supaya
 ### Phase 12 â€” Deploy
 
 - [x] **T12.1** Dockerfile multi-stage (Go build + distroless/nginx)
-- [ ] **T12.2** `docker-compose.yml` untuk review lokal (opsional, DB tetap lokal)
+- [x] **T12.2** `docker-compose.yml` untuk review lokal (opsional, DB tetap lokal)
 - [ ] **T12.3** Konfigurasi environment production (secret via env, bukan file)
 - [ ] **T12.4** Migration strategy â€” jalankan saat deploy, sebelum app start
 - [ ] **T12.5** Health check untuk orchestrator
