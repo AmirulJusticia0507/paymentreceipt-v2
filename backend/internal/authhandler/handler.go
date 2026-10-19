@@ -44,7 +44,8 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 
 	// Username dikembalikan apa adanya supaya pesan errornya jujur. Password
 	// justru tidak boleh diberi pesan khusus - kalau ada, penyerang bisa
-	// membedakan "format salah" dari "kredensial salah" dan learnsomething.
+	// membedakan "format salah" dari "kredensial salah" dan belajar dari
+	// perbedaan itu.
 	req.Username = strings.TrimSpace(req.Username)
 
 	if req.Username == "" {

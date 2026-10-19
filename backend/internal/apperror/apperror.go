@@ -2,7 +2,7 @@
 // merepresentasikannya sebagai Problem Details (RFC 9457).
 //
 // Prinsip: setiap error yang muncul di dalam aplikasi adalah *domain error* dengan
-// kode yang stabil. Layer HTTP_then_hanya_menerjemahkannya menjadi respons - bukan
+// kode yang stabil. Layer HTTP hanya menerjemahkannya menjadi respons - bukan
 // menentukan sendiri status code atau pesan.
 //
 // Kegunaan:
@@ -37,7 +37,7 @@ const (
 	KindUnprocessable
 	// KindRateLimited berarti terlalu banyak permintaan.
 	KindRateLimited
-	// KindInternalDependency berarti serviço di luar (mis. database) bermasalah.
+	// KindInternalDependency berarti layanan di luar (mis. database) bermasalah.
 	KindInternalDependency
 	// KindNotImplemented berarti endpoint ada tapi belum dikerjakan.
 	//

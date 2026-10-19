@@ -13,7 +13,7 @@ import (
 
 // CORS mengatur kebijakan cross-origin.
 //
-// Aplikasi ini信息服务的后端 API dengan frontend terpisah (dev server Vite di
+// Aplikasi ini menyediakan API untuk frontend terpisah (dev server Vite di
 // port berbeda), jadi CORS memang diperlukan di pengembangan. Di production
 // frontend di-serving dari origin yang sama, jadi daftar origin dibatasi.
 func CORS(appCfg config.AppConfig) func(http.Handler) http.Handler {

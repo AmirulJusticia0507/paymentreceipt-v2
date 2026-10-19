@@ -97,7 +97,7 @@ func OverallStatus(reports []Report) Status {
 //
 // Sengaja TIDAK mengecek dependensi. Kalau database down, restart aplikasi tidak
 // akan menolong - masalahnya ada di luar proses ini. Justru mematikan pod di
-// situation itu hanya memperburuk: tidak ada yang bisa melayani traffic, dan yang
+// situasi itu hanya memperburuk: tidak ada yang bisa melayani traffic, dan yang
 // baru start akan gagal juga.
 //
 // Yang perlu dijawab liveness hanya satu: apakah prosesnya masih hidup?

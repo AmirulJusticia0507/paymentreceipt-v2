@@ -36,7 +36,7 @@ type baseSuggestion struct {
 // seluruh tabel.
 //
 // Route ini harus dipasang SEBELUM /bases/{id}; kalau tidak, pola {id} akan
-// menelan "/search" dan_ATTENTION_ nilainya tidak akan sampai ke sini.
+// menelan "/search" dan nilainya tidak akan sampai ke sini.
 func SearchBases(queries *dbgen.Queries) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := strings.TrimSpace(r.URL.Query().Get("q"))
