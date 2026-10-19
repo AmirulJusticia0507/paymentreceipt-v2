@@ -397,7 +397,7 @@ Keputusan architecture ada di ADR-0004. RencANA awal: **server-side PDF** supaya
 - [x] **T11.1** Test handler â€” happy path + validasi error + authz
 -[x] **T11.2** Test service â€” business rule & state machine status
 - [x] **T11.3** Test domain (pure, cepat)
-- [ ] **T11.4** Integration test dengan testcontainer/test DB
+- [x] **T11.4** Integration test dengan testcontainer/test DB
 - [!] **T11.5** **Race detector** â€” `go test -race ./...` harus hijau. TERBLOKIR: butuh cgo + gcc, belum terinstall di mesin ini
 - [x] **T11.6** Lint & format â€” `golangci-lint` + `gofumpt` (0 issues)
 - [x] **T11.7** Frontend lint â€” ESLint + Prettier (konfigurasi flat belum final; `vue-tsc --noEmit` sudah bagian build)
