@@ -7,7 +7,7 @@
 # Contoh pemakaian:
 #   make build        # build backend + frontend
 #   make test         # test backend + frontend lint
-#   make run          # jalankan backend dan frontend dev server
+#   make run          # jalankan backend (muat backend/.env) + frontend dev server
 #   make clean        # bersihkan artefak build
 
 # --- Konfigurasi ----------------------------------------------------------
@@ -41,8 +41,14 @@ lint-frontend:
 
 ## Jalankan backend (Go) dan frontend dev server (Vite) untuk development.
 ## Dua proses berjalan paralel; tekan Ctrl+C untuk menghentikan keduanya.
+##
+## backend/.env dimuat ke environment SEBELUM go run (set -a mengekspor semua
+## variabel hasil source). Backend tidak membaca .env sendiri - tanpa langkah
+## ini go run ./cmd/api gagal validasi config (DB_URL, AUTH_JWT_SECRET, dst.).
 run:
-	cd $(BACKEND_DIR) && go run ./cmd/api & cd $(FRONTEND_DIR) && npm run dev
+	set -a; [ ! -f $(BACKEND_DIR)/.env ] || . $(BACKEND_DIR)/.env; set +a; \
+		(cd $(BACKEND_DIR) && go run ./cmd/api) & \
+		(cd $(FRONTEND_DIR) && npm run dev)
 
 ## Format Go code.
 fmt:

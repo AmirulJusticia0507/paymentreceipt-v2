@@ -193,6 +193,10 @@ Error response mengikuti [RFC 9457 (Problem Details for HTTP APIs)](https://www.
 ## Command Umum
 
 ```bash
+# Dua-duanya sekaligus (butuh GNU make + sh: Git Bash/WSL;
+# backend/.env dimuat otomatis oleh target ini)
+make run
+
 # Backend
 cd backend
 go build ./...          # build
