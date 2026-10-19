@@ -52,8 +52,10 @@ cd paymentreceipt-v2
 # buat database
 createdb -U postgres paymentreceipt_v2
 
-# jalankan migrasi (dari root repo)
-migrate -path backend/db/migrations -database "postgres://postgres@localhost:5432/paymentreceipt_v2?sslmode=disable" up
+# jalankan migrasi (dari root repo; memakai migrator bawaan repo)
+cd backend
+DB_URL="postgres://postgres@localhost:5432/paymentreceipt_v2?sslmode=disable" go run ./cmd/migrate up
+cd ..
 
 # isi data awal
 psql -U postgres -d paymentreceipt_v2 -f backend/db/seeds/development.sql
@@ -207,8 +209,14 @@ npm run type-check      # vue-tsc
 npm run build           # production build
 
 # Database
-./scripts/db-reset.sh   # drop + migrate + seed
+./scripts/db-reset.sh                                   # drop + migrate + seed
+cd backend && DB_URL=... go run ./cmd/migrate up        # migrasi saja
+cd backend && DB_URL=... go run ./cmd/migrate version   # cek versi skema
+cd backend && DB_URL=... go run ./cmd/migrate down -steps 1   # rollback 1 versi
 ```
+
+Deploy, rollback, dan troubleshooting produksi: [docs/runbook-deploy.md](docs/runbook-deploy.md).
+Skema log & agregator: [docs/logging.md](docs/logging.md).
 
 ---
 

@@ -1,5 +1,18 @@
 name: paymentreceipt-v2
 
+# default logging untuk semua service: json-file dengan rotasi.
+#
+# Tanpa batas ini, docker menumpuk seluruh stdout log container tanpa batas -
+# server yang berjalan berminggu-minggu bisa menghabiskan disk hanya karena log.
+# max-size 10m x max-file 5 membatasi tiap service ke ~50 MB. Agregator
+# (Loki/ELK/CloudWatch) tetap bisa membaca lewat docker log driver atau
+# collector pihak ketiga; skema JSON-nya ada di docs/logging.md.
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
 services:
   # Migrasi skema dijalankan sebagai langkah terpisah SEBELUM aplikasi start.
   # Service ini berhenti setelah selesai (one-shot); compose menunggu exit code 0
@@ -19,6 +32,7 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway
     restart: "no"
+    logging: *default-logging
     networks:
       - app
 
@@ -29,6 +43,15 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
+    # HEALTHCHECK sudah didefinisikan di Dockerfile (binary api dengan flag
+    # -healthcheck); nilai berikut menimpanya dengan interval yang lebih
+    # agresif untuk review lokal supaya statusnya cepat terlihat.
+    healthcheck:
+      test: ["CMD", "/app/paymentreceipt-api", "-healthcheck"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     environment:
       APP_ENV: development
       APP_BASE_URL: http://localhost:8088
@@ -44,6 +67,7 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway
     restart: unless-stopped
+    logging: *default-logging
     networks:
       - app
 
@@ -52,10 +76,21 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     depends_on:
-      - api
+      api:
+        condition: service_healthy
+    # nginx:alpine menyertakan busybox wget. Probe lewat /healthz yang di-proxy
+    # ke api, jadi "sehat" berarti benar-benar rantai nginx -> api -> response
+    # berfungsi - bukan cuma proses nginx hidup.
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
     ports:
       - "${WEB_PORT:-8088}:8080"
     restart: unless-stopped
+    logging: *default-logging
     networks:
       - app
 

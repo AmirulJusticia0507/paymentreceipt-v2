@@ -45,6 +45,37 @@ func newRequestID() string {
 	return hex.EncodeToString(buf[:])
 }
 
+// maxRequestIDLen membatasi panjang request ID yang diterima dari luar.
+//
+// Nilai yang terlalu panjang membuang-buang ruang log tanpa manfaat korelasi.
+const maxRequestIDLen = 64
+
+// sanitizeRequestID menerima request ID eksternal hanya bila formatnya aman.
+//
+// Header X-Request-ID bisa dipalsukan client, jadi nilainya tidak boleh
+// langsung ditempel ke log: karakter kontrol (baris baru, tab) bisa dipakai
+// untuk mencemari/memalsukan entri log (log injection), dan parser JSON di
+// agregator bisa terganggu. Karena itu hanya karakter [A-Za-z0-9_-] dengan
+// panjang 8..64 yang diterima; selain itu dikembalikan kosong dan pemanggil
+// mengganti dengan ID buatan sendiri.
+func sanitizeRequestID(raw string) string {
+	if len(raw) < 8 || len(raw) > maxRequestIDLen {
+		return ""
+	}
+	for i := 0; i < len(raw); i++ {
+		c := raw[i]
+		switch {
+		case c >= 'a' && c <= 'z':
+		case c >= 'A' && c <= 'Z':
+		case c >= '0' && c <= '9':
+		case c == '-' || c == '_':
+		default:
+			return ""
+		}
+	}
+	return raw
+}
+
 // statusRecorder membungkus ResponseWriter untuk mencatat status dan ukuran.
 // Harus mengimplementasikan Flush, Hijack, dan Unwrap supaya middleware lain
 // (mis. gzip atau websocket) tetap bisa mengambil ResponseWriter aslinya.
@@ -91,10 +122,29 @@ func RequestLogger(base *slog.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			start := time.Now()
-			id := newRequestID()
+			// Hormati request ID dari proxy (mis. nginx) supaya satu request
+			// tercatat dengan ID yang sama di log edge DAN log aplikasi -
+			// korelasi langsung tanpa harus mencocokkan timestamp. Header ini
+			// bisa datang juga dari client langsung, jadi WAJIB disanitasi
+			// dulu: nilai yang tidak valid dibuang dan diganti buatan sendiri.
+			id := sanitizeRequestID(r.Header.Get(RequestIDHeader))
+			if id == "" {
+				id = newRequestID()
+			}
 
 			ctx := WithRequestID(r.Context(), id)
-			ctx = WithLogger(ctx, base.With(slog.String("request_id", id)))
+			// Logger ber-attr request_id dipakai DUA arah: disimpan ke context
+			// supaya handler bisa melog dengan ID yang sama, dan dipakai untuk
+			// baris log request di bawah supaya setiap akses tercatat dengan ID
+			// yang bisa dicari di agregator.
+			reqLogger := base.With(slog.String("request_id", id))
+			ctx = WithLogger(ctx, reqLogger)
+
+			// Request ID dikembalikan SEBELUM handler dipanggil. Kalau diset
+			// sesudahnya, header sudah tidak bisa dikirim - response writer
+			// sudah menulis status/header saat handler menulis body pertama
+			// kali, dan client tidak pernah melihat ID-nya.
+			w.Header().Set(RequestIDHeader, id)
 
 			rec := &statusRecorder{ResponseWriter: w, status: http.StatusOK}
 
@@ -113,14 +163,10 @@ func RequestLogger(base *slog.Logger) func(http.Handler) http.Handler {
 
 			// Endpoint yang lambat layak diberi perhatian lebih.
 			if duration > 1*time.Second {
-				base.WarnContext(ctx, "request lambat", attrs...)
+				reqLogger.WarnContext(ctx, "request lambat", attrs...)
 			} else {
-				base.InfoContext(ctx, "request", attrs...)
+				reqLogger.InfoContext(ctx, "request", attrs...)
 			}
-
-			// Request ID dikembalikan supaya user bisa melaporkan error dengan
-			// menyebut ID yang sama, dan kita bisa mencarinya di log.
-			w.Header().Set(RequestIDHeader, id)
 		})
 	}
 }

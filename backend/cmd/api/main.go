@@ -20,6 +20,7 @@ import (
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/config"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/database"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/dbgen"
+	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/health"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/logging"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/router"
 )
@@ -29,10 +30,30 @@ var version = "dev"
 
 func main() {
 	showVersion := flag.Bool("version", false, "tampilkan versi lalu keluar")
+	healthCheck := flag.Bool("healthcheck", false,
+		"probe endpoint health di server lokal lalu keluar (untuk Docker HEALTHCHECK / K8s probe)")
+	healthCheckURL := flag.String("healthcheck-url", "",
+		"URL yang dip probe oleh -healthcheck (default: http://127.0.0.1:<SERVER_PORT>/healthz)")
 	flag.Parse()
 
 	if *showVersion {
 		fmt.Printf("paymentreceipt-v2 api %s\n", version)
+		return
+	}
+
+	// Mode healthcheck tidak memuat konfigurasi penuh: tujuannya menjawab
+	// "apakah prosesnya bisa melayani?", bukan "apakah konfigurasi valid?".
+	// Kalau konfigurasi rusak, proses sudah gagal sejak awal dan Docker melihat
+	// exit code non-zero tanpa perlu mode ini.
+	if *healthCheck {
+		url := *healthCheckURL
+		if url == "" {
+			url = fmt.Sprintf("http://127.0.0.1:%s/healthz", serverPortFromEnv())
+		}
+		if err := health.Probe(url, 3*time.Second); err != nil {
+			fmt.Fprintln(os.Stderr, "healthcheck gagal:", err)
+			os.Exit(1)
+		}
 		return
 	}
 
@@ -41,6 +62,14 @@ func main() {
 		slog.Error("aplikasi berhenti dengan error", slog.Any("error", err))
 		os.Exit(1)
 	}
+}
+
+// serverPortFromEnv membaca SERVER_PORT tanpa memuat konfigurasi penuh.
+func serverPortFromEnv() string {
+	if p := os.Getenv("SERVER_PORT"); p != "" {
+		return p
+	}
+	return "8080"
 }
 
 func run() error {
