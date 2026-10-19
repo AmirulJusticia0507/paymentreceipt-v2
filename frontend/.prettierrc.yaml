@@ -1,0 +1,32 @@
+# Konfigurasi Prettier.
+#
+# Pembagian peran dengan ESLint: Prettier mengurusi TAMPILAN (spasi, koma,
+# akhir baris), ESLint mengurusi KEBENARANAN (variabel terpakai, aturan Vue).
+# Aturan formatting sengaja TIDAK ditulis di eslint.config.* supaya dua tool
+# tidak saling menimpa hasil kerja satu sama lain.
+#
+# Nilai-nilai di bawah disesuaikan dengan gaya yang SUDAH dipakai di codebase,
+# bukan sebaliknya - mayoritas file sudah menulis tanpa titik koma dan memakai
+# kutip tunggal. Memaksa gaya lain berarti merewrite ratusan baris yang sudah
+# terbaca baik.
+
+printWidth: 100
+singleQuote: true
+semi: false
+trailingComma: all
+arrowParens: always
+
+# endOfLine: "auto" - keputusan yang butuh penjelasan, jadi jangan diganti
+# begitu saja.
+#
+# Pilihan naif adalah "lf", karena git menyimpan seluruh isi repo sebagai LF.
+# Tapi di Windows dengan core.autocrlf=true, file di WORKING TREE keluar
+# sebagai CRLF. Dengan "lf", `prettier --check` akan gagal pada hampir SETIAP
+# file - bukan karena salah format, hanya karena akhir baris. Pernah terjadi
+# di sini saat menyiapkan golangci-lint: gofmt -d pada satu file menghasilkan
+# diff sepanjang seluruh file (280 baris untuk file 140 baris).
+#
+# "auto" membaca akhir baris yang sudah dipakai file itu lalu memakainya.
+# Konsistensi repo tetap terjaga karena normalisasi ke LF terjadi saat commit,
+# bukan saat format.
+endOfLine: auto
