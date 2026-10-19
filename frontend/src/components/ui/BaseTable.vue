@@ -80,6 +80,20 @@ const pageRange = computed(() => {
 function keyFor(row: T, index: number): string | number {
   return props.rowKey ? props.rowKey(row) : (row as { id: string | number }).id ?? index
 }
+
+/**
+ * Nilai sel untuk kolom yang tidak punya render khusus.
+ *
+ * Sengaja ditaruh di fungsi, bukan inline di template. Vue menerima cast
+ * TypeScript (`as Record<...>`) di dalam atribut template - build lolos -
+ * tapi parser Prettier menolaknya dan melaporkan "Unexpected closing tag"
+ * yang menyesatkan: masalahnya bukan di tag-nya, tapi di cast. Akibatnya
+ * satu file ini tidak bisa diperiksa sama sekali oleh `prettier --check`,
+ * jadi regresi formatting di dalamnya tidak pernah ketahuan.
+ */
+function cellValue(row: T, key: string): unknown {
+  return (row as Record<string, unknown>)[key]
+}
 </script>
 
 <template>
@@ -181,8 +195,8 @@ function keyFor(row: T, index: number): string | number {
                   ]"
                 >
                   <!-- Slot khusus kolom, misalnya badge status atau rupiah. -->
-                  <slot :name="`cell-${column.key}`" :row="row" :value="(row as Record<string, unknown>)[column.key]">
-                    {{ column.cell ? column.cell(row) : (row as Record<string, unknown>)[column.key] }}
+                  <slot :name="`cell-${column.key}`" :row="row" :value="cellValue(row, column.key)">
+                    {{ column.cell ? column.cell(row) : cellValue(row, column.key) }}
                   </slot>
                 </td>
               </tr>
