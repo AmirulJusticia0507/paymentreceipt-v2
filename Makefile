@@ -55,6 +55,7 @@ clean:
 	if exist $(BACKEND_DIR)\tmp_ai_test rmdir /s /q $(BACKEND_DIR)\tmp_ai_test
 
 ## Setup database lokal (migrasi + seed).
+## Migrasi dijalankan lewat cmd/migrate (jalur yang sama dengan deploy).
 dev-db:
-	cd $(BACKEND_DIR) && migrate -path db/migrations -database "postgres://paymentreceipt:paymentreceipt_local@localhost:5432/paymentreceipt_v2?sslmode=disable" up
-	psql -U postgres -d paymentreceipt_v2 -f db/seeds/development.sql
+	cd $(BACKEND_DIR) && DB_URL="postgres://paymentreceipt:paymentreceipt_local@localhost:5432/paymentreceipt_v2?sslmode=disable" go run ./cmd/migrate up
+	psql -U postgres -d paymentreceipt_v2 -f $(BACKEND_DIR)/db/seeds/development.sql

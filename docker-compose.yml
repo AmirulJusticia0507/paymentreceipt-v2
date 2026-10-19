@@ -1,10 +1,34 @@
 name: paymentreceipt-v2
 
 services:
+  # Migrasi skema dijalankan sebagai langkah terpisah SEBELUM aplikasi start.
+  # Service ini berhenti setelah selesai (one-shot); compose menunggu exit code 0
+  # sebelum memulai api berkat depends_on.condition: service_completed_successfully.
+  # Strategi ini memastikan aplikasi tidak pernah berjalan dengan skema yang
+  # belum sesuai dengan kodenya.
+  migrate:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    # ENTRYPOINT default image adalah binary api; override untuk binary migrasi.
+    entrypoint: ["/app/paymentreceipt-migrate", "up"]
+    environment:
+      DB_URL: ${DOCKER_DB_URL:?set DOCKER_DB_URL in the root .env file}
+      LOG_FORMAT: json
+      LOG_LEVEL: info
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    restart: "no"
+    networks:
+      - app
+
   api:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
     environment:
       APP_ENV: development
       APP_BASE_URL: http://localhost:8088
