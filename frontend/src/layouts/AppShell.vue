@@ -21,6 +21,7 @@ import {
   Sun,
   Tags,
   Truck,
+  Users,
   X,
 } from 'lucide-vue-next'
 
@@ -68,6 +69,10 @@ const NAV_GROUPS: NavGroup[] = [
       { label: 'Request', to: '/requests', icon: FolderTree },
       { label: 'Request Base', to: '/request-bases', icon: FolderTree },
     ],
+  },
+  {
+    title: 'Administrasi',
+    items: [{ label: 'Pengguna', to: '/users', icon: Users, roles: ['admin'] }],
   },
 ]
 

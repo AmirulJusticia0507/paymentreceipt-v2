@@ -242,7 +242,7 @@ func (q *Queries) TouchUserLastLogin(ctx context.Context, id int64) error {
 
 const updateUserPassword = `-- name: UpdateUserPassword :exec
 UPDATE users
-SET password_hash = $1
+SET password_hash = $1, updated_at = now()
 WHERE id = $2
 `
 

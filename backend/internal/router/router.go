@@ -160,6 +160,7 @@ func New(d Deps) http.Handler {
 				requestbasestore.NewRequestBaseStore(d.Queries), "/request-bases")
 
 			mountSources(r, authenticator, d.Queries)
+			mountUsers(r, authenticator, cfg.Auth, d.Queries)
 			mountPaymentReceipts(r, authenticator, paymentreceipt.NewService(paymentreceiptstore.New(d.Queries)))
 
 			// AI ekstraksi struk/faktur — upload gambar, dapatkan data terstruktur.

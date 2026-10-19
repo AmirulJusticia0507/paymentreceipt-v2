@@ -28,6 +28,19 @@ export interface User {
   last_login_at?: string
 }
 
+/**
+ * Profil user untuk halaman admin (Pengguna).
+ *
+ * Memuat kolom yang tidak dipakai login biasa - status aktif dan timestamp.
+ * Seperti User, tidak pernah memuat password_hash: query backend sudah
+ * menyaringnya di database.
+ */
+export interface AdminUser extends User {
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
 export interface LoginResponse {
   user: User
   expires_at: string

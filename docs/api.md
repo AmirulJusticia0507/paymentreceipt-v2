@@ -316,6 +316,35 @@ Response objek: `id`, `source`, `nama_barang`, `nama_toko`, `no_telp`,
 
 ---
 
+## Users (admin)
+
+`/api/v1/users` — **khusus admin untuk seluruh operasinya**: daftar user
+memuat email & riwayat login, bukan data untuk semua role.
+
+### GET `/api/v1/users/`
+
+Daftar semua user (aktif & nonaktif), tanpa paginasi.
+
+`data`: objek `id`, `username`, `email`, `full_name`, `role`, `is_active`,
+`last_login_at`, `created_at`, `updated_at`. `password_hash` tidak pernah
+dikirim — sudah disaring di query.
+
+### POST `/api/v1/users/{id}/reset-password`
+
+Menetapkan password baru dan **mencabut semua refresh token** user tersebut —
+ia keluar dari seluruh perangkat dan harus login ulang. Access token yang
+sudah terbit tetap berlaku sampai kedaluwarsa (maksimal `AUTH_ACCESS_TTL`).
+
+| Field body | Aturan |
+|---|---|
+| `password` | wajib, minimal **8 karakter**; tidak di-trim (spasi adalah karakter valid) |
+
+`200` → `data`: `id`, `username`, `reset: true`.
+`404` bila user tidak ada · `422` bila password kurang dari 8 karakter ·
+`403` untuk non-admin.
+
+---
+
 ## Payment receipts
 
 Modul inti. Transaksi pembelian: item, qty, satuan, harga, usage.

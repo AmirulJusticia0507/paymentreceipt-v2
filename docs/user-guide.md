@@ -52,6 +52,11 @@ Sidebar → **Master Data**: Department, Satuan, Kategori, Base, **Sumber Beli**
 Sidebar → **Pengajuan**: Request & Request Base (daftar pengajuan per
 departemen) — kelola oleh admin; setiap payment receipt merujuk satu request.
 
+Sidebar → **Pengguna** (admin): daftar seluruh akun beserta role dan status.
+Tombol kunci untuk **Reset Password** — password baru minimal 8 karakter, dan
+user langsung keluar dari semua perangkat (harus login ulang). Pembuatan &
+penghapusan akun tetap dilakukan admin sistem di sisi server.
+
 ## 5. Payment Receipt — mencatat pembelian
 
 Buka sidebar → **Payment Receipt**.
@@ -126,8 +131,10 @@ Admin juga dapat mengubah data arsip dan menghapusnya bila terjadi kesalahan.
 
 ## 9. Yang belum tersedia (bukan bug)
 
-- Reset/lupa password mandiri — hubungi admin.
-- Manajemen user via aplikasi — akun dibuat admin sistem di sisi server.
+- Reset password mandiri via email/tautan — belum ada; **admin bisa mereset
+  lewat menu Pengguna** (target langsung keluar dari semua perangkat).
+- Pembuatan & penghapusan akun via aplikasi — akun dibuat admin sistem di
+  sisi server.
 - Notifikasi email/WhatsApp otomatis.
 - Halaman Ekstraksi AI belum ditautkan ke menu sidebar — akses langsung dengan
   URL `/ai/extract-receipt`.

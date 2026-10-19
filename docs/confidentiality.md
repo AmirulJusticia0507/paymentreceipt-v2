@@ -110,7 +110,9 @@ Tindakan peredaman yang tersedia pada sistem saat ini:
   (semua pengguna diminta login ulang).
 - **Set `is_active = false`** pada akun terdampak → login & sesi berjalan ditolak
   tanpa menghapus riwayat.
-- **Ganti password** akun terdampak → hash baru, hash lama tidak berlaku lagi.
+- **Ganti password** akun terdampak (admin: menu Pengguna → Reset Password —
+  semua sesi target dicabut otomatis) → hash baru, hash lama tidak berlaku
+  lagi.
 
 ## 8. Penegakan & sanksi
 

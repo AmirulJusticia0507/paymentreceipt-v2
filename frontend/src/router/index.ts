@@ -79,6 +79,12 @@ const routes: RouteRecordRaw[] = [
         meta: { requiresAuth: true, title: 'Sumber Beli' },
       },
       {
+        path: 'users',
+        name: 'users',
+        component: () => import('@/pages/UsersPage.vue'),
+        meta: { requiresAuth: true, roles: ['admin'], title: 'Pengguna' },
+      },
+      {
         // AI ekstraksi struk/faktur — accessible untuk semua user yang login.
         path: 'ai/extract-receipt',
         name: 'ai-extract-receipt',

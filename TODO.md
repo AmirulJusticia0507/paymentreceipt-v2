@@ -253,6 +253,7 @@ Tujuan: login/logout/refresh + proteksi seluruh endpoint.
 - [x] **T3.11** Cookie flags: `HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/`
 - [x] **T3.12** Test: hash/verify password, issue/parse token, RBAC matrix
 - [x] **T3.13** Halaman Login (Vue) â€” desain modern, tanpa kedokutang "password"!
+- [x] **T3.14** Reset password oleh admin (endpoint + halaman Pengguna)
 
 ---
 

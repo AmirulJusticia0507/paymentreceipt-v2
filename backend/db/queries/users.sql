@@ -24,7 +24,7 @@ WHERE id = @id;
 
 -- name: UpdateUserPassword :exec
 UPDATE users
-SET password_hash = @password_hash
+SET password_hash = @password_hash, updated_at = now()
 WHERE id = @id;
 
 -- name: TouchUserLastLogin :exec
