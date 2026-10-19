@@ -136,9 +136,10 @@ func drawItemTable(pdf *gofpdf.Fpdf, data ReceiptData) {
 func drawSignatures(pdf *gofpdf.Fpdf) {
 	sigY := pdf.GetY()
 	pdf.SetFont("Helvetica", "", 9)
-	// tiga kolom blok tanda tangan: User, GA, Direktur Operasional
+	// tiga kolom blok tanda tangan: User (kosong), GA (diisi staf GA sendiri),
+	// Direktur Operasional (nama dicetak tetap).
 	blockW := (pageWidth - marginLeft - marginRight) / 3
-	for i, label := range []string{"User", "GA", "Direktur Operasional"} {
+	for i, label := range []string{"User", "GA", "Direktur Operasional\nGeoffrey Meyssonier"} {
 		x := marginLeft + float64(i)*blockW
 		pdf.SetXY(x, sigY)
 		pdf.MultiCell(blockW, 4, label, "", "C", false)
