@@ -37,6 +37,16 @@ type Deps struct {
 	Queries *dbgen.Queries
 }
 
+const (
+	// apiV1Path adalah prefix semua endpoint ber-versi.
+	apiV1Path = "/api/v1"
+	// aiExtractRoute adalah path ekstraksi AI relatif terhadap apiV1Path.
+	// Diturunkan dari satu konstanta untuk registrasi route DAN override batas
+	// body - kalau keduanya ditulis terpisah, mereka bisa berbeda diam-diam dan
+	// override jadi tidak pernah kena.
+	aiExtractRoute = "/ai/extract-receipt"
+)
+
 // New menyusun router lengkap dengan seluruh middleware.
 //
 // Urutan middleware disengaja:
@@ -62,7 +72,12 @@ func New(d Deps) http.Handler {
 	r.Use(middleware.RealIP(cfg.App.TrustedProxies))
 	r.Use(middleware.CORS(cfg.App))
 	r.Use(middleware.SecureHeaders(cfg.App.IsProduction()))
-	r.Use(middleware.BodyLimit(cfg.Server.MaxRequestBody))
+	// Batas body default untuk semua endpoint, dengan pengecualian endpoint
+	// unggahan AI yang butuh ruang lebih besar (gambar struk) - lihat
+	// aiExtractRoute.
+	r.Use(middleware.BodyLimit(cfg.Server.MaxRequestBody, map[string]int64{
+		apiV1Path + aiExtractRoute: cfg.AI.MaxRequestBody,
+	}))
 	r.Use(middleware.Timeout(30 * time.Second))
 
 	// --- Endpoint operasional ---------------------------------------------
@@ -89,7 +104,7 @@ func New(d Deps) http.Handler {
 	aiProvider := ai.NewOpenAIProvider(cfg.AI.BaseURL, cfg.AI.APIKey, cfg.AI.Model, cfg.AI.Timeout)
 	aiH := aihandler.NewHandler(aiProvider)
 
-	r.Route("/api/v1", func(r chi.Router) {
+	r.Route(apiV1Path, func(r chi.Router) {
 		r.Get("/healthz", health.Liveness())
 
 		// Endpoint publik.
@@ -148,7 +163,7 @@ func New(d Deps) http.Handler {
 			mountPaymentReceipts(r, authenticator, paymentreceipt.NewService(paymentreceiptstore.New(d.Queries)))
 
 			// AI ekstraksi struk/faktur — upload gambar, dapatkan data terstruktur.
-			r.Post("/ai/extract-receipt", aiH.ExtractReceipt)
+			r.Post(aiExtractRoute, aiH.ExtractReceipt)
 
 			// Arsip PR (Phase 7).
 			mountPrArchive(r, authenticator, d.DB, d.Queries)

@@ -417,6 +417,9 @@ Keputusan architecture ada di ADR-0004. RencANA awal: **server-side PDF** supaya
 - [x] **T12.6** Logging terstruktur + agregator
 - [x] **T12.7** Dokumentasi runbook deploy & rollback
 - [x] **T12.8** `docs/api.md` atau OpenAPI spec
+- [x] **T12.9** Pasang `AI_MAX_REQUEST_BODY` sebagai batas upload endpoint AI
+- [ ] **T12.10** Kembalikan kode hasil generate pada respons `bulk-archive`
+- [ ] **T12.11** Bersihkan komentar kode yang terkontaminasi teks asing
 
 ---
 

@@ -103,12 +103,25 @@ func Timeout(d time.Duration) func(http.Handler) http.Handler {
 
 // BodyLimit membatasi ukuran body request. Dicek lewat MaxBytesReader supaya
 // request besar ditolak saat dibaca, bukan setelah seluruh body sudah di memori.
-func BodyLimit(maxBytes int64) func(http.Handler) http.Handler {
+//
+// overrides memetakan path persis ke batas khusus untuk path itu - dipakai
+// untuk endpoint yang memang butuh body lebih besar dari batas default (mis.
+// unggahan gambar AI). Pemilihan batas harus terjadi SEBELUM body dibungkus:
+// menumpuk MaxBytesReader berbatas lebih besar di atas pembungkus yang lebih
+// ketat tidak menaikkan apa pun, karena pembungkus luar tetap lebih dulu
+// menolak bacaan yang melewati batasnya.
+func BodyLimit(defaultMax int64, overrides map[string]int64) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.Body != nil {
-				r.Body = http.MaxBytesReader(w, r.Body, maxBytes)
+			if r.Body == nil {
+				next.ServeHTTP(w, r)
+				return
 			}
+			max := defaultMax
+			if v, ok := overrides[r.URL.Path]; ok && v > 0 {
+				max = v
+			}
+			r.Body = http.MaxBytesReader(w, r.Body, max)
 			next.ServeHTTP(w, r)
 		})
 	}

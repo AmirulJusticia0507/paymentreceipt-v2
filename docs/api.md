@@ -116,8 +116,9 @@ Pemetaan `Kind` → status:
   korelasi dengan log (lihat `docs/logging.md`).
 - `Content-Type: application/json; charset=utf-8` untuk semua body JSON.
 - Batas ukuran body global: **2 MiB** (`SERVER_MAX_REQUEST_BODY`, default) untuk
-  semua endpoint — request yang melebihi ditolak saat dibaca (`422`). Ini juga
-  batas efektif untuk upload AI hari ini, lihat
+  semua endpoint — request yang melebihi ditolak saat dibaca (`422`).
+  Pengecualian: endpoint unggahan AI memakai batas khusus
+  `AI_MAX_REQUEST_BODY` (default 10 MiB), lihat
   [AI extract struk](#ai-extract-struk).
 
 ### Transisi status payment receipt
@@ -478,14 +479,10 @@ export selalu menarik hingga **5000 baris** pertama (batas atas ekspor).
 `multipart/form-data` dengan satu field **`file`**:
 
 - Tipe: JPG, PNG, WEBP (ditolak selain itu → `422`).
-- Ukuran: batas body global `SERVER_MAX_REQUEST_BODY` (default 2 MiB) berlaku
-  lebih dulu — request lebih besar ditolak oleh middleware sebelum sampai ke
-  handler. Handler sendiri mem-parse maksimal 10 MiB.
-
-> **Catatan:** `AI_MAX_REQUEST_BODY` (default 10 MiB) sudah ada di config tapi
-> belum terpasang sebagai pembatas route ini — hari ini batas efektif upload
-> adalah nilai `SERVER_MAX_REQUEST_BODY`. Untuk mengizinkan upload lebih besar,
-> naikkan `SERVER_MAX_REQUEST_BODY`.
+- Ukuran: batas khusus endpoint ini `AI_MAX_REQUEST_BODY` (default **10 MiB**)
+  — endpoint lain memakai `SERVER_MAX_REQUEST_BODY` (default 2 MiB). Melebihi
+  batas membuat request ditolak middleware saat dibaca; handler menjawab `422`
+  "Berkas terlalu besar".
 
 Respons:
 
