@@ -20,7 +20,6 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-MIGRATIONS_DIR="$REPO_ROOT/backend/db/migrations"
 SEED_FILE="$REPO_ROOT/backend/db/seeds/development.sql"
 
 PGHOST="${PGHOST:-localhost}"
@@ -81,8 +80,11 @@ SQL
 echo "    Database dibuat (owner: $PGAPPUSER)."
 
 # --- 2. Migrasi -----------------------------------------------------------
-# Dijalankan sebagai PGAPPUSER. Kalau role belum ada, gagal dengan pesan jelas
-# alih-alih membuat tabel yang tidak bisa diakses aplikasi.
+# Dijalankan sebagai PGAPPUSER memakai binary migrasi bawaan repo (cmd/migrate)
+# - satu jalur yang sama dengan deploy produksi, sehingga versi tercatat di
+# tabel schema_migrations dan tidak ada kejutan saat compose "migrate" service
+# dijalankan. Kalau role belum ada, gagal dengan pesan jelas alih-alih membuat
+# tabel yang tidak bisa diakses aplikasi.
 if ! psql -U "$PGAPPUSER" -d "$PGDATABASE" -q -c "SELECT 1;" >/dev/null 2>&1; then
   echo "    GAGAL: role '$PGAPPUSER' tidak ada atau tidak bisa login." >&2
   echo "    Buat dulu dengan:" >&2
@@ -91,21 +93,12 @@ if ! psql -U "$PGAPPUSER" -d "$PGDATABASE" -q -c "SELECT 1;" >/dev/null 2>&1; th
   exit 1
 fi
 
-echo "==> Menjalankan migrasi (sebagai $PGAPPUSER)"
-count=0
-while IFS= read -r f; do
-  name="$(basename "$f")"
-  printf '    %-40s ' "$name"
-  if psql -U "$PGAPPUSER" -d "$PGDATABASE" -v ON_ERROR_STOP=1 -q -f "$f"; then
-    echo "OK"
-    count=$((count + 1))
-  else
-    echo "GAGAL"
-    echo "Migrasi '$name' gagal. Database dalam kondisi sebagian." >&2
-    exit 1
-  fi
-done < <(find "$MIGRATIONS_DIR" -name '*.up.sql' | sort)
-echo "    $count migrasi diterapkan."
+echo "==> Menjalankan migrasi (sebagai $PGAPPUSER, via cmd/migrate)"
+# PGPASSWORD di-pass-through environment: pgx (driver migrasi) membacanya dengan
+# cara yang sama dengan libpq, jadi tidak perlu menempelkan password ke URL.
+DB_URL="postgres://${PGAPPUSER}@${PGHOST}:${PGPORT}/${PGDATABASE}?sslmode=disable" \
+  go -C "$REPO_ROOT/backend" run ./cmd/migrate up
+echo "    Migrasi selesai."
 
 # --- 3. Seed --------------------------------------------------------------
 if [ "$RUN_SEED" -eq 1 ]; then
