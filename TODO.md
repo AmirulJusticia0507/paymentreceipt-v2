@@ -404,7 +404,7 @@ Keputusan architecture ada di ADR-0004. RencANA awal: **server-side PDF** supaya
 - [x] **T11.8** **Pre-commit hook** — `.githooks/pre-commit` (gofmt, go vet, build + test, frontend build)
 - [x] **T11.9** **CI GitHub Actions** — `.github/workflows/ci.yml` (backend test/lint, frontend type-check/build/audit, govulncheck)
 - [x] **T11.10** SQL injection regression test - semua query wajib parameterized
-- [x] **T11.11** Vulnerability scan — `npm audit` dijalankan (4 high di dev-deps eslint, non-blocking); backend `govulncheck` di CI
+- [x] **T11.11** Vulnerability scan — `npm audit` dijalankan (4 high dari `braces`, TIDAK bisa diperbaiki: semua versi yang pernah dirilis rentan, non-blocking); backend `govulncheck` di CI
 - [ ] **T11.12** Cap coverage minimal: backend 70%, frontend 60%
 
 ---

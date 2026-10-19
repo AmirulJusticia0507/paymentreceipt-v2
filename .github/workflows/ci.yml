@@ -107,15 +107,27 @@ jobs:
       - name: Format
         working-directory: frontend
         run: npx prettier --check "src/**/*.{ts,vue,css}"
-      # Sengaja TIDAK dijadikan gerbang, dan ini bukan kecelakaan: saat
-      # ditulis, `npm audit` melaporkan 4 temuan high yang semuanya ada di
-      # rantai devDependencies (alat build), bukan kode yang dijalankan di
-      # production. Memasang `|| true` di sini TAPI melabelinya jujur lebih
-      # baik daripada menghapus `|| true` sehingga CI merah permanen untuk
-      # masalah yang belum bisa diselesaikan sekarang.
+      # Sengaja TIDAK dijadikan gerbang, dan alasannya sudah ditelusuri sampai
+      # selesai supaya tidak ada yang mengulanginya:
       #
-      # Saat temuan itu tertangani, hapus `|| true` supaya langkah ini
-      # menjadi gerbang sungguhan.
+      #   Temuannya di `braces`, lewat rantai
+      #   @vue/eslint-config-typescript -> fast-glob -> micromatch -> braces.
+      #   Kerentanannya stack-exhaustion DoS lewat pola glob bersarang dalam.
+      #
+      #   1. Tidak ada versi perbaikan. Setiap versi braces yang pernah
+      #      diterbitkan - termasuk 3.0.3, yang kini adalah yang terbaru -
+      #      masuk rentang rentan (<=3.0.3). Tidak ada rilis yang bisa dipasang.
+      #   2. Saran `npm audit fix --force` adalah menurunkan
+      #      @vue/eslint-config-typescript ke 14.0.1, perubahan semver-major
+      #      yang TIDAK menyelesaikan apa pun - hanya menukar satu masalah
+      #      dengan yang lain.
+      #   3. Risiko nyatanya kecil. Pola glob datang dari konfigurasi ESLint
+      #      yang ditulis developer, bukan dari input user, dan hanya berjalan
+      #      saat lint di mesin developer atau di CI - bukan di production.
+      #
+      # Jadi menghapus `|| true` hanya akan membuat CI merah permanen untuk
+      # sesuatu yang tidak bisa diselesaikan sekarang. Saat braces merilis
+      # versi aman, barulah `|| true` dihapus supaya step ini jadi gerbang.
       - name: Audit (informational, bukan gerbang)
         working-directory: frontend
         run: npm audit --audit-level=high || true
