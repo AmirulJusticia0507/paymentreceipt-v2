@@ -159,17 +159,20 @@ const roleLabel: Record<UserRole, string> = {
       aria-label="Navigasi utama"
     >
       <!-- Brand -->
-      <div class="flex h-16 shrink-0 items-center gap-2.5 border-b border-default px-4">
-        <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white p-1 shadow-2xs border border-default">
+      <div class="flex h-16 shrink-0 items-center gap-2.5 border-b border-default px-3.5">
+        <div
+          class="flex items-center justify-center rounded-xl bg-white p-1.5 shadow-2xs ring-1 ring-black/5 dark:bg-white dark:ring-white/20 transition-all shrink-0"
+          :class="collapsed ? 'size-10' : 'h-10 px-2 max-w-[130px]'"
+        >
           <img
             src="/susi-air-logo.png"
             alt="Logo Susi Air"
-            class="h-full w-full object-contain"
+            class="h-full w-auto object-contain"
           />
         </div>
         <div v-if="!collapsed" class="min-w-0">
           <p class="truncate text-sm font-bold text-ink">Payment Receipt</p>
-          <p class="truncate text-xs font-medium text-brand-600">Susi Air · GA</p>
+          <p class="truncate text-xs font-semibold text-brand-600 dark:text-brand-400">Susi Air · GA</p>
         </div>
         <button
           type="button"
@@ -280,12 +283,13 @@ const roleLabel: Record<UserRole, string> = {
         <div class="ml-auto flex items-center gap-2 relative">
           <button
             type="button"
-            class="rounded-md p-2 text-ink-muted transition-colors hover:bg-default hover:text-ink"
+            class="flex items-center gap-1.5 rounded-xl border border-default bg-surface/70 px-2.5 py-1.5 text-xs font-semibold text-ink shadow-2xs backdrop-blur-xs transition-all hover:bg-default hover:shadow-xs focus-visible:outline-2 focus-visible:outline-brand-500"
             :aria-label="theme.theme === 'dark' ? 'Mode terang' : 'Mode gelap'"
             @click="theme.toggle()"
           >
-            <Sun v-if="theme.theme === 'dark'" class="size-5" aria-hidden="true" />
-            <Moon v-else class="size-5" aria-hidden="true" />
+            <Sun v-if="theme.theme === 'dark'" class="size-4 text-amber-400 transition-transform hover:rotate-45" aria-hidden="true" />
+            <Moon v-else class="size-4 text-brand-600 transition-transform hover:-rotate-12" aria-hidden="true" />
+            <span class="hidden sm:inline">{{ theme.theme === 'dark' ? 'Mode Terang' : 'Mode Gelap' }}</span>
           </button>
 
           <!-- User menu -->
