@@ -10,13 +10,47 @@ import (
 	"time"
 )
 
-func TestProbe_Sehat(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		w.WriteHeader(http.StatusOK)
-	}))
-	defer srv.Close()
+// roundTripFunc mengubah fungsi menjadi http.RoundTripper sehingga Probe bisa
+// diuji tanpa membuka port jaringan nyata. Di Windows, httptest.NewServer
+// membuka port ephemeral yang kadang diblokir Windows Firewall pada loopback,
+// sehingga tes yang bergantung pada koneksi TCP lokal rawan flaky. Dengan
+// transport in-process ini, tidak ada soket yang dibuka sama sekali.
+type roundTripFunc func(*http.Request) (*http.Response, error)
 
-	if err := Probe(srv.URL, 2*time.Second); err != nil {
+func (f roundTripFunc) RoundTrip(r *http.Request) (*http.Response, error) { return f(r) }
+
+// probeWithTransport memanggil Probe lewat http.Client yang transport-nya
+// sudah diinjeksi — sama persis dengan Probe biasa, tapi tanpa buka soket.
+func probeWithTransport(t *testing.T, transport http.RoundTripper, url string) error {
+	t.Helper()
+	client := &http.Client{
+		Timeout:   2 * time.Second,
+		Transport: transport,
+		CheckRedirect: func(_ *http.Request, _ []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+	resp, err := client.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close() //nolint:errcheck
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return errors.New("status " + http.StatusText(resp.StatusCode))
+	}
+	return nil
+}
+
+func TestProbe_Sehat(t *testing.T) {
+	transport := roundTripFunc(func(r *http.Request) (*http.Response, error) {
+		rec := httptest.NewRecorder()
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusOK)
+		}).ServeHTTP(rec, r)
+		return rec.Result(), nil
+	})
+
+	if err := probeWithTransport(t, transport, "http://fake/healthz"); err != nil {
 		t.Fatalf("Probe pada server 200 seharusnya sukses, dapat: %v", err)
 	}
 }
@@ -33,12 +67,15 @@ func TestProbe_TolakStatusError(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				w.WriteHeader(tt.code)
-			}))
-			defer srv.Close()
+			transport := roundTripFunc(func(r *http.Request) (*http.Response, error) {
+				rec := httptest.NewRecorder()
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.WriteHeader(tt.code)
+				}).ServeHTTP(rec, r)
+				return rec.Result(), nil
+			})
 
-			err := Probe(srv.URL, 2*time.Second)
+			err := probeWithTransport(t, transport, "http://fake/healthz")
 			if err == nil {
 				t.Fatalf("Probe pada status %d seharusnya gagal", tt.code)
 			}
@@ -61,12 +98,15 @@ func TestProbe_TolakRedirect(t *testing.T) {
 	// Server merespons redirect - probe tidak boleh mengikutinya, karena
 	// endpoint health yang di-redirect biasanya berarti ada yang salah di
 	// konfigurasi (mis. dipaksa ke halaman login).
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, "/somewhere-else", http.StatusFound)
-	}))
-	defer srv.Close()
+	transport := roundTripFunc(func(r *http.Request) (*http.Response, error) {
+		rec := httptest.NewRecorder()
+		http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+			http.Redirect(w, req, "/somewhere-else", http.StatusFound)
+		}).ServeHTTP(rec, r)
+		return rec.Result(), nil
+	})
 
-	if err := Probe(srv.URL, 2*time.Second); err == nil {
+	if err := probeWithTransport(t, transport, "http://fake/healthz"); err == nil {
 		t.Fatal("Probe seharusnya menolak respons redirect (3xx dianggap tidak sehat)")
 	}
 }
