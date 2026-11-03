@@ -279,7 +279,7 @@ Pola yang diulang untuk semua modul master: **CRUD + paginated list + search + s
   - [x] `PageHeader` + breadcrumb
   - [x] `EmptyState`
   - [x] `SkeletonTable`
-- [ ] **T4.9** Playground/storybook sederhana: `/dev/components` untuk uji komponen
+- [x] **T4.9** Playground/storybook sederhana: `/dev/components` untuk uji komponen
 
 ---
 

@@ -115,6 +115,12 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/pages/PaymentReceiptDetailPage.vue'),
         meta: { requiresAuth: true, title: 'Detail Payment Receipt' },
       },
+      {
+        path: 'dev/components',
+        name: 'dev-components',
+        component: () => import('@/pages/DevComponentsPage.vue'),
+        meta: { requiresAuth: true, title: 'Playground Komponen' },
+      },
     ],
   },
   {
