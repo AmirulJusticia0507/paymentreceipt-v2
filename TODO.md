@@ -230,7 +230,7 @@ Tujuan: API hidup, healthcheck jalan, logging rapi.
 - [x] **T2.9** Middleware: Recover, CORS, RealIP, Timeout, RateLimit
 - [x] **T2.10** Router `GET /healthz` & `GET /readyz`
 - [x] **T2.11** Pagination helper â€” `page`, `per_page` (max 100), total count, metadata di response
-- [!] **T2.12** Konvensi nama tabel DB di Go + mapping struct via `db:` tag - menunggu sqlc generate (butuh skema DB di `sqlc.yaml`)
+- [x] **T2.12** Konvensi nama tabel DB di Go + mapping struct via `db:` tag - selesai via sqlc generated code di `internal/dbgen`
 - [x] **T2.13** Unit test config loader
 - [x] **T2.14** Smoke test: jalankan server, curl `/healthz`
 
