@@ -54,10 +54,31 @@ INSERT INTO categories (kode, nama, keterangan) VALUES
   ('LAIN', 'Lain-lain',           'Tidak terkategori');
 
 INSERT INTO base (kode, nama, keterangan) VALUES
-  ('PK', 'Perlengkapan Kantor',  'Barang habis pakai untuk operasional'),
-  ('PJ', 'Peralatan & Jewelry',  'Peralatan emitir dan aksesori Reciprocal'),
-  ('SR', 'Servis & Perawatan',   'Jasa servis dan perawatan aset'),
-  ('OT', 'Operasional Toolkit',  'Kebutuhan khusus operasional');
+  ('PNG', 'Base Pangandaran',   'Headquarters & Main Engineering Base - Jawa Barat'),
+  ('HLP', 'Base Jakarta',        'Halim Perdanakusuma (HLP) - DKI Jakarta'),
+  ('KNO', 'Base Medan',          'Kualanamu / Medan - Sumatera Utara'),
+  ('PDG', 'Base Padang',         'Minangkabau - Sumatera Barat'),
+  ('PKU', 'Base Pekanbaru',      'Sultan Syarif Kasim II - Riau'),
+  ('SIQ', 'Base Dabo Singkep',   'Dabo Singkep - Kepulauan Riau'),
+  ('TRK', 'Base Tarakan',        'Juwata - Kalimantan Utara'),
+  ('LNU', 'Base Malinau',        'Kolonel Robert Atty Bessing - Kalimantan Utara'),
+  ('AAP', 'Base Samarinda',      'APT Pranoto - Kalimantan Timur'),
+  ('BDJ', 'Base Banjarmasin',    'Syamsudin Noor - Kalimantan Selatan'),
+  ('BPN', 'Base Balikpapan',     'Sultan Aji Muhammad Sulaiman Sepinggan - Kalimantan Timur'),
+  ('MXB', 'Base Masamba',        'Andi Djemma - Sulawesi Selatan'),
+  ('MDC', 'Base Manado',         'Sam Ratulangi - Sulawesi Utara'),
+  ('KOE', 'Base Kupang',         'El Tari - Nusa Tenggara Timur'),
+  ('TTE', 'Base Ternate',        'Sultan Babullah - Maluku Utara'),
+  ('AMQ', 'Base Ambon',          'Pattimura - Maluku'),
+  ('SOQ', 'Base Sorong',         'Domine Eduard Osok - Papua Barat Daya'),
+  ('MKW', 'Base Manokwari',      'Rendani - Papua Barat'),
+  ('BIK', 'Base Biak',           'Frans Kaisiepo - Papua'),
+  ('NBX', 'Base Nabire',         'Douw Aturure - Papua Tengah'),
+  ('TIM', 'Base Timika',         'Mozes Kilangin - Papua Tengah'),
+  ('DJJ', 'Base Sentani',        'Sentani / Jayapura - Papua'),
+  ('WMX', 'Base Wamena',         'Wamena - Papua Pegunungan'),
+  ('DEX', 'Base Dekai',          'Nop Goliat Dekai - Papua Pegunungan'),
+  ('MKQ', 'Base Merauke',        'Mopah - Papua Selatan');
 
 INSERT INTO requests (kode, nama, department_id, keterangan)
 SELECT 'REQ-GA-001', 'Pengadaan ATK GA', d.id, 'ATK untuk kebutuhan GA'
@@ -68,12 +89,20 @@ SELECT 'REQ-OPS-001', 'Perlengkapan Operasional', d.id, 'Kebutuhan lapangan'
 FROM department d WHERE d.kode = 'OPS';
 
 INSERT INTO request_base (kode, nama, jabatan, base_id, keterangan)
-SELECT 'RB-001', 'Pengadaan Komputer', 'GA Officer', b.id, 'Unit kerja untuk request komputer'
-FROM base b WHERE b.kode = 'PK';
+SELECT 'RB-PNG-01', 'Operasional Kantor Pusat', 'GA Officer', b.id, 'Kebutuhan umum Head Office Pangandaran'
+FROM base b WHERE b.kode = 'PNG';
 
 INSERT INTO request_base (kode, nama, jabatan, base_id, keterangan)
-SELECT 'RB-002', 'Servis AC Ruangan', 'Maintenance Lead', b.id, 'Request perawatan AC'
-FROM base b WHERE b.kode = 'SR';
+SELECT 'RB-HLP-01', 'Ground Handling & Operasional', 'Station Manager', b.id, 'Kebutuhan operasional Base Halim'
+FROM base b WHERE b.kode = 'HLP';
+
+INSERT INTO request_base (kode, nama, jabatan, base_id, keterangan)
+SELECT 'RB-TIM-01', 'Flight Ops & Maintenance', 'Base Coordinator', b.id, 'Kebutuhan operasional pangkalan Timika'
+FROM base b WHERE b.kode = 'TIM';
+
+INSERT INTO request_base (kode, nama, jabatan, base_id, keterangan)
+SELECT 'RB-DJJ-01', 'Perintis & Kargo Papua', 'Operations Officer', b.id, 'Kebutuhan pangkalan Sentani Jayapura'
+FROM base b WHERE b.kode = 'DJJ';
 
 -- Mode online -> wajib link, nama_toko harus NULL
 INSERT INTO sources (source, nama_barang, nama_toko, link_pembelian, keterangan) VALUES
