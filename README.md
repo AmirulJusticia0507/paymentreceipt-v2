@@ -220,6 +220,7 @@ cd backend && DB_URL=... go run ./cmd/migrate down -steps 1   # rollback 1 versi
 ```
 
 Deploy, rollback, dan troubleshooting produksi: [docs/runbook-deploy.md](docs/runbook-deploy.md).
+Deploy frontend ke Vercel (PWA ready): repo sudah dilengkapi `vercel.json` dan dukungan Progressive Web App (manifest + service worker).
 Skema log & agregator: [docs/logging.md](docs/logging.md).
 Referensi endpoint API: [docs/api.md](docs/api.md).
 Petunjuk pengguna: [docs/user-guide.md](docs/user-guide.md).
