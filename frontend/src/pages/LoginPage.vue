@@ -13,7 +13,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useForm, useField } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import { z } from 'zod'
-import { AlertCircle, Loader2, Eye, EyeOff, LogIn } from 'lucide-vue-next'
+import { AlertCircle, Loader2, Eye, EyeOff } from 'lucide-vue-next'
 
 import { useAuthStore } from '@/stores/auth'
 import { ApiError } from '@/lib/http'
@@ -107,13 +107,15 @@ const isDemo = import.meta.env.DEV
     <div class="w-full max-w-sm">
       <!-- Brand -->
       <div class="mb-8 text-center">
-        <div
-          class="mx-auto mb-4 flex size-12 items-center justify-center rounded-xl bg-brand-600 text-white shadow-sm"
-        >
-          <LogIn class="size-6" aria-hidden="true" />
+        <div class="mx-auto mb-4 inline-flex items-center justify-center rounded-2xl bg-white p-3 shadow-xs border border-default">
+          <img
+            src="/susi-air-logo.png"
+            alt="Susi Air Logo"
+            class="h-10 w-auto object-contain"
+          />
         </div>
-        <h1 class="text-xl font-semibold tracking-tight text-ink">Payment Receipt</h1>
-        <p class="mt-1 text-sm text-ink-muted">Sistem Purchase Requisition</p>
+        <h1 class="text-xl font-bold tracking-tight text-ink">Payment Receipt</h1>
+        <p class="mt-1 text-sm text-ink-muted">PT. Asi Pudjiastuti Aviation · General Affairs</p>
       </div>
 
       <!-- Card -->

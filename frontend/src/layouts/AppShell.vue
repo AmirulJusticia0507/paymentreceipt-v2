@@ -9,7 +9,6 @@
 import { computed, ref, watch } from 'vue'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import {
-  BarChart3,
   FileText,
   FolderTree,
   LayoutDashboard,
@@ -160,13 +159,17 @@ const roleLabel: Record<UserRole, string> = {
       aria-label="Navigasi utama"
     >
       <!-- Brand -->
-      <div class="flex h-16 shrink-0 items-center gap-2.5 border-b border-default px-5">
-        <div class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-brand-600 text-white">
-          <BarChart3 class="size-4" aria-hidden="true" />
+      <div class="flex h-16 shrink-0 items-center gap-2.5 border-b border-default px-4">
+        <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white p-1 shadow-2xs border border-default">
+          <img
+            src="/susi-air-logo.png"
+            alt="Logo Susi Air"
+            class="h-full w-full object-contain"
+          />
         </div>
         <div v-if="!collapsed" class="min-w-0">
-          <p class="truncate text-sm font-semibold text-ink">Payment Receipt</p>
-          <p class="truncate text-xs text-ink-muted">General Affairs</p>
+          <p class="truncate text-sm font-bold text-ink">Payment Receipt</p>
+          <p class="truncate text-xs font-medium text-brand-600">Susi Air · GA</p>
         </div>
         <button
           type="button"
