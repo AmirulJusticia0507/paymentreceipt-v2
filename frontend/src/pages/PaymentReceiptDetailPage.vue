@@ -106,6 +106,12 @@ const approveStatus = computed<string | null>(() =>
   nextStatuses.value.find(s => s !== 'cancelled') ?? null,
 )
 
+/** Nama staf GA yang memverifikasi dari riwayat status. */
+const gaVerifierName = computed<string | null>(() => {
+  const item = history.value.find(h => h.to_status === 'checked' || h.to_status === 'processed')
+  return item?.changed_by_nama || null
+})
+
 /** Apakah cancelled tersedia dari status saat ini. */
 const canCancel = computed<boolean>(() =>
   nextStatuses.value.includes('cancelled'),
@@ -187,6 +193,7 @@ async function changeStatus(newStatus: string): Promise<void> {
     // Reload history setelah update status
     const resH = await requestWithMeta<StatusHistory[]>(`/api/v1/payment-receipts/${receipt.value.id}/status-history`)
     history.value = resH.data ?? []
+    await loadPdf()
     toast.value = {
       kind: 'success',
       title: isCancelling ? 'Dokumen dibatalkan' : 'Status diperbarui',
@@ -348,22 +355,31 @@ function goBack(): void {
 
         <!-- Blok TTD (Tanda Tangan) -->
         <div class="card rounded-xl border border-default p-4 space-y-3">
-          <h2 class="text-sm font-semibold text-ink">Tanda Tangan Dokumen</h2>
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-semibold text-ink">Tanda Tangan Dokumen</h2>
+            <span class="text-[11px] text-ink-muted">Sesuai format PDF</span>
+          </div>
           <div class="grid grid-cols-3 gap-2 text-xs text-center">
-            <div class="rounded-lg border border-dashed border-default p-3">
-              <p class="text-ink-muted">User</p>
-              <div class="mt-3 mb-1 h-px w-full bg-default"></div>
-              <p class="text-ink font-medium">{{ receipt?.department_nama || '—' }}</p>
+            <div class="rounded-lg border border-dashed border-default p-2.5">
+              <p class="text-[11px] text-ink-muted font-medium">Diajukan oleh:</p>
+              <p class="text-[10px] text-ink-muted">User / Pemohon</p>
+              <div class="my-3 h-px w-full bg-default"></div>
+              <p class="text-ink font-semibold truncate">{{ receipt?.department_nama || '—' }}</p>
+              <p class="text-[10px] text-ink-muted mt-0.5">Pemohon</p>
             </div>
-            <div class="rounded-lg border border-dashed border-brand-500/40 bg-brand-500/5 p-3">
-              <p class="text-ink-muted">General Affairs</p>
-              <div class="mt-3 mb-1 h-px w-full bg-brand-200"></div>
-              <p class="text-ink font-medium">GA Department</p>
+            <div class="rounded-lg border border-dashed border-brand-500/40 bg-brand-500/5 p-2.5">
+              <p class="text-[11px] text-brand-600 font-medium">Diperiksa oleh:</p>
+              <p class="text-[10px] text-ink-muted">General Affairs</p>
+              <div class="my-3 h-px w-full bg-brand-200"></div>
+              <p class="text-ink font-semibold truncate">{{ gaVerifierName || '( Menunggu GA )' }}</p>
+              <p class="text-[10px] text-ink-muted mt-0.5">GA Department</p>
             </div>
-            <div class="rounded-lg border border-dashed border-default p-3">
-              <p class="text-ink-muted">Dir. Operasional</p>
-              <div class="mt-3 mb-1 h-px w-full bg-default"></div>
-              <p class="text-ink font-medium text-[10px] leading-tight">Geoffrey Meyssonier</p>
+            <div class="rounded-lg border border-dashed border-default p-2.5">
+              <p class="text-[11px] text-ink-muted font-medium">Disetujui oleh:</p>
+              <p class="text-[10px] text-ink-muted">Dir. Operasional</p>
+              <div class="my-3 h-px w-full bg-default"></div>
+              <p class="text-ink font-semibold truncate">Geoffrey Meyssonier</p>
+              <p class="text-[10px] text-ink-muted mt-0.5">Direktur Operasional</p>
             </div>
           </div>
           <p class="text-[10px] text-ink-muted">

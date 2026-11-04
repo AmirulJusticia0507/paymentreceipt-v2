@@ -129,6 +129,21 @@ func (h *paymentReceiptHandler) pdf(w http.ResponseWriter, r *http.Request) {
 		httputil.Problemf(w, r, err)
 		return
 	}
+
+	// Ambil riwayat status untuk otomatis mengisi nama staf GA yang memeriksa / memproses
+	history, _ := h.service.StatusHistory(r.Context(), id)
+	var gaNama string
+	approverNama := "Geoffrey Meyssonier"
+	for _, hItem := range history {
+		if (hItem.ToStatus == "checked" || hItem.ToStatus == "processed") && gaNama == "" && hItem.ChangedByNama != "" {
+			gaNama = hItem.ChangedByNama
+		}
+	}
+	if qGA := strings.TrimSpace(r.URL.Query().Get("ga_nama")); qGA != "" {
+		gaNama = qGA
+	}
+	userNama := strings.TrimSpace(r.URL.Query().Get("user_nama"))
+
 	data := pdf.ReceiptData{
 		Kode:             item.Kode,
 		DepartmentKode:   item.DepartmentKode,
@@ -145,6 +160,9 @@ func (h *paymentReceiptHandler) pdf(w http.ResponseWriter, r *http.Request) {
 		Usage:            item.Usage,
 		Keterangan:       item.Keterangan,
 		TanggalPembelian: item.TanggalPembelian,
+		UserNama:         userNama,
+		GANama:           gaNama,
+		ApproverNama:     approverNama,
 	}
 	buf, err := pdf.RenderReceipt(data)
 	if err != nil {
