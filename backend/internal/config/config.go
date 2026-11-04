@@ -128,6 +128,7 @@ type AIConfig struct {
 // Nilai dibaca dari OS environment. Untuk pengembangan lokal, gunakan godotenv
 // style loader di cmd/api atau set manual lewat `set` di shell.
 func Load() (*Config, error) {
+	loadDotEnv()
 	cfg := &Config{
 		App: AppConfig{
 			Env:            getEnv("APP_ENV", "development"),
