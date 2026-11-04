@@ -452,22 +452,22 @@ function openDetail(item: any): void {
 
         <div class="relative">
           <label class="block text-sm font-medium text-ink">Tanggal Pembelian <span class="text-status-cancelled" aria-hidden="true">*</span></label>
-          <input v-model="editing.tanggal_pembelian" type="date" class="block w-full rounded-lg border bg-raised px-3 py-2 text-sm text-ink transition-[var(--transition-fast)] focus:ring-2 focus:outline-none focus:border-brand-500 focus:ring-brand-500/20" />
+          <input v-model="editing.tanggal_pembelian" type="date" class="block w-full rounded-lg border bg-raised px-3 py-2 text-sm text-ink transition-(--transition-fast) focus:ring-2 focus:outline-none focus:border-brand-500 focus:ring-brand-500/20" />
         </div>
 
         <div class="relative">
           <label class="block text-sm font-medium text-ink">Deskripsi Item <span class="text-status-cancelled" aria-hidden="true">*</span></label>
-          <input v-model="editing.deskripsi_items" type="text" maxlength="255" class="block w-full rounded-lg border bg-raised px-3 py-2 text-sm text-ink transition-[var(--transition-fast)] focus:ring-2 focus:outline-none focus:border-brand-500 focus:ring-brand-500/20" />
+          <input v-model="editing.deskripsi_items" type="text" maxlength="255" class="block w-full rounded-lg border bg-raised px-3 py-2 text-sm text-ink transition-(--transition-fast) focus:ring-2 focus:outline-none focus:border-brand-500 focus:ring-brand-500/20" />
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div class="relative">
             <label class="block text-sm font-medium text-ink">Jumlah</label>
-            <input v-model.number="editing.jumlah_items" type="number" min="1" class="block w-full rounded-lg border bg-raised px-3 py-2 text-sm text-ink transition-[var(--transition-fast)] focus:ring-2 focus:outline-none focus:border-brand-500 focus:ring-brand-500/20" />
+            <input v-model.number="editing.jumlah_items" type="number" min="1" class="block w-full rounded-lg border bg-raised px-3 py-2 text-sm text-ink transition-(--transition-fast) focus:ring-2 focus:outline-none focus:border-brand-500 focus:ring-brand-500/20" />
           </div>
           <div class="relative">
             <label class="block text-sm font-medium text-ink">Harga</label>
-            <input v-model="editing.harga_items" type="text" class="block w-full rounded-lg border bg-raised px-3 py-2 text-sm text-ink transition-[var(--transition-fast)] focus:ring-2 focus:outline-none focus:border-brand-500 focus:ring-brand-500/20" />
+            <input v-model="editing.harga_items" type="text" class="block w-full rounded-lg border bg-raised px-3 py-2 text-sm text-ink transition-(--transition-fast) focus:ring-2 focus:outline-none focus:border-brand-500 focus:ring-brand-500/20" />
           </div>
         </div>
 
@@ -477,12 +477,12 @@ function openDetail(item: any): void {
 
         <div class="relative">
           <label class="block text-sm font-medium text-ink">Usage</label>
-          <input v-model="editing.usage" type="text" maxlength="150" placeholder="Opsional" class="block w-full rounded-lg border bg-raised px-3 py-2 text-sm text-ink transition-[var(--transition-fast)] focus:ring-2 focus:outline-none focus:border-brand-500 focus:ring-brand-500/20" />
+          <input v-model="editing.usage" type="text" maxlength="150" placeholder="Opsional" class="block w-full rounded-lg border bg-raised px-3 py-2 text-sm text-ink transition-(--transition-fast) focus:ring-2 focus:outline-none focus:border-brand-500 focus:ring-brand-500/20" />
         </div>
 
         <div class="relative">
           <label class="block text-sm font-medium text-ink">Keterangan</label>
-          <textarea v-model="editing.keterangan" class="block w-full rounded-lg border bg-raised px-3 py-2 text-sm text-ink transition-[var(--transition-fast)] focus:ring-2 focus:outline-none focus:border-brand-500 focus:ring-brand-500/20" />
+          <textarea v-model="editing.keterangan" class="block w-full rounded-lg border bg-raised px-3 py-2 text-sm text-ink transition-(--transition-fast) focus:ring-2 focus:outline-none focus:border-brand-500 focus:ring-brand-500/20" />
         </div>
       </div>
       <template #footer>
