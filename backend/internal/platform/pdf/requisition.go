@@ -37,19 +37,21 @@ type ReceiptData struct {
 }
 
 // RenderRequisition menghasilkan PDF Purchase Requisition ke writer fpdf.
-// Layout: header perusahaan resmi, judul terpisah, info pemohon dua kolom sejajar,
-// tabel item tunggal, total, dan blok tanda tangan tiga kolom dengan jeda 5-space.
+// Layout: header perusahaan resmi, judul terpisah dengan jeda 3 spasi yang rapi,
+// info pemohon dua kolom sejajar, tabel item tunggal, total, dan blok tanda tangan tiga kolom.
 func RenderRequisition(pdf *gofpdf.Fpdf, data ReceiptData) {
 	// 1. Header perusahaan resmi
 	drawHeader(pdf)
 
-	// 2. Judul dokumen rapi dan terpisah jelas di bawah garis pembatas
-	titleY := pdf.GetY() + 2
+	// 2. Judul dokumen diturunkan dengan jeda yang lega agar tidak menutupi garis header
+	titleY := pdf.GetY() + 6
 	centerText(pdf, titleY, "PURCHASE REQUISITION", 14, true)
-	pdf.SetY(titleY + 10)
 
-	// 3. Blok info pemohon (dua kolom rapi dan sejajar)
-	infoY := pdf.GetY()
+	// 3. Jeda 3 space line (~15mm) setelah judul agar dokumen terlihat lega dan rapi
+	infoY := titleY + 16
+	pdf.SetY(infoY)
+
+	// 4. Blok info pemohon (dua kolom rapi dan sejajar)
 	colMid := marginLeft + 95.0
 
 	// Kolom kiri
@@ -78,10 +80,10 @@ func RenderRequisition(pdf *gofpdf.Fpdf, data ReceiptData) {
 
 	pdf.SetY(infoY + 22)
 
-	// 4. Tabel item
+	// 5. Tabel item
 	drawItemTable(pdf, data)
 
-	// 5. Usage / Keterangan catatan tambahan
+	// 6. Usage / Keterangan catatan tambahan
 	if data.Usage != "" || data.Keterangan != "" {
 		noteY := pdf.GetY() + 3
 		pdf.SetFont("Helvetica", "I", 8.5)
@@ -99,7 +101,7 @@ func RenderRequisition(pdf *gofpdf.Fpdf, data ReceiptData) {
 		pdf.CellFormat(pageWidth-marginLeft-marginRight, 5, note, "", 1, "L", false, 0, "")
 	}
 
-	// 6. Blok tanda tangan 3 kolom dengan jeda 5-space dan nama penandatangan
+	// 7. Blok tanda tangan 3 kolom dengan jeda 5-space dan nama penandatangan
 	drawSignaturesWithData(pdf, data)
 }
 
@@ -112,13 +114,14 @@ func drawHeader(pdf *gofpdf.Fpdf) {
 	// Garis ganda pembatas header resmi
 	pdf.SetDrawColor(30, 30, 30)
 	pdf.SetLineWidth(0.6)
-	pdf.Line(marginLeft, y+17.5, pageWidth-marginRight, y+17.5)
+	pdf.Line(marginLeft, y+18, pageWidth-marginRight, y+18)
 	pdf.SetLineWidth(0.2)
-	pdf.Line(marginLeft, y+18.5, pageWidth-marginRight, y+18.5)
+	pdf.Line(marginLeft, y+19, pageWidth-marginRight, y+19)
 	pdf.SetLineWidth(0.2)
 	pdf.SetDrawColor(0, 0, 0)
 
-	pdf.SetY(y + 21)
+	// Berikan jarak pemisah yang cukup setelah garis ganda pembatas header
+	pdf.SetY(y + 24)
 }
 
 func infoPair(pdf *gofpdf.Fpdf, label, value string, x, y float64) {
