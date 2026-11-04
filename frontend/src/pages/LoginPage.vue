@@ -75,7 +75,14 @@ function onSubmit(values: { username: string; password: string }) {
             mapped = true
           }
         }
-        if (!mapped) formError.value = err.message
+        if (!mapped) {
+          if (err.status === 404) {
+            formError.value =
+              'Server API backend belum aktif di domain ini (404 Not Found). Untuk mencoba aplikasi, jalankan backend Go secara lokal (localhost:5173) atau hubungkan ke backend cloud.'
+          } else {
+            formError.value = err.message
+          }
+        }
       } else if (err instanceof TypeError) {
         formError.value = 'Tidak bisa menghubungi server API. Pastikan server backend sedang aktif.'
       } else {
@@ -90,7 +97,9 @@ function fillDemoAccount(user: string, pass: string): void {
   password.value = pass
 }
 
-const isDemo = import.meta.env.DEV
+const isDemo =
+  import.meta.env.DEV ||
+  (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app'))
 </script>
 
 <template>
