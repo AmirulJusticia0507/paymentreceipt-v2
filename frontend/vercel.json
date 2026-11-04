@@ -5,11 +5,11 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://oaks-football-compute-pressing.trycloudflare.com/api/$1"
+      "destination": "https://hollow-recommended-mod-badly.trycloudflare.com/api/$1"
     },
     {
       "source": "/healthz",
-      "destination": "https://oaks-football-compute-pressing.trycloudflare.com/healthz"
+      "destination": "https://hollow-recommended-mod-badly.trycloudflare.com/healthz"
     },
     {
       "source": "/(.*)",
