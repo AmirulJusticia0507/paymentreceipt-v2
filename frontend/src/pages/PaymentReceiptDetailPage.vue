@@ -1,14 +1,14 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 /**
  * Halaman review & persetujuan Payment Receipt untuk Approver / GA Staff.
  *
  * Layout dua kolom:
- *  - Kiri  : embedded PDF viewer (iframe → /api/v1/payment-receipts/:id/pdf)
+ *  - Kiri  : embedded PDF viewer (iframe â†’ /api/v1/payment-receipts/:id/pdf)
  *            dengan fallback tombol unduh jika browser memblokir iframe PDF.
  *  - Kanan : panel info + riwayat status + input catatan + tombol approve/tolak.
  *
  * Hanya user dengan role admin, ga_staff, atau approver yang melihat
- * tombol aksi — viewer hanya bisa membaca PDF.
+ * tombol aksi â€” viewer hanya bisa membaca PDF.
  */
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -27,7 +27,7 @@ import ToastNotification from '@/components/ui/ToastNotification.vue'
 import { requestWithMeta } from '@/lib/http'
 import { useAuthStore } from '@/stores/auth'
 
-// ─── types ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface Receipt {
   id: number
@@ -60,7 +60,7 @@ interface StatusHistory {
   created_at: string
 }
 
-// ─── legal transitions (sama dengan domain backend) ────────────────────────
+// â”€â”€â”€ legal transitions (sama dengan domain backend) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const NEXT_STATUS: Record<string, string[]> = {
   pending:   ['checked'],
@@ -72,12 +72,12 @@ const NEXT_STATUS: Record<string, string[]> = {
 
 /** Label tombol approve per transisi. */
 const APPROVE_LABEL: Record<string, string> = {
-  checked:   'Setujui (→ Checked)',
-  processed: 'Proses (→ Processed)',
-  finished:  'Selesaikan (→ Finished)',
+  checked:   'Setujui (â†’ Checked)',
+  processed: 'Proses (â†’ Processed)',
+  finished:  'Selesaikan (â†’ Finished)',
 }
 
-// ─── state ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const route  = useRoute()
 const router = useRouter()
@@ -117,7 +117,7 @@ const canCancel = computed<boolean>(() =>
   nextStatuses.value.includes('cancelled'),
 )
 
-// ─── helpers ───────────────────────────────────────────────────────────────
+// â”€â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function formatRupiah(val: string | number | undefined | null): string {
   if (!val) return 'Rp 0'
@@ -139,7 +139,7 @@ function formatDateTime(iso: string | undefined | null): string {
   })
 }
 
-// ─── load data ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ load data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function load(): Promise<void> {
   const id = route.params.id as string
@@ -175,7 +175,7 @@ onMounted(async () => {
   await Promise.all([load(), loadPdf()])
 })
 
-// ─── actions ───────────────────────────────────────────────────────────────
+// â”€â”€â”€ actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function changeStatus(newStatus: string): Promise<void> {
   if (!receipt.value) return
@@ -223,7 +223,7 @@ function goBack(): void {
 
 <template>
   <div class="space-y-4">
-    <!-- ── Top bar ───────────────────────────────────────────────────────── -->
+    <!-- â”€â”€ Top bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     <div class="flex flex-wrap items-start justify-between gap-3">
       <div class="flex items-center gap-3">
         <button
@@ -244,7 +244,7 @@ function goBack(): void {
             </Badge>
           </div>
           <p class="mt-0.5 text-xs text-ink-muted">
-            {{ receipt?.department_nama }} · {{ receipt?.request_kode }} {{ receipt?.request_nama }}
+            {{ receipt?.department_nama }} Â· {{ receipt?.request_kode }} {{ receipt?.request_nama }}
           </p>
         </div>
       </div>
@@ -266,7 +266,7 @@ function goBack(): void {
       </div>
     </div>
 
-    <!-- ── Main layout: PDF kiri, panel kanan ───────────────────────────── -->
+    <!-- â”€â”€ Main layout: PDF kiri, panel kanan â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_380px]">
 
       <!-- PDF Viewer -->
@@ -274,16 +274,16 @@ function goBack(): void {
         <!-- Loading -->
         <div
           v-if="pdfLoading"
-          class="flex h-[650px] flex-col items-center justify-center gap-3 text-ink-muted"
+          class="flex h-162.5 flex-col items-center justify-center gap-3 text-ink-muted"
         >
           <Loader2 class="size-8 animate-spin text-brand-500" aria-hidden="true" />
-          <span class="text-sm">Memuat dokumen PDF…</span>
+          <span class="text-sm">Memuat dokumen PDFâ€¦</span>
         </div>
 
         <!-- Error fallback -->
         <div
           v-else-if="pdfError"
-          class="flex h-[650px] flex-col items-center justify-center gap-3 p-6 text-center"
+          class="flex h-162.5 flex-col items-center justify-center gap-3 p-6 text-center"
         >
           <p class="text-sm font-medium text-ink">Gagal memuat PDF di browser</p>
           <p class="text-xs text-ink-muted">
@@ -299,7 +299,7 @@ function goBack(): void {
         <iframe
           v-else-if="pdfBlobUrl"
           :src="pdfBlobUrl"
-          class="h-[650px] w-full"
+          class="h-162.5 w-full"
           title="Dokumen Purchase Requisition"
           aria-label="Pratinjau dokumen PDF Purchase Requisition"
         />
@@ -364,7 +364,7 @@ function goBack(): void {
               <p class="text-[11px] text-ink-muted font-medium">Diajukan oleh:</p>
               <p class="text-[10px] text-ink-muted">User / Pemohon</p>
               <div class="my-3 h-px w-full bg-default"></div>
-              <p class="text-ink font-semibold truncate">{{ receipt?.department_nama || '—' }}</p>
+              <p class="text-ink font-semibold truncate">{{ receipt?.department_nama || 'â€”' }}</p>
               <p class="text-[10px] text-ink-muted mt-0.5">Pemohon</p>
             </div>
             <div class="rounded-lg border border-dashed border-brand-500/40 bg-brand-500/5 p-2.5">
@@ -400,11 +400,11 @@ function goBack(): void {
               <div class="min-w-0">
                 <p class="text-ink">
                   <span class="font-medium">{{ h.from_status ?? '(baru)' }}</span>
-                  <span class="mx-1 text-ink-muted">→</span>
+                  <span class="mx-1 text-ink-muted">â†’</span>
                   <Badge :variant="(h.to_status as any)" class="text-[10px]">{{ h.to_status }}</Badge>
                 </p>
                 <p class="text-ink-muted mt-0.5">
-                  {{ h.changed_by_nama }} · {{ formatDateTime(h.created_at) }}
+                  {{ h.changed_by_nama }} Â· {{ formatDateTime(h.created_at) }}
                 </p>
                 <p v-if="h.note" class="text-ink mt-0.5 italic">{{ h.note }}</p>
               </div>
@@ -429,8 +429,8 @@ function goBack(): void {
               id="catatan-approval"
               v-model="catatan"
               rows="3"
-              placeholder="Tambahkan catatan persetujuan atau alasan penolakan…"
-              class="block w-full rounded-lg border border-default bg-raised px-3 py-2 text-sm text-ink placeholder:text-ink-muted focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none resize-none transition-[var(--transition-fast)] disabled:opacity-60"
+              placeholder="Tambahkan catatan persetujuan atau alasan penolakanâ€¦"
+              class="block w-full rounded-lg border border-default bg-raised px-3 py-2 text-sm text-ink placeholder:text-ink-muted focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none resize-none transition-(--transition-fast) disabled:opacity-60"
               :disabled="approving || cancelling"
             />
           </div>
@@ -448,7 +448,7 @@ function goBack(): void {
               <template #icon>
                 <CheckCircle class="size-4" aria-hidden="true" />
               </template>
-              {{ APPROVE_LABEL[approveStatus] ?? `Setujui (→ ${approveStatus})` }}
+              {{ APPROVE_LABEL[approveStatus] ?? `Setujui (â†’ ${approveStatus})` }}
             </BaseButton>
 
             <!-- Tolak / batalkan -->
