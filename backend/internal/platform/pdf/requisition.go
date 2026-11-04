@@ -42,19 +42,19 @@ type ReceiptData struct {
 
 // RenderRequisition menghasilkan PDF Purchase Requisition ke writer fpdf.
 // Layout: header resmi (Logo Susi Air + PT. ASI PUDJIASTUTI AVIATION + garis ganda pembatas),
-// judul PURCHASE REQUISITION terpisah dengan jeda 3 spasi yang rapi,
+// judul PURCHASE REQUISITION terpisah jelas di bawah garis pembatas dengan jeda 3 spasi yang rapi,
 // blok info pemohon dua kolom rapi (No, Department, Request, To, Date, Received by),
 // tabel item tunggal, total, dan blok tanda tangan tiga kolom (5-space break).
 func RenderRequisition(pdf *gofpdf.Fpdf, data ReceiptData) {
 	// 1. Header perusahaan resmi (Logo Susi Air + Kop surat + Garis pembatas ganda)
 	drawHeader(pdf)
 
-	// 2. Judul dokumen di bawah garis pembatas header
-	titleY := pdf.GetY()
+	// 2. Judul dokumen jelas di bawah garis pembatas header dengan jarak lega
+	titleY := pdf.GetY() + 8.0
 	centerText(pdf, titleY, "PURCHASE REQUISITION", 14, true)
 
 	// 3. Jeda 3 space line (~16mm) setelah judul agar dokumen terlihat lega dan rapi
-	infoY := titleY + 16
+	infoY := titleY + 16.0
 	pdf.SetY(infoY)
 
 	// 4. Blok info pemohon (dua kolom rapi dan sejajar)
@@ -86,7 +86,7 @@ func RenderRequisition(pdf *gofpdf.Fpdf, data ReceiptData) {
 	}
 	infoPair(pdf, "Received by", receivedBy, colMid, infoY+12)
 
-	pdf.SetY(infoY + 22)
+	pdf.SetY(infoY + 22.0)
 
 	// 5. Tabel item
 	drawItemTable(pdf, data)
@@ -131,7 +131,7 @@ func drawHeader(pdf *gofpdf.Fpdf) {
 	centerText(pdf, y+11, "General Affairs Department", 9.5, true)
 
 	// Garis ganda pembatas header resmi
-	yLine := y + 18.0
+	yLine := y + 19.0
 	pdf.SetDrawColor(30, 30, 30)
 	pdf.SetLineWidth(0.6)
 	pdf.Line(marginLeft, yLine, pageWidth-marginRight, yLine)
@@ -140,8 +140,8 @@ func drawHeader(pdf *gofpdf.Fpdf) {
 	pdf.SetLineWidth(0.2)
 	pdf.SetDrawColor(0, 0, 0)
 
-	// Jarak pemisah ke judul dokumen setelah garis ganda pembatas
-	pdf.SetY(yLine + 7.0)
+	// Titik Y tepat di bawah garis pembatas kop surat
+	pdf.SetY(yLine + 2.0)
 }
 
 func infoPair(pdf *gofpdf.Fpdf, label, value string, x, y float64) {
