@@ -4,6 +4,14 @@
   "cleanUrls": true,
   "rewrites": [
     {
+      "source": "/api/(.*)",
+      "destination": "https://oaks-football-compute-pressing.trycloudflare.com/api/$1"
+    },
+    {
+      "source": "/healthz",
+      "destination": "https://oaks-football-compute-pressing.trycloudflare.com/healthz"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

@@ -34,6 +34,18 @@ func CORS(appCfg config.AppConfig) func(http.Handler) http.Handler {
 		}
 	}
 
+	isAllowedOrigin := func(o string) bool {
+		if allowed[o] {
+			return true
+		}
+		if appCfg.IsDevelopment() {
+			if strings.HasSuffix(o, ".vercel.app") || strings.HasSuffix(o, ".trycloudflare.com") {
+				return true
+			}
+		}
+		return false
+	}
+
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			origin := r.Header.Get("Origin")
@@ -43,7 +55,7 @@ func CORS(appCfg config.AppConfig) func(http.Handler) http.Handler {
 			w.Header().Add("Vary", "Origin")
 
 			if origin != "" {
-				if allowed[origin] {
+				if isAllowedOrigin(origin) {
 					w.Header().Set("Access-Control-Allow-Origin", origin)
 					w.Header().Set("Access-Control-Allow-Credentials", "true")
 					w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
