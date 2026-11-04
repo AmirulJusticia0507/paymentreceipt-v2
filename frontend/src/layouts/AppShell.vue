@@ -139,6 +139,7 @@ const roleLabel: Record<UserRole, string> = {
   ga_staff: 'General Affairs',
   approver: 'Approver',
   viewer: 'Pengunjung',
+  requester: 'Requester (Pemohon)',
 }
 </script>
 

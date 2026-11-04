@@ -1,4 +1,4 @@
---
+﻿--
 -- PostgreSQL database dump
 --
 
@@ -79,7 +79,8 @@ CREATE TYPE public.user_role AS ENUM (
     'admin',
     'ga_staff',
     'approver',
-    'viewer'
+    'viewer',
+    'requester'
 );
 
 

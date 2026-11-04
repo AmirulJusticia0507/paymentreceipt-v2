@@ -47,10 +47,11 @@ func IdentityFrom(ctx context.Context) (Identity, bool) {
 
 // Nama role. Dipakai sebagai konstanta supaya tidak ada typo string.
 const (
-	RoleAdmin    = "admin"
-	RoleGAStaff  = "ga_staff"
-	RoleApprover = "approver"
-	RoleViewer   = "viewer"
+	RoleAdmin     = "admin"
+	RoleGAStaff   = "ga_staff"
+	RoleApprover  = "approver"
+	RoleViewer    = "viewer"
+	RoleRequester = "requester"
 )
 
 // Authenticator memverifikasi JWT pada setiap request.

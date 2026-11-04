@@ -82,6 +82,7 @@ type CreateInput struct {
 	HargaItems       string    `json:"harga_items"`
 	PriceEstimate    *string   `json:"price_estimate"`
 	Keterangan       string    `json:"keterangan"`
+	CreatedBy        int64     `json:"-"`
 }
 
 // ChangeStatusInput is the body for status transition.
@@ -183,6 +184,9 @@ func (s *Service) Create(ctx context.Context, in CreateInput) (Receipt, error) {
 	created, err := s.store.Create(ctx, in)
 	if err != nil {
 		return Receipt{}, err
+	}
+	if in.CreatedBy > 0 {
+		_ = s.store.InsertStatusHistory(ctx, created.ID, "", "pending", in.CreatedBy, "Pengajuan dibuat")
 	}
 	return created, nil
 }

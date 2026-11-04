@@ -17,7 +17,7 @@ export interface FieldProblem {
 }
 
 /** Peran pengguna..Values harus sama dengan enum user_role di database. */
-export type UserRole = 'admin' | 'ga_staff' | 'approver' | 'viewer'
+export type UserRole = 'admin' | 'ga_staff' | 'approver' | 'viewer' | 'requester'
 
 export interface User {
   id: number

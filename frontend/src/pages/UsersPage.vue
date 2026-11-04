@@ -37,6 +37,7 @@ const ROLE_LABELS: Record<AdminUser['role'], string> = {
   ga_staff: 'GA Staff',
   approver: 'Approver',
   viewer: 'Viewer',
+  requester: 'Requester (Pemohon)',
 }
 
 const queryClient = useQueryClient()

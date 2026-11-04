@@ -110,7 +110,25 @@ func (h *paymentReceiptHandler) create(w http.ResponseWriter, r *http.Request) {
 	if purchaseDate != nil {
 		date = *purchaseDate
 	}
-	item, err := h.service.Create(r.Context(), paymentreceipt.CreateInput{RequestID: body.RequestID, DepartmentID: body.DepartmentID, SourceID: body.SourceID, CategoryID: body.CategoryID, UnitID: body.UnitID, TanggalPembelian: date, Usage: body.Usage, DeskripsiItems: body.DeskripsiItems, JumlahItems: body.JumlahItems, HargaItems: body.HargaItems, PriceEstimate: body.PriceEstimate, Keterangan: body.Keterangan})
+	createdBy := int64(0)
+	if identity, ok := auth.IdentityFrom(r.Context()); ok {
+		createdBy = identity.UserID
+	}
+	item, err := h.service.Create(r.Context(), paymentreceipt.CreateInput{
+		RequestID:        body.RequestID,
+		DepartmentID:     body.DepartmentID,
+		SourceID:         body.SourceID,
+		CategoryID:       body.CategoryID,
+		UnitID:           body.UnitID,
+		TanggalPembelian: date,
+		Usage:            body.Usage,
+		DeskripsiItems:   body.DeskripsiItems,
+		JumlahItems:      body.JumlahItems,
+		HargaItems:       body.HargaItems,
+		PriceEstimate:    body.PriceEstimate,
+		Keterangan:       body.Keterangan,
+		CreatedBy:        createdBy,
+	})
 	if err != nil {
 		httputil.Problemf(w, r, err)
 		return
@@ -130,19 +148,25 @@ func (h *paymentReceiptHandler) pdf(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Ambil riwayat status untuk otomatis mengisi nama staf GA yang memeriksa / memproses
+	// Ambil riwayat status untuk otomatis mengisi nama staf GA yang memeriksa dan pemohon
 	history, _ := h.service.StatusHistory(r.Context(), id)
 	var gaNama string
+	var userNama string
 	approverNama := "Geoffrey Meyssonier"
 	for _, hItem := range history {
 		if (hItem.ToStatus == "checked" || hItem.ToStatus == "processed") && gaNama == "" && hItem.ChangedByNama != "" {
 			gaNama = hItem.ChangedByNama
 		}
+		if hItem.ToStatus == "pending" && userNama == "" && hItem.ChangedByNama != "" {
+			userNama = hItem.ChangedByNama
+		}
 	}
 	if qGA := strings.TrimSpace(r.URL.Query().Get("ga_nama")); qGA != "" {
 		gaNama = qGA
 	}
-	userNama := strings.TrimSpace(r.URL.Query().Get("user_nama"))
+	if qUser := strings.TrimSpace(r.URL.Query().Get("user_nama")); qUser != "" {
+		userNama = qUser
+	}
 
 	data := pdf.ReceiptData{
 		Kode:             item.Kode,
@@ -333,8 +357,8 @@ func mountPaymentReceipts(r chi.Router, a *auth.Authenticator, service *paymentr
 		r.Get("/{id}", h.get)
 		r.Get("/{id}/pdf", h.pdf)
 		r.Get("/{id}/status-history", h.statusHistory)
-		r.With(a.RequireRole(auth.RoleAdmin, auth.RoleGAStaff)).Post("/", h.create)
-		r.With(a.RequireRole(auth.RoleAdmin, auth.RoleGAStaff)).Put("/{id}", h.update)
+		r.With(a.RequireRole(auth.RoleAdmin, auth.RoleGAStaff, auth.RoleRequester)).Post("/", h.create)
+		r.With(a.RequireRole(auth.RoleAdmin, auth.RoleGAStaff, auth.RoleRequester)).Put("/{id}", h.update)
 		r.With(a.RequireRole(auth.RoleAdmin)).Delete("/{id}", h.delete)
 		r.With(a.RequireRole(auth.RoleAdmin, auth.RoleGAStaff, auth.RoleApprover)).Patch("/bulk-status", h.bulkStatus)
 		r.With(a.RequireRole(auth.RoleAdmin, auth.RoleGAStaff, auth.RoleApprover)).Patch("/{id}/status", h.changeStatus)

@@ -281,6 +281,14 @@ const isDemo =
             <p class="font-medium text-ink">viewer</p>
             <p class="text-[10px] text-ink-muted">approver123 (Viewer)</p>
           </button>
+          <button
+            type="button"
+            class="col-span-2 rounded-lg border border-default bg-surface/80 px-2 py-1.5 text-left transition-colors hover:bg-brand-50 hover:text-brand-700 dark:hover:bg-brand-950/50 dark:hover:text-brand-300"
+            @click="fillDemoAccount('requester', 'approver123')"
+          >
+            <p class="font-medium text-ink">requester</p>
+            <p class="text-[10px] text-ink-muted">approver123 (Pemohon PR Departemen)</p>
+          </button>
         </div>
       </div>
     </div>

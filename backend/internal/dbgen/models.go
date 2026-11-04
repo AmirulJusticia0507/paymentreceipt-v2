@@ -103,10 +103,11 @@ func (ns NullSourceType) Value() (driver.Value, error) {
 type UserRole string
 
 const (
-	UserRoleAdmin    UserRole = "admin"
-	UserRoleGaStaff  UserRole = "ga_staff"
-	UserRoleApprover UserRole = "approver"
-	UserRoleViewer   UserRole = "viewer"
+	UserRoleAdmin     UserRole = "admin"
+	UserRoleGaStaff   UserRole = "ga_staff"
+	UserRoleApprover  UserRole = "approver"
+	UserRoleViewer    UserRole = "viewer"
+	UserRoleRequester UserRole = "requester"
 )
 
 func (e *UserRole) Scan(src interface{}) error {

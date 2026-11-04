@@ -26,7 +26,10 @@ INSERT INTO users (username, email, password_hash, full_name, role) VALUES
    'Manajer Approver', 'approver'),
   ('viewer',   'viewer@asi-pudjiastuti-aviation.co.id',
    '$argon2id$v=19$m=19456,t=2,p=1$jtN84i07H0n2b2NPHdBmMA$cCoZsTMtwt+uBrFbjACy15ElO9NPL824eFY/wHf+Hjw',
-   'Pengunjung', 'viewer');
+   'Pengunjung', 'viewer'),
+  ('requester', 'requester@asi-pudjiastuti-aviation.co.id',
+   '$argon2id$v=19$m=19456,t=2,p=1$jtN84i07H0n2b2NPHdBmMA$cCoZsTMtwt+uBrFbjACy15ElO9NPL824eFY/wHf+Hjw',
+   'Staf Pemohon (Requester)', 'requester');
 
 -- ---------------------------------------------------------------------------
 -- Master data

@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { FileText, Pencil, Plus, Trash2 } from 'lucide-vue-next'
@@ -81,6 +81,7 @@ const statusChanging = ref<number | null>(null)
 const toast = ref<{ kind: 'success' | 'error' | 'info'; title: string; description?: string } | null>(null)
 
 const canManage = computed(() => auth.hasRole('admin', 'ga_staff'))
+const canCreate = computed(() => auth.hasRole('admin', 'ga_staff', 'requester'))
 
 
 async function loadOptions(): Promise<void> {
@@ -305,7 +306,7 @@ function openDetail(item: any): void {
         <h1 class="text-lg font-semibold tracking-tight text-ink">Payment Receipt</h1>
         <p class="mt-0.5 text-sm text-ink-muted">Transaksi pembelian General Affairs.</p>
       </div>
-      <BaseButton v-if="canManage" @click="openCreate()">
+      <BaseButton v-if="canCreate" @click="openCreate()">
         <template #icon><Plus class="size-4" aria-hidden="true" /></template>
         Tambah
       </BaseButton>
@@ -399,7 +400,7 @@ function openDetail(item: any): void {
           <button type="button" class="rounded-md p-1.5 text-ink-muted transition-colors hover:bg-default hover:text-brand-600" :aria-label="`Detail ${row.kode}`" @click="openDetail(row)">
             <FileText class="size-4" aria-hidden="true" />
           </button>
-          <button v-if="canManage" type="button" class="rounded-md p-1.5 text-ink-muted transition-colors hover:bg-default hover:text-brand-600" :aria-label="`Ubah ${row.kode}`" @click="openEdit(row)">
+          <button v-if="canManage || (auth.hasRole('requester') && row.status === 'pending')" type="button" class="rounded-md p-1.5 text-ink-muted transition-colors hover:bg-default hover:text-brand-600" :aria-label="`Ubah ${row.kode}`" @click="openEdit(row)">
             <Pencil class="size-4" aria-hidden="true" />
           </button>
           <button v-if="auth.hasRole('admin')" type="button" class="rounded-md p-1.5 text-ink-muted transition-colors hover:bg-status-cancelled/10 hover:text-status-cancelled" :aria-label="`Hapus ${row.kode}`" @click="askDelete(row)">

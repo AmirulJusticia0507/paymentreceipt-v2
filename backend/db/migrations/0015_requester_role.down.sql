@@ -1,0 +1,2 @@
+-- 0015_requester_role.down.sql
+-- PostgreSQL enum values cannot be dropped directly without recreating the type.
