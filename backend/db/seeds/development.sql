@@ -32,26 +32,32 @@ INSERT INTO users (username, email, password_hash, full_name, role) VALUES
 -- Master data
 -- ---------------------------------------------------------------------------
 INSERT INTO department (kode, nama, keterangan) VALUES
-  ('GA',    'General Affairs', 'Bagian umum'),
-  ('OPS',   'Operations',      'Operasional'),
-  ('ENG',   'Engineering',     'Teknik'),
-  ('FIN',   'Finance',         'Keuangan'),
-  ('HRD',   'Human Resources', 'Sumber daya manusia'),
-  ('SEC',   'Security',        'Keamanan');
+  ('GA',    'General Affairs',                'Bagian umum, fasilitas kantor, rumah tangga & aset pangkalan'),
+  ('OPS',   'Flight & Ground Operations',     'Operasional penerbangan, dispatch, pangkalan & ground handling'),
+  ('ENG',   'Maintenance & Engineering',      'Perawatan armada pesawat, teknisi, avionik & hanggar MRO'),
+  ('FIN',   'Finance & Accounting',           'Keuangan, kasir pangkalan, pembukuan & akuntansi'),
+  ('HRD',   'Human Resources & Training',     'SDM, personalia, rekrutmen, pelatihan & expatriate'),
+  ('IT',    'Information Technology',         'Teknologi informasi, infrastruktur jaringan & sistem aplikasi'),
+  ('SQS',   'Safety, Quality & Security',     'Keselamatan penerbangan, quality assurance & keamanan bandara'),
+  ('COM',   'Commercial, Cargo & Ticketing',  'Komersial, penjualan tiket, carter pesawat & kargo perintis'),
+  ('PROC',  'Procurement & Supply Chain',     'Pengadaan barang, suku cadang & manajemen rantai pasok');
 
 INSERT INTO satuan (kode, nama) VALUES
   ('PCS', 'Pcs'), ('BOX', 'Box'), ('LUS', 'Lusin'), ('RIM', 'Rim'),
   ('SET', 'Set'), ('KG',  'Kilogram'), ('LTR', 'Liter'), ('PAK', 'Paket'), ('GAL', 'Galon');
 
 INSERT INTO categories (kode, nama, keterangan) VALUES
-  ('ATK', 'Alat Tulis Kantor',    'ATK & Stationery'),
-  ('ELEK', 'Elektronik',          'Perangkat elektronik'),
-  ('FURN', 'Furnitur',            'Perabot kantor'),
-  ('MB',  'Perlengkapan Makan',  'Kebutuhan makan & minum'),
-  ('APAR', 'Perlengkapan/APAR',   'Alat pemadam & keselamatan'),
-  ('KOM',  'Komunikasi',          'Telepon, internet, pulse'),
-  ('JASA', 'Jasa',                'Jasa pihak ketiga'),
-  ('LAIN', 'Lain-lain',           'Tidak terkategori');
+  ('MRO',  'Suku Cadang & Maintenance Pesawat',   'Aircraft spare parts, consumable hanggar, pelumas & tools aviasi'),
+  ('GSE',  'Ground Support Equipment',            'Peralatan penunjang darat, chock, towbar, rambu apron & bagasi'),
+  ('ATK',  'Alat Tulis Kantor & Dokumen Flight',  'Stationery kantor, flight log book, formulir manifes & tiket'),
+  ('ELEK', 'Elektronik, Radio & IT Hardware',     'Komputer, radio VHF aviasi, handy talkie & jaringan base'),
+  ('APAR', 'Keselamatan, K3 & Fire Protection',   'Alat pemadam api, rompi hi-vis, safety shoes & perlengkapan K3'),
+  ('FURN', 'Furnitur & Inventaris Pangkalan',     'Meja kerja, kursi ruang tunggu penumpang & lemari station'),
+  ('SERA', 'Seragam & Perlengkapan Personel',     'Seragam pilot, cabin crew, teknisi hanggar & ID card staf'),
+  ('KOM',  'Telekomunikasi & Layanan Satelit',    'Internet pangkalan, telepon satelit, pulsa radio & komunikasi'),
+  ('MB',   'Konsumsi & Pantry Pangkalan',         'Snack penerbangan perintis, air galon & pantry kantor/base'),
+  ('JASA', 'Jasa Pihak Ketiga & Perawatan',       'Servis fasilitas, ekspedisi kargo, kalibrasi alat & perbaikan gedung'),
+  ('LAIN', 'Kebutuhan Operasional Lain-lain',     'Pengeluaran taktis dan operasional pangkalan yang tidak terkategori');
 
 INSERT INTO base (kode, nama, keterangan) VALUES
   ('PNG', 'Base Pangandaran',   'Headquarters & Main Engineering Base - Jawa Barat'),
