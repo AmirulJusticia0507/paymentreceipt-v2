@@ -1,11 +1,15 @@
-// Package pdf merender dokumen resmi server-side.
 package pdf
 
 import (
+	"bytes"
+	_ "embed"
 	"time"
 
 	"github.com/jung-kurt/gofpdf"
 )
+
+//go:embed assets/susi-air-logo.png
+var susiAirLogo []byte
 
 // ReceiptData adalah data yang dibutuhkan to render dokumen Purchase Requisition
 // dari satu payment receipt.
@@ -37,25 +41,27 @@ type ReceiptData struct {
 }
 
 // RenderRequisition menghasilkan PDF Purchase Requisition ke writer fpdf.
-// Layout: header perusahaan resmi, judul terpisah dengan jeda 3 spasi yang rapi,
-// info pemohon dua kolom sejajar, tabel item tunggal, total, dan blok tanda tangan tiga kolom.
+// Layout: header resmi (Logo Susi Air + PT. ASI PUDJIASTUTI AVIATION + garis ganda pembatas),
+// judul PURCHASE REQUISITION terpisah dengan jeda 3 spasi yang rapi,
+// blok info pemohon dua kolom rapi (No, Department, Request, To, Date, Received by),
+// tabel item tunggal, total, dan blok tanda tangan tiga kolom (5-space break).
 func RenderRequisition(pdf *gofpdf.Fpdf, data ReceiptData) {
-	// 1. Header perusahaan resmi
+	// 1. Header perusahaan resmi (Logo Susi Air + Kop surat + Garis pembatas ganda)
 	drawHeader(pdf)
 
-	// 2. Judul dokumen diturunkan dengan jeda yang lega agar tidak menutupi garis header
-	titleY := pdf.GetY() + 6
+	// 2. Judul dokumen di bawah garis pembatas header
+	titleY := pdf.GetY()
 	centerText(pdf, titleY, "PURCHASE REQUISITION", 14, true)
 
-	// 3. Jeda 3 space line (~15mm) setelah judul agar dokumen terlihat lega dan rapi
+	// 3. Jeda 3 space line (~16mm) setelah judul agar dokumen terlihat lega dan rapi
 	infoY := titleY + 16
 	pdf.SetY(infoY)
 
 	// 4. Blok info pemohon (dua kolom rapi dan sejajar)
 	colMid := marginLeft + 95.0
 
-	// Kolom kiri
-	infoPair(pdf, "No. Dokumen", data.Kode, marginLeft, infoY)
+	// Kolom kiri: No, Department, Request
+	infoPair(pdf, "No", data.Kode, marginLeft, infoY)
 	deptText := data.DepartmentKode
 	if data.DepartmentNama != "" {
 		deptText += " - " + data.DepartmentNama
@@ -67,16 +73,18 @@ func RenderRequisition(pdf *gofpdf.Fpdf, data ReceiptData) {
 	}
 	infoPair(pdf, "Request", reqText, marginLeft, infoY+12)
 
-	// Kolom kanan
-	infoPair(pdf, "Tanggal", formatDateID(data.TanggalPembelian), colMid, infoY)
+	// Kolom kanan: To, Date, Received by
 	toDept := data.ToDepartemenGA
 	if toDept == "" {
 		toDept = "General Affair Dept."
 	}
-	infoPair(pdf, "Kepada", toDept, colMid, infoY+6)
-	if data.KategoriNama != "" {
-		infoPair(pdf, "Kategori", data.KategoriNama, colMid, infoY+12)
+	infoPair(pdf, "To", toDept, colMid, infoY)
+	infoPair(pdf, "Date", formatDateID(data.TanggalPembelian), colMid, infoY+6)
+	receivedBy := data.GANama
+	if receivedBy == "" {
+		receivedBy = "................................"
 	}
+	infoPair(pdf, "Received by", receivedBy, colMid, infoY+12)
 
 	pdf.SetY(infoY + 22)
 
@@ -107,21 +115,33 @@ func RenderRequisition(pdf *gofpdf.Fpdf, data ReceiptData) {
 
 func drawHeader(pdf *gofpdf.Fpdf) {
 	y := marginTop
+
+	// Logo Susi Air di kiri atas
+	if len(susiAirLogo) > 0 {
+		opt := gofpdf.ImageOptions{ImageType: "PNG"}
+		_ = pdf.RegisterImageOptionsReader("susi-air-logo", opt, bytes.NewReader(susiAirLogo))
+		logoW := 46.0
+		logoH := logoW / 5.27
+		pdf.ImageOptions("susi-air-logo", marginLeft, y-1.5, logoW, logoH, false, opt, 0, "")
+	}
+
+	// Teks kop surat resmi perusahaan
 	centerText(pdf, y, "PT. ASI PUDJIASTUTI AVIATION", 13, true)
 	centerText(pdf, y+6, "Head Office: Jl Merdeka 312 Pangandaran, West Java Indonesia 46396", 8, false)
 	centerText(pdf, y+11, "General Affairs Department", 9.5, true)
 
 	// Garis ganda pembatas header resmi
+	yLine := y + 18.0
 	pdf.SetDrawColor(30, 30, 30)
 	pdf.SetLineWidth(0.6)
-	pdf.Line(marginLeft, y+18, pageWidth-marginRight, y+18)
+	pdf.Line(marginLeft, yLine, pageWidth-marginRight, yLine)
 	pdf.SetLineWidth(0.2)
-	pdf.Line(marginLeft, y+19, pageWidth-marginRight, y+19)
+	pdf.Line(marginLeft, yLine+1.0, pageWidth-marginRight, yLine+1.0)
 	pdf.SetLineWidth(0.2)
 	pdf.SetDrawColor(0, 0, 0)
 
-	// Berikan jarak pemisah yang cukup setelah garis ganda pembatas header
-	pdf.SetY(y + 24)
+	// Jarak pemisah ke judul dokumen setelah garis ganda pembatas
+	pdf.SetY(yLine + 7.0)
 }
 
 func infoPair(pdf *gofpdf.Fpdf, label, value string, x, y float64) {
