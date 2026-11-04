@@ -35,8 +35,8 @@ func TestLoad_Success(t *testing.T) {
 	if cfg.App.Env != "development" {
 		t.Errorf("App.Env = %q, want %q", cfg.App.Env, "development")
 	}
-	if cfg.Server.Port != 8080 {
-		t.Errorf("Server.Port = %d, want 8080", cfg.Server.Port)
+	if cfg.Server.Port != 8088 {
+		t.Errorf("Server.Port = %d, want 8088", cfg.Server.Port)
 	}
 	if cfg.Auth.AccessTTL != 15*time.Minute {
 		t.Errorf("Auth.AccessTTL = %s, want 15m", cfg.Auth.AccessTTL)
@@ -286,8 +286,8 @@ func TestLoad_UnparseableNumberFallsBackToDefault(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Load() error = %v, want nil (nilai buruk harus jatuh ke default)", err)
 	}
-	if cfg.Server.Port != 8080 {
-		t.Errorf("Server.Port = %d, want 8080 (fallback)", cfg.Server.Port)
+	if cfg.Server.Port != 8088 {
+		t.Errorf("Server.Port = %d, want 8088 (fallback)", cfg.Server.Port)
 	}
 	if cfg.Server.ReadTimeout != 15*time.Second {
 		t.Errorf("Server.ReadTimeout = %s, want 15s (fallback)", cfg.Server.ReadTimeout)

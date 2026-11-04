@@ -68,11 +68,11 @@ export default defineConfig({
     // cookie SameSite=Lax, yang tidak akan terkirim ke origin berbeda.
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:8088',
         changeOrigin: true,
       },
       '/healthz': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:8088',
         changeOrigin: true,
       },
     },

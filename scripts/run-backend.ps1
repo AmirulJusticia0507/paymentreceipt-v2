@@ -24,5 +24,5 @@ if (Test-Path $envFile) {
 }
 
 Set-Location (Join-Path $rootDir "backend")
-Write-Host "Menjalankan server backend Go pada http://localhost:8080..." -ForegroundColor Green
+Write-Host "Menjalankan server backend Go pada http://localhost:8088..." -ForegroundColor Green
 go run ./cmd/api

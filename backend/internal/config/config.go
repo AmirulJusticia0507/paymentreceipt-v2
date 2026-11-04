@@ -133,12 +133,12 @@ func Load() (*Config, error) {
 		App: AppConfig{
 			Env:            getEnv("APP_ENV", "development"),
 			Name:           getEnv("APP_NAME", "paymentreceipt-v2"),
-			BaseURL:        strings.TrimRight(getEnv("APP_BASE_URL", "http://localhost:8080"), "/"),
+			BaseURL:        strings.TrimRight(getEnv("APP_BASE_URL", "http://localhost:8088"), "/"),
 			TrustedProxies: getEnvList("APP_TRUSTED_PROXIES"),
 		},
 		Server: ServerConfig{
 			Host:            getEnv("SERVER_HOST", "0.0.0.0"),
-			Port:            getEnvInt("SERVER_PORT", 8080),
+			Port:            getEnvInt("SERVER_PORT", 8088),
 			ReadTimeout:     getEnvDuration("SERVER_READ_TIMEOUT", 15*time.Second),
 			WriteTimeout:    getEnvDuration("SERVER_WRITE_TIMEOUT", 30*time.Second),
 			IdleTimeout:     getEnvDuration("SERVER_IDLE_TIMEOUT", 60*time.Second),
