@@ -1,5 +1,6 @@
 ﻿<script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { FileText, Pencil, Plus, Trash2 } from 'lucide-vue-next'
 
 import BaseTable from '@/components/ui/BaseTable.vue'
@@ -13,6 +14,7 @@ import { requestWithMeta, qs } from '@/lib/http'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
+const router = useRouter()
 
 const STATUS_TRANSITIONS: Record<string, string[]> = {
   pending: ['checked'],
@@ -75,9 +77,6 @@ const deleting = ref<any>(null)
 const deleteBusy = ref(false)
 const statusChanging = ref<number | null>(null)
 
-const detailOpen = ref(false)
-const detailItem = ref<any>(null)
-const statusHistory = ref<any[]>([])
 
 const toast = ref<{ kind: 'success' | 'error' | 'info'; title: string; description?: string } | null>(null)
 
@@ -293,15 +292,10 @@ async function changeStatus(item: any, newStatus: string): Promise<void> {
   }
 }
 
-async function openDetail(item: any): Promise<void> {
-  const res = await requestWithMeta<any>(`/api/v1/payment-receipts/${item.id}`)
-  detailItem.value = res.data
-  const sh = await requestWithMeta<any[]>(`/api/v1/payment-receipts/${item.id}/status-history`)
-  statusHistory.value = sh.data ?? []
-  detailOpen.value = true
+function openDetail(item: any): void {
+  router.push({ name: 'payment-receipt-detail', params: { id: item.id } })
 }
 
-function closeDetail(): void { detailOpen.value = false; detailItem.value = null; statusHistory.value = [] }
 </script>
 
 <template>
@@ -508,21 +502,6 @@ function closeDetail(): void { detailOpen.value = false; detailItem.value = null
       @cancel="cancelDelete()"
     />
 
-    <!-- Detail modal with status history -->
-    <BaseModal :open="detailOpen" title="Detail Payment Receipt" @close="closeDetail()">
-      <div class="space-y-3 text-sm">
-        <pre class="whitespace-pre-wrap text-ink">{{ detailItem }}</pre>
-        <div>
-          <h3 class="font-semibold text-ink mb-2">Riwayat Status</h3>
-          <ol class="space-y-1 list-disc pl-4 text-ink-muted">
-            <li v-for="h in statusHistory" :key="h.id">
-              {{ h.from_status ?? '-' }} â†’ {{ h.to_status }} ({{ h.changed_by_nama }}, {{ new Date(h.created_at).toLocaleString('id-ID') }}){{ h.note ? ' - ' + h.note : '' }}
-            </li>
-          </ol>
-          <p v-if="statusHistory.length === 0" class="text-xs text-ink-muted">Belum ada riwayat.</p>
-        </div>
-      </div>
-    </BaseModal>
 
     <!-- Toast -->
     <div class="fixed right-4 bottom-4 z-40 w-full max-w-sm">
