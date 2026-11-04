@@ -70,10 +70,31 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:8088',
         changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on('error', (_err, _req, res) => {
+            if (res && 'writeHead' in res && !(res as import('http').ServerResponse).headersSent) {
+              ;(res as import('http').ServerResponse).writeHead(503, { 'Content-Type': 'application/json' })
+              res.end(
+                JSON.stringify({
+                  code: 'BACKEND_NOT_RUNNING',
+                  message: 'Backend Go belum aktif di http://localhost:8088.',
+                }),
+              )
+            }
+          })
+        },
       },
       '/healthz': {
         target: 'http://localhost:8088',
         changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on('error', (_err, _req, res) => {
+            if (res && 'writeHead' in res && !(res as import('http').ServerResponse).headersSent) {
+              ;(res as import('http').ServerResponse).writeHead(503, { 'Content-Type': 'application/json' })
+              res.end(JSON.stringify({ status: 'error', message: 'Backend belum aktif.' }))
+            }
+          })
+        },
       },
     },
   },
