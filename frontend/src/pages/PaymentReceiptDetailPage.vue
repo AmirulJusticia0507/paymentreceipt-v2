@@ -438,7 +438,7 @@ function goBack(): void {
               id="catatan-approval"
               v-model="catatan"
               rows="3"
-              placeholder="Tambahkan catatan persetujuan atau alasan penolakanâ€¦"
+              placeholder="Tambahkan catatan persetujuan…"
               class="block w-full rounded-lg border border-default bg-raised px-3 py-2 text-sm text-ink placeholder:text-ink-muted focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none resize-none transition-(--transition-fast) disabled:opacity-60"
               :disabled="approving || cancelling"
             />
@@ -457,7 +457,7 @@ function goBack(): void {
               <template #icon>
                 <CheckCircle class="size-4" aria-hidden="true" />
               </template>
-              {{ APPROVE_LABEL[approveStatus] ?? `Setujui (â†’ ${approveStatus})` }}
+              {{ APPROVE_LABEL[approveStatus] ?? `Setujui → ${STATUS_LABELS[approveStatus] ?? approveStatus}` }}
             </BaseButton>
 
             <!-- Tolak / batalkan -->
