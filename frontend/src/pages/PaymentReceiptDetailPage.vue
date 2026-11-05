@@ -70,11 +70,20 @@ const NEXT_STATUS: Record<string, string[]> = {
   cancelled: [],
 }
 
+/** Label status bahasa Indonesia untuk ditampilkan kepada pengguna. */
+const STATUS_LABELS: Record<string, string> = {
+  pending:   'Diajukan',
+  checked:   'Diperiksa',
+  processed: 'Diproses',
+  finished:  'Selesai',
+  cancelled: 'Dibatalkan',
+}
+
 /** Label tombol approve per transisi. */
 const APPROVE_LABEL: Record<string, string> = {
-  checked:   'Setujui (â†’ Checked)',
-  processed: 'Proses (â†’ Processed)',
-  finished:  'Selesaikan (â†’ Finished)',
+  checked:   `Setujui → ${STATUS_LABELS.checked}`,
+  processed: `Proses → ${STATUS_LABELS.processed}`,
+  finished:  `Selesaikan → ${STATUS_LABELS.finished}`,
 }
 
 // â”€â”€â”€ state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -197,7 +206,7 @@ async function changeStatus(newStatus: string): Promise<void> {
     toast.value = {
       kind: 'success',
       title: isCancelling ? 'Dokumen dibatalkan' : 'Status diperbarui',
-      description: `Status sekarang: ${newStatus}`,
+      description: `Status sekarang: ${STATUS_LABELS[newStatus] ?? newStatus}`,
     }
   } catch (e: any) {
     toast.value = { kind: 'error', title: 'Gagal mengubah status', description: e?.message ?? 'Error' }
@@ -240,7 +249,7 @@ function goBack(): void {
               {{ receipt?.kode ?? '...' }}
             </h1>
             <Badge v-if="receipt" :variant="(receipt.status as any)">
-              {{ receipt.status }}
+              {{ STATUS_LABELS[receipt.status] ?? receipt.status }}
             </Badge>
           </div>
           <p class="mt-0.5 text-xs text-ink-muted">
@@ -399,9 +408,9 @@ function goBack(): void {
               <span class="mt-0.5 size-1.5 shrink-0 rounded-full bg-brand-500 self-start translate-y-1"></span>
               <div class="min-w-0">
                 <p class="text-ink">
-                  <span class="font-medium">{{ h.from_status ?? '(baru)' }}</span>
-                  <span class="mx-1 text-ink-muted">â†’</span>
-                  <Badge :variant="(h.to_status as any)" class="text-[10px]">{{ h.to_status }}</Badge>
+                  <span class="font-medium">{{ STATUS_LABELS[h.from_status ?? ''] ?? (h.from_status ?? '(baru)') }}</span>
+                  <span class="mx-1 text-ink-muted">→</span>
+                  <Badge :variant="(h.to_status as any)" class="text-[10px]">{{ STATUS_LABELS[h.to_status] ?? h.to_status }}</Badge>
                 </p>
                 <p class="text-ink-muted mt-0.5">
                   {{ h.changed_by_nama }} Â· {{ formatDateTime(h.created_at) }}

@@ -24,6 +24,15 @@ const STATUS_TRANSITIONS: Record<string, string[]> = {
   cancelled: [],
 }
 
+/** Label status bahasa Indonesia untuk ditampilkan kepada pengguna. */
+const STATUS_LABELS: Record<string, string> = {
+  pending:   'Diajukan',
+  checked:   'Diperiksa',
+  processed: 'Diproses',
+  finished:  'Selesai',
+  cancelled: 'Dibatalkan',
+}
+
 const search = ref('')
 const statusFilter = ref('')
 const departmentFilter = ref('')
@@ -284,7 +293,7 @@ async function changeStatus(item: any, newStatus: string): Promise<void> {
       method: 'PATCH',
       body: { status: newStatus, note: '' },
     })
-    toast.value = { kind: 'success', title: `Status â†’ ${newStatus}` }
+    toast.value = { kind: 'success', title: `Status → ${STATUS_LABELS[newStatus] ?? newStatus}` }
     await fetchList()
   } catch (e: any) {
     toast.value = { kind: 'error', title: 'Gagal ubah status', description: e?.message ?? 'Error' }
@@ -374,15 +383,15 @@ function openDetail(item: any): void {
 
       <template #cell-status="{ row }">
         <div class="flex items-center gap-1">
-          <Badge :variant="(row.status as any)">{{ row.status }}</Badge>
+          <Badge :variant="(row.status as any)">{{ STATUS_LABELS[row.status] ?? row.status }}</Badge>
           <select
             v-if="canManage"
             class="text-xs rounded border border-default bg-raised px-1 py-0.5"
             :disabled="statusChanging === row.id"
             @change="changeStatus(row, ($event.target as HTMLSelectElement).value)"
           >
-            <option value="">Ã—</option>
-            <option v-for="s in STATUS_TRANSITIONS[row.status] ?? []" :key="s" :value="s">{{ s }}</option>
+            <option value="">×</option>
+            <option v-for="s in STATUS_TRANSITIONS[row.status] ?? []" :key="s" :value="s">{{ STATUS_LABELS[s] ?? s }}</option>
           </select>
         </div>
       </template>
