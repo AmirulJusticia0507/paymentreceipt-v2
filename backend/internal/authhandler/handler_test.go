@@ -119,6 +119,18 @@ func TestMe_WithoutIdentityInContext_ReturnsUnauthorized(t *testing.T) {
 	}
 }
 
+func TestUpdateMe_WithoutIdentityInContext_ReturnsUnauthorized(t *testing.T) {
+	h := newTestHandler(nil, cookieOpts)
+	req := httptest.NewRequest(http.MethodPatch, "/api/v1/auth/me", strings.NewReader(`{"full_name":"Susi Air"}`))
+	rec := httptest.NewRecorder()
+
+	h.UpdateMe(rec, req)
+
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("status = %d, want 401; body=%s", rec.Code, rec.Body.String())
+	}
+}
+
 // ---- Cookie ----
 
 // TestCookieFlags memastikan cookie di-set dengan flag HttpOnly.

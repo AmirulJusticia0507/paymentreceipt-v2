@@ -254,6 +254,7 @@ Tujuan: login/logout/refresh + proteksi seluruh endpoint.
 - [x] **T3.12** Test: hash/verify password, issue/parse token, RBAC matrix
 - [x] **T3.13** Halaman Login (Vue) â€” desain modern, tanpa kedokutang "password"!
 - [x] **T3.14** Reset password oleh admin (endpoint + halaman Pengguna)
+- [x] **T3.15** Profil saya — pengguna dapat memperbarui nama lengkap akun sendiri
 
 ---
 

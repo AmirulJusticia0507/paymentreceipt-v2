@@ -24,6 +24,7 @@ import (
 type UserStore interface {
 	GetUserByUsername(ctx context.Context, username string) (dbgen.User, error)
 	GetUserSafeByID(ctx context.Context, id int64) (dbgen.GetUserSafeByIDRow, error)
+	UpdateUserFullName(ctx context.Context, arg dbgen.UpdateUserFullNameParams) (dbgen.UpdateUserFullNameRow, error)
 	TouchUserLastLogin(ctx context.Context, id int64) error
 }
 
@@ -230,6 +231,43 @@ func (s *Service) Me(ctx context.Context, userID int64) (*UserInfo, error) {
 			return nil, apperror.NotFound("User")
 		}
 		return nil, apperror.Internalf("auth.get_user_failed", err)
+	}
+	if !user.IsActive {
+		return nil, apperror.Forbidden("Akun Anda dinonaktifkan.")
+	}
+
+	info := UserInfo{
+		ID:       user.ID,
+		Username: user.Username,
+		Email:    user.Email,
+		FullName: user.FullName,
+		Role:     string(user.Role),
+	}
+	if user.LastLoginAt.Valid {
+		info.LastLoginAt = user.LastLoginAt.Time
+	}
+	return &info, nil
+}
+
+// UpdateFullName mengubah nama lengkap milik pengguna yang sedang masuk.
+func (s *Service) UpdateFullName(ctx context.Context, userID int64, fullName string) (*UserInfo, error) {
+	fullName = strings.TrimSpace(fullName)
+	if fullName == "" {
+		return nil, apperror.FieldValidation("full_name", "Nama lengkap wajib diisi", "required")
+	}
+	if len([]rune(fullName)) > 150 {
+		return nil, apperror.FieldValidation("full_name", "Nama lengkap maksimal 150 karakter", "max")
+	}
+
+	user, err := s.users.UpdateUserFullName(ctx, dbgen.UpdateUserFullNameParams{
+		ID:       userID,
+		FullName: fullName,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, apperror.NotFound("User")
+		}
+		return nil, apperror.Internalf("auth.update_full_name_failed", err)
 	}
 	if !user.IsActive {
 		return nil, apperror.Forbidden("Akun Anda dinonaktifkan.")

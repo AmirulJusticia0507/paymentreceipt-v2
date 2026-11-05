@@ -118,6 +118,7 @@ func New(d Deps) http.Handler {
 				r.Use(authenticator.Middleware)
 				r.Post("/logout", authH.Logout)
 				r.Get("/me", authH.Me)
+				r.Patch("/me", authH.UpdateMe)
 			})
 		})
 

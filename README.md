@@ -26,12 +26,12 @@ kode yang di-port.
 
 ## Prasyarat
 
-| Kebutuhan | Versi | Cara cek |
-|---|---|---|
-| Go | 1.26+ | `go version` |
-| Node.js | 20+ | `node --version` |
+| Kebutuhan  | Versi                     | Cara cek           |
+| ---------- | ------------------------- | ------------------ |
+| Go         | 1.26+                     | `go version`     |
+| Node.js    | 20+                       | `node --version` |
 | PostgreSQL | 16+ (18 direkomendasikan) | `psql --version` |
-| Git | 2.40+ | `git --version` |
+| Git        | 2.40+                     | `git --version`  |
 
 Belum punya? — [go.dev](https://go.dev/dl/) · [nodejs.org](https://nodejs.org) · [postgresql.org](https://www.postgresql.org/download/)
 
@@ -134,16 +134,16 @@ Arsitektur lengkap: [TODO.md § Arsitektur](TODO.md#arsitektur)
 
 ## Modul
 
-| Modul | Deskripsi |
-|---|---|
-| **Dashboard** | Statistik, trend belanja, breakdown status |
-| **Department** | Unit kerja pemohon |
-| **Request** | Pengajuan milik satu department |
-| **Base / Request Base** | Kategori pengajuan umum dan turunannya |
-| **Sources** | Toko/sumber pembelian — mode `online` atau `offline` |
-| **Payment Receipt** | Transaksi pembelian + alur status |
-| **PR Archive** | Purchase requisition yang sudah disetujui |
-| **Cetak PDF** | Dokumen Purchase Requisition |
+| Modul                         | Deskripsi                                                 |
+| ----------------------------- | --------------------------------------------------------- |
+| **Dashboard**           | Statistik, trend belanja, breakdown status                |
+| **Department**          | Unit kerja pemohon                                        |
+| **Request**             | Pengajuan milik satu department                           |
+| **Base / Request Base** | Kategori pengajuan umum dan turunannya                    |
+| **Sources**             | Toko/sumber pembelian — mode `online` atau `offline` |
+| **Payment Receipt**     | Transaksi pembelian + alur status                         |
+| **PR Archive**          | Purchase requisition yang sudah disetujui                 |
+| **Cetak PDF**           | Dokumen Purchase Requisition                              |
 
 ---
 
@@ -165,26 +165,26 @@ Transisi ilegal ditolak dengan `409 Conflict`. Riwayat perubahan status disimpan
 Semua endpoint memakai prefix `/api/v1`. Endpoint terlindungi memakai JWT pada cookie
 `HttpOnly`.
 
-| Method | Path | Auth |
-|---|---|---|
-| `GET` | `/healthz` | — |
-| `GET` | `/readyz` | — |
-| `POST` | `/api/v1/auth/login` | — |
-| `POST` | `/api/v1/auth/refresh` | refresh token |
-| `POST` | `/api/v1/auth/logout` | ya |
-| `GET` | `/api/v1/auth/me` | ya |
-| `GET/POST/PUT/DELETE` | `/api/v1/departments` | ya |
-| `GET/POST/PUT/DELETE` | `/api/v1/satuan` | ya |
-| `GET/POST/PUT/DELETE` | `/api/v1/categories` | ya |
-| `GET/POST/PUT/DELETE` | `/api/v1/bases` | ya |
-| `GET` | `/api/v1/bases/search?q=` | ya |
-| `GET/POST/PUT/DELETE` | `/api/v1/requests` | ya |
-| `GET/POST/PUT/DELETE` | `/api/v1/request-bases` | ya |
-| `GET/POST/PUT/DELETE` | `/api/v1/sources` | ya |
-| `GET/POST/PUT/DELETE` | `/api/v1/payment-receipts` | ya |
-| `PATCH` | `/api/v1/payment-receipts/:id/status` | ya |
-| `GET` | `/api/v1/payment-receipts/:id/pdf` | ya |
-| `GET/POST/PUT/DELETE` | `/api/v1/pr-archive` | ya |
+| Method                  | Path                                    | Auth          |
+| ----------------------- | --------------------------------------- | ------------- |
+| `GET`                 | `/healthz`                            | —            |
+| `GET`                 | `/readyz`                             | —            |
+| `POST`                | `/api/v1/auth/login`                  | —            |
+| `POST`                | `/api/v1/auth/refresh`                | refresh token |
+| `POST`                | `/api/v1/auth/logout`                 | ya            |
+| `GET`                 | `/api/v1/auth/me`                     | ya            |
+| `GET/POST/PUT/DELETE` | `/api/v1/departments`                 | ya            |
+| `GET/POST/PUT/DELETE` | `/api/v1/satuan`                      | ya            |
+| `GET/POST/PUT/DELETE` | `/api/v1/categories`                  | ya            |
+| `GET/POST/PUT/DELETE` | `/api/v1/bases`                       | ya            |
+| `GET`                 | `/api/v1/bases/search?q=`             | ya            |
+| `GET/POST/PUT/DELETE` | `/api/v1/requests`                    | ya            |
+| `GET/POST/PUT/DELETE` | `/api/v1/request-bases`               | ya            |
+| `GET/POST/PUT/DELETE` | `/api/v1/sources`                     | ya            |
+| `GET/POST/PUT/DELETE` | `/api/v1/payment-receipts`            | ya            |
+| `PATCH`               | `/api/v1/payment-receipts/:id/status` | ya            |
+| `GET`                 | `/api/v1/payment-receipts/:id/pdf`    | ya            |
+| `GET/POST/PUT/DELETE` | `/api/v1/pr-archive`                  | ya            |
 
 Error response mengikuti [RFC 9457 (Problem Details for HTTP APIs)](https://www.rfc-editor.org/rfc/rfc9457).
 

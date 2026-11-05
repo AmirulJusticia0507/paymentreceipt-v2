@@ -240,6 +240,49 @@ func (q *Queries) TouchUserLastLogin(ctx context.Context, id int64) error {
 	return err
 }
 
+const updateUserFullName = `-- name: UpdateUserFullName :one
+UPDATE users
+SET full_name = $1, updated_at = now()
+WHERE id = $2
+RETURNING id, username, email, full_name, role, is_active, last_login_at, created_at, updated_at
+`
+
+type UpdateUserFullNameParams struct {
+	FullName string
+	ID       int64
+}
+
+type UpdateUserFullNameRow struct {
+	ID          int64
+	Username    string
+	Email       string
+	FullName    string
+	Role        UserRole
+	IsActive    bool
+	LastLoginAt pgtype.Timestamptz
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+}
+
+// Pengguna hanya boleh mengubah nama akun miliknya sendiri. Query ini
+// mengembalikan profil aman agar UI dapat langsung memperbarui headernya.
+func (q *Queries) UpdateUserFullName(ctx context.Context, arg UpdateUserFullNameParams) (UpdateUserFullNameRow, error) {
+	row := q.db.QueryRow(ctx, updateUserFullName, arg.FullName, arg.ID)
+	var i UpdateUserFullNameRow
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Email,
+		&i.FullName,
+		&i.Role,
+		&i.IsActive,
+		&i.LastLoginAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const updateUserPassword = `-- name: UpdateUserPassword :exec
 UPDATE users
 SET password_hash = $1, updated_at = now()

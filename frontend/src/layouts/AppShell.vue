@@ -17,6 +17,7 @@ import {
   Moon,
   Package,
   Receipt,
+  Settings,
   Sun,
   Tags,
   Truck,
@@ -326,6 +327,13 @@ const roleLabel: Record<UserRole, string> = {
                 <Sun v-else class="size-4" aria-hidden="true" />
                 {{ theme.theme === 'dark' ? 'Mode terang' : 'Mode gelap' }}
               </button>
+              <RouterLink
+                to="/profile"
+                class="flex w-full items-center gap-3 px-4 py-2 text-sm text-ink-muted transition-colors hover:bg-default hover:text-ink focus-visible:outline-2 focus-visible:outline-brand-500"
+              >
+                <Settings class="size-4" aria-hidden="true" />
+                Profil saya
+              </RouterLink>
               <button
                 type="button"
                 class="flex w-full items-center gap-3 px-4 py-2 text-sm text-status-cancelled hover:bg-status-cancelled/10"

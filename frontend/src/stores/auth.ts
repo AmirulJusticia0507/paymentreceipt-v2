@@ -70,6 +70,11 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  /** Memperbarui profil lokal setelah server menyimpan perubahan profil. */
+  function setUser(nextUser: User): void {
+    user.value = nextUser
+  }
+
   function hasRole(...roles: UserRole[]): boolean {
     return user.value !== null && roles.includes(user.value.role)
   }
@@ -89,6 +94,7 @@ export const useAuthStore = defineStore('auth', () => {
     isAdmin,
     login,
     logout,
+    setUser,
     restore,
     hasRole,
     clear,

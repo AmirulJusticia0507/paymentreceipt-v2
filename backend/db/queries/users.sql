@@ -32,6 +32,14 @@ UPDATE users
 SET last_login_at = now()
 WHERE id = @id;
 
+-- name: UpdateUserFullName :one
+-- Pengguna hanya boleh mengubah nama akun miliknya sendiri. Query ini
+-- mengembalikan profil aman agar UI dapat langsung memperbarui headernya.
+UPDATE users
+SET full_name = @full_name, updated_at = now()
+WHERE id = @id
+RETURNING id, username, email, full_name, role, is_active, last_login_at, created_at, updated_at;
+
 -- name: DeactivateUser :exec
 -- Soft delete. User tidak dihapus dari tabel supaya audit trail
 -- (status_history, pr_archive) tetap punya rujukan yang valid.

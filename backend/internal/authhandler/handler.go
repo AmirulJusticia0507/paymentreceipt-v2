@@ -34,6 +34,11 @@ type loginRequest struct {
 	Password string `json:"password"`
 }
 
+// updateProfileRequest adalah body PATCH /api/v1/auth/me.
+type updateProfileRequest struct {
+	FullName string `json:"full_name"`
+}
+
 // Login menangani POST /api/v1/auth/login.
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	var req loginRequest
@@ -118,6 +123,29 @@ func (h *Handler) Me(w http.ResponseWriter, r *http.Request) {
 	}
 
 	info, err := h.svc.Me(r.Context(), identity.UserID)
+	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+
+	httputil.JSONData(w, http.StatusOK, info)
+}
+
+// UpdateMe menangani PATCH /api/v1/auth/me.
+func (h *Handler) UpdateMe(w http.ResponseWriter, r *http.Request) {
+	identity, ok := auth.IdentityFrom(r.Context())
+	if !ok {
+		httputil.Problemf(w, r, apperror.Unauthorized("Anda harus masuk terlebih dahulu"))
+		return
+	}
+
+	var req updateProfileRequest
+	if err := httputil.DecodeJSON(w, r, &req); err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+
+	info, err := h.svc.UpdateFullName(r.Context(), identity.UserID, req.FullName)
 	if err != nil {
 		httputil.Problemf(w, r, err)
 		return
