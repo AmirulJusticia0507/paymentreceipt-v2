@@ -339,18 +339,30 @@ func (q *Queries) ListPaymentReceipts(ctx context.Context, arg ListPaymentReceip
 }
 
 const listReceiptNotifications = `-- name: ListReceiptNotifications :many
-SELECT p.id, p.kode, p.status, p.department_id, d.nama AS department_nama,
-       GREATEST(p.updated_at, COALESCE(MAX(h.created_at), p.created_at)) AS last_activity,
-       GREATEST(0, CURRENT_DATE - GREATEST(p.updated_at::date, COALESCE(MAX(h.created_at)::date, p.created_at::date)))::int AS days_waiting
-FROM payment_receipt p
-JOIN department d ON d.id = p.department_id
-LEFT JOIN status_history h ON h.payment_receipt_id = p.id
-WHERE p.status IN ('pending', 'checked', 'processed')
-  AND ($1::bigint IS NULL OR p.department_id = $1::bigint)
-GROUP BY p.id, d.nama
-ORDER BY last_activity ASC, p.id ASC
+WITH receipt_activity AS (
+    SELECT p.id, p.kode, p.status, p.department_id, d.nama AS department_nama,
+           GREATEST(p.updated_at, COALESCE(MAX(h.created_at), p.created_at)) AS last_activity
+    FROM payment_receipt p
+    JOIN department d ON d.id = p.department_id
+    LEFT JOIN status_history h ON h.payment_receipt_id = p.id
+    WHERE p.status IN ('pending', 'checked', 'processed')
+      AND ($2::bigint IS NULL OR p.department_id = $2::bigint)
+    GROUP BY p.id, d.nama
+)
+SELECT a.id, a.kode, a.status, a.department_id, a.department_nama,
+       GREATEST(0, CURRENT_DATE - a.last_activity::date)::int AS days_waiting
+FROM receipt_activity a
+LEFT JOIN receipt_notification_reads nr
+  ON nr.user_id = $1 AND nr.payment_receipt_id = a.id
+WHERE nr.activity_at IS NULL OR nr.activity_at <> a.last_activity
+ORDER BY a.last_activity ASC, a.id ASC
 LIMIT 100
 `
+
+type ListReceiptNotificationsParams struct {
+	UserID       int64
+	DepartmentID pgtype.Int8
+}
 
 type ListReceiptNotificationsRow struct {
 	ID             int64
@@ -358,12 +370,11 @@ type ListReceiptNotificationsRow struct {
 	Status         PaymentStatus
 	DepartmentID   int64
 	DepartmentNama string
-	LastActivity   interface{}
 	DaysWaiting    int32
 }
 
-func (q *Queries) ListReceiptNotifications(ctx context.Context, departmentID pgtype.Int8) ([]ListReceiptNotificationsRow, error) {
-	rows, err := q.db.Query(ctx, listReceiptNotifications, departmentID)
+func (q *Queries) ListReceiptNotifications(ctx context.Context, arg ListReceiptNotificationsParams) ([]ListReceiptNotificationsRow, error) {
+	rows, err := q.db.Query(ctx, listReceiptNotifications, arg.UserID, arg.DepartmentID)
 	if err != nil {
 		return nil, err
 	}
@@ -377,7 +388,6 @@ func (q *Queries) ListReceiptNotifications(ctx context.Context, departmentID pgt
 			&i.Status,
 			&i.DepartmentID,
 			&i.DepartmentNama,
-			&i.LastActivity,
 			&i.DaysWaiting,
 		); err != nil {
 			return nil, err
@@ -388,6 +398,36 @@ func (q *Queries) ListReceiptNotifications(ctx context.Context, departmentID pgt
 		return nil, err
 	}
 	return items, nil
+}
+
+const markReceiptNotificationRead = `-- name: MarkReceiptNotificationRead :one
+WITH receipt_activity AS (
+    SELECT p.id, GREATEST(p.updated_at, COALESCE(MAX(h.created_at), p.created_at)) AS last_activity
+    FROM payment_receipt p
+    LEFT JOIN status_history h ON h.payment_receipt_id = p.id
+    WHERE p.id = $2
+      AND ($3::bigint IS NULL OR p.department_id = $3::bigint)
+    GROUP BY p.id
+)
+INSERT INTO receipt_notification_reads (user_id, payment_receipt_id, activity_at, read_at)
+SELECT $1, a.id, a.last_activity, NOW()
+FROM receipt_activity a
+ON CONFLICT (user_id, payment_receipt_id) DO UPDATE
+SET activity_at = EXCLUDED.activity_at, read_at = EXCLUDED.read_at
+RETURNING payment_receipt_id
+`
+
+type MarkReceiptNotificationReadParams struct {
+	UserID           int64
+	PaymentReceiptID int64
+	DepartmentID     pgtype.Int8
+}
+
+func (q *Queries) MarkReceiptNotificationRead(ctx context.Context, arg MarkReceiptNotificationReadParams) (int64, error) {
+	row := q.db.QueryRow(ctx, markReceiptNotificationRead, arg.UserID, arg.PaymentReceiptID, arg.DepartmentID)
+	var payment_receipt_id int64
+	err := row.Scan(&payment_receipt_id)
+	return payment_receipt_id, err
 }
 
 const updatePaymentReceipt = `-- name: UpdatePaymentReceipt :one

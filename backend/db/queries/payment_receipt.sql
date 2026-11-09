@@ -99,14 +99,37 @@ RETURNING id, kode, request_id, department_id, source_id, category_id, unit_id,
 DELETE FROM payment_receipt WHERE id = @id;
 
 -- name: ListReceiptNotifications :many
-SELECT p.id, p.kode, p.status, p.department_id, d.nama AS department_nama,
-       GREATEST(p.updated_at, COALESCE(MAX(h.created_at), p.created_at)) AS last_activity,
-       GREATEST(0, CURRENT_DATE - GREATEST(p.updated_at::date, COALESCE(MAX(h.created_at)::date, p.created_at::date)))::int AS days_waiting
-FROM payment_receipt p
-JOIN department d ON d.id = p.department_id
-LEFT JOIN status_history h ON h.payment_receipt_id = p.id
-WHERE p.status IN ('pending', 'checked', 'processed')
-  AND (sqlc.narg('department_id')::bigint IS NULL OR p.department_id = sqlc.narg('department_id')::bigint)
-GROUP BY p.id, d.nama
-ORDER BY last_activity ASC, p.id ASC
+WITH receipt_activity AS (
+    SELECT p.id, p.kode, p.status, p.department_id, d.nama AS department_nama,
+           GREATEST(p.updated_at, COALESCE(MAX(h.created_at), p.created_at)) AS last_activity
+    FROM payment_receipt p
+    JOIN department d ON d.id = p.department_id
+    LEFT JOIN status_history h ON h.payment_receipt_id = p.id
+    WHERE p.status IN ('pending', 'checked', 'processed')
+      AND (sqlc.narg('department_id')::bigint IS NULL OR p.department_id = sqlc.narg('department_id')::bigint)
+    GROUP BY p.id, d.nama
+)
+SELECT a.id, a.kode, a.status, a.department_id, a.department_nama,
+       GREATEST(0, CURRENT_DATE - a.last_activity::date)::int AS days_waiting
+FROM receipt_activity a
+LEFT JOIN receipt_notification_reads nr
+  ON nr.user_id = sqlc.arg('user_id') AND nr.payment_receipt_id = a.id
+WHERE nr.activity_at IS NULL OR nr.activity_at <> a.last_activity
+ORDER BY a.last_activity ASC, a.id ASC
 LIMIT 100;
+
+-- name: MarkReceiptNotificationRead :one
+WITH receipt_activity AS (
+    SELECT p.id, GREATEST(p.updated_at, COALESCE(MAX(h.created_at), p.created_at)) AS last_activity
+    FROM payment_receipt p
+    LEFT JOIN status_history h ON h.payment_receipt_id = p.id
+    WHERE p.id = sqlc.arg('payment_receipt_id')
+      AND (sqlc.narg('department_id')::bigint IS NULL OR p.department_id = sqlc.narg('department_id')::bigint)
+    GROUP BY p.id
+)
+INSERT INTO receipt_notification_reads (user_id, payment_receipt_id, activity_at, read_at)
+SELECT sqlc.arg('user_id'), a.id, a.last_activity, NOW()
+FROM receipt_activity a
+ON CONFLICT (user_id, payment_receipt_id) DO UPDATE
+SET activity_at = EXCLUDED.activity_at, read_at = EXCLUDED.read_at
+RETURNING payment_receipt_id;

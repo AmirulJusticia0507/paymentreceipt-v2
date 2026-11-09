@@ -223,6 +223,13 @@ type PrArchive struct {
 	UpdatedAt        time.Time
 }
 
+type ReceiptNotificationRead struct {
+	UserID           int64
+	PaymentReceiptID int64
+	ActivityAt       time.Time
+	ReadAt           time.Time
+}
+
 type RefreshToken struct {
 	ID        int64
 	UserID    int64

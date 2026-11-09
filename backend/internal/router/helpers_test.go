@@ -39,6 +39,24 @@ func TestNew_OperationalReportRouteIsMountedBehindAuthentication(t *testing.T) {
 	}
 }
 
+func TestNew_NotificationReadRouteIsMountedBehindAuthentication(t *testing.T) {
+	cfg := &config.Config{
+		App:    config.AppConfig{Env: "test", Name: "test", BaseURL: "http://localhost"},
+		Server: config.ServerConfig{Host: "localhost", Port: 8080, MaxRequestBody: 1 << 20},
+		Auth: config.AuthConfig{
+			JWTSecret: []byte("test-secret-long-enough-for-hmac-signing"), Issuer: "test",
+			AccessTTL: time.Minute, RefreshTTL: time.Hour, CookieName: "access", RefreshCookieName: "refresh",
+		},
+	}
+	handler := New(Deps{Config: cfg, Logger: slog.New(slog.NewTextHandler(io.Discard, nil))})
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/notifications/receipts/1/read", nil)
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("status = %d, want %d for mounted protected route; body=%s", rec.Code, http.StatusUnauthorized, rec.Body.String())
+	}
+}
+
 func TestDepartmentScope_UnassignedRequesterIsRejected(t *testing.T) {
 	r := httptest.NewRequest("GET", "/", nil)
 	r = r.WithContext(auth.WithIdentity(r.Context(), auth.Identity{Role: auth.RoleRequester}))

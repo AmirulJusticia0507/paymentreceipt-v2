@@ -29,7 +29,7 @@ import {
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
 import type { UserRole } from '@/lib/types'
-import { requestWithMeta } from '@/lib/http'
+import { http, requestWithMeta } from '@/lib/http'
 
 interface ReceiptNotice { id: number; kode: string; status: string; department_nama: string; days_waiting: number }
 
@@ -96,6 +96,7 @@ const noticesOpen = ref(false)
 const notices = ref<ReceiptNotice[]>([])
 const noticesError = ref('')
 const noticesLoading = ref(false)
+const openingNoticeId = ref<number | null>(null)
 
 async function loadNotices(): Promise<void> {
   noticesLoading.value = true
@@ -107,6 +108,21 @@ async function loadNotices(): Promise<void> {
     noticesError.value = 'Pengingat tidak dapat dimuat.'
   } finally {
     noticesLoading.value = false
+  }
+}
+
+async function openNotice(notice: ReceiptNotice): Promise<void> {
+  openingNoticeId.value = notice.id
+  noticesError.value = ''
+  try {
+    await http.post<void>(`/api/v1/notifications/receipts/${notice.id}/read`)
+    notices.value = notices.value.filter((item) => item.id !== notice.id)
+    noticesOpen.value = false
+    await router.push(`/payment-receipts/${notice.id}`)
+  } catch {
+    noticesError.value = 'Notifikasi belum bisa ditandai dibaca. Coba lagi.'
+  } finally {
+    openingNoticeId.value = null
   }
 }
 
@@ -321,7 +337,7 @@ const roleLabel: Record<UserRole, string> = {
               <p v-else-if="noticesError" class="py-4 text-sm text-status-cancelled">{{ noticesError }}</p>
               <p v-else-if="!notices.length" class="py-4 text-sm text-ink-muted">Tidak ada receipt aktif.</p>
               <ul v-else class="max-h-80 space-y-1 overflow-y-auto">
-                <li v-for="notice in notices" :key="notice.id"><RouterLink :to="`/payment-receipts/${notice.id}`" class="block rounded-lg px-2 py-2 hover:bg-default focus-visible:outline-2 focus-visible:outline-brand-500" @click="noticesOpen = false"><span class="block text-sm font-medium text-ink">{{ notice.kode }} · {{ notice.status }}</span><span class="text-xs text-ink-muted">{{ notice.department_nama }} · {{ notice.days_waiting >= 3 ? `${notice.days_waiting} hari, tertunda` : `${notice.days_waiting} hari` }}</span></RouterLink></li>
+                <li v-for="notice in notices" :key="notice.id"><button type="button" class="block w-full rounded-lg px-2 py-2 text-left hover:bg-default focus-visible:outline-2 focus-visible:outline-brand-500 disabled:cursor-wait disabled:opacity-60" :disabled="openingNoticeId === notice.id" @click="openNotice(notice)"><span class="block text-sm font-medium text-ink">{{ notice.kode }} · {{ notice.status }}</span><span class="text-xs text-ink-muted">{{ notice.department_nama }} · {{ notice.days_waiting >= 3 ? `${notice.days_waiting} hari, tertunda` : `${notice.days_waiting} hari` }}</span><span v-if="openingNoticeId === notice.id" class="sr-only">Menandai dibaca</span></button></li>
               </ul>
             </section>
           </div>

@@ -1098,6 +1098,16 @@ ALTER TABLE ONLY public.audit_log
 CREATE INDEX idx_audit_log_created ON public.audit_log USING btree (created_at DESC, id DESC);
 CREATE INDEX idx_audit_log_actor ON public.audit_log USING btree (actor_id, created_at DESC);
 
+CREATE TABLE public.receipt_notification_reads (
+    user_id bigint NOT NULL,
+    payment_receipt_id bigint NOT NULL,
+    activity_at timestamp with time zone NOT NULL,
+    read_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT receipt_notification_reads_pkey PRIMARY KEY (user_id, payment_receipt_id),
+    CONSTRAINT receipt_notification_reads_user_fk FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE,
+    CONSTRAINT receipt_notification_reads_receipt_fk FOREIGN KEY (payment_receipt_id) REFERENCES public.payment_receipt(id) ON DELETE CASCADE
+);
+
 
 --
 -- PostgreSQL database dump complete

@@ -707,3 +707,8 @@ curl -b jar.txt -D - -o /dev/null "$BASE/payment-receipts/42" | grep -i x-reques
 `processed`) receipts ordered by oldest activity, up to 100. Each item includes
 `days_waiting`; 3 calendar days or more is considered overdue. Requester accounts
 receive only their assigned department's receipts.
+
+`POST /api/v1/notifications/receipts/{id}/read` permanently marks that receipt
+notification as read for the current user and returns `204`. It no longer appears
+in that user's reminder list unless the receipt changes again; other users have
+their own independent read state.
