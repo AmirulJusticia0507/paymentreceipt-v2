@@ -127,3 +127,35 @@ func TestMigrations_PaymentReceiptConstraintsAndGeneratedTotal(t *testing.T) {
 		t.Fatalf("zero quantity SQLSTATE = %v, want 23514", postgresError)
 	}
 }
+
+// TestUsers_ContactConstraints memastikan akun hasil signup boleh tanpa email
+// selama punya nomor HP valid, sementara email yang diisi tetap harus valid.
+// Regression test untuk migrasi 0019 yang sempat menulis regex dengan
+// backslash ganda sehingga email valid ditolak.
+func TestUsers_ContactConstraints(t *testing.T) {
+	conn := openTestDatabase(t)
+	applyMigrations(t, conn)
+	ctx := context.Background()
+
+	insertUser := func(username string, email any, phone any) error {
+		_, err := conn.Exec(ctx, `
+			INSERT INTO users (username, email, phone, password_hash)
+			VALUES ($1, $2, $3, 'test-hash')`,
+			username, email, phone,
+		)
+		return err
+	}
+
+	if err := insertUser("signup-null-email", nil, "0812-3456-7890"); err != nil {
+		t.Fatalf("email NULL + phone valid harus diterima: %v", err)
+	}
+	if err := insertUser("signup-valid-email", "user@example.test", nil); err != nil {
+		t.Fatalf("email valid tanpa phone harus diterima: %v", err)
+	}
+	if err := insertUser("signup-invalid-email", "bukan-email", nil); err == nil {
+		t.Fatal("email tidak valid harus ditolak")
+	}
+	if err := insertUser("signup-invalid-phone", nil, "abc"); err == nil {
+		t.Fatal("phone tidak valid harus ditolak")
+	}
+}

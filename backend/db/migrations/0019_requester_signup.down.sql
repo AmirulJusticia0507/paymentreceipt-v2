@@ -3,4 +3,4 @@ ALTER TABLE users
     DROP COLUMN phone,
     DROP CONSTRAINT users_email_format,
     ALTER COLUMN email SET NOT NULL,
-    ADD CONSTRAINT users_email_format CHECK (email ~ '^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$');
+    ADD CONSTRAINT users_email_format CHECK (email ~ '^[^@\s]+@[^@\s]+\.[^@\s]+$');

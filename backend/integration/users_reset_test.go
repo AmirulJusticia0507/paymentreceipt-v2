@@ -65,7 +65,10 @@ func TestUsers_ListAdminOnly(t *testing.T) {
 	}
 
 	// Endpoint ini memuat email & riwayat login - viewer harus ditolak.
-	viewerToken, _, err := auth.NewTokenManager(e.cfg.Auth).IssueAccess(9999, "viewer-test", auth.RoleViewer)
+	// User harus benar-benar ada karena middleware memeriksa status aktif ke DB;
+	// token untuk ID fiktif akan berhenti di 401, bukan menguji otorisasi role.
+	viewerID := e.insertUserWithPassword(t, "viewer-test", "password-viewer-123", "viewer")
+	viewerToken, _, err := auth.NewTokenManager(e.cfg.Auth).IssueAccess(viewerID, "viewer-test", auth.RoleViewer)
 	if err != nil {
 		t.Fatalf("issue viewer token: %v", err)
 	}
