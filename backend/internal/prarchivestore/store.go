@@ -54,6 +54,7 @@ func fromList(r dbgen.ListPrArchivesRow) prarchive.PrArchive {
 		ID:               r.ID,
 		Kode:             r.Kode,
 		PaymentReceiptID: r.PaymentReceiptID,
+		DepartmentID:     r.DepartmentID,
 		ReceiptKode:      r.ReceiptKode,
 		TanggalSelesai:   r.TanggalSelesai,
 		NamaRequest:      r.NamaRequest,
@@ -78,6 +79,7 @@ func fromGet(r dbgen.GetPrArchiveRow) prarchive.PrArchive {
 		ID:               r.ID,
 		Kode:             r.Kode,
 		PaymentReceiptID: r.PaymentReceiptID,
+		DepartmentID:     r.DepartmentID,
 		ReceiptKode:      r.ReceiptKode,
 		TanggalSelesai:   r.TanggalSelesai,
 		NamaRequest:      r.NamaRequest,
@@ -113,12 +115,13 @@ func fromPrArchive(r dbgen.PrArchive) prarchive.PrArchive {
 
 func (s *Store) List(ctx context.Context, f prarchive.Filters) ([]prarchive.PrArchive, int64, error) {
 	params := dbgen.ListPrArchivesParams{
-		DateFrom: datePtr(f.DateFrom),
-		DateTo:   datePtr(f.DateTo),
-		Q:        textPtr(&f.Query),
-		Approver: int64Ptr(&f.ApproverID),
-		Limit:    f.Limit,
-		Offset:   f.Offset,
+		DateFrom:     datePtr(f.DateFrom),
+		DateTo:       datePtr(f.DateTo),
+		Q:            textPtr(&f.Query),
+		Approver:     int64Ptr(&f.ApproverID),
+		DepartmentID: int64Ptr(&f.DepartmentID),
+		Limit:        f.Limit,
+		Offset:       f.Offset,
 	}
 
 	rows, err := s.q.ListPrArchives(ctx, params)
@@ -127,10 +130,11 @@ func (s *Store) List(ctx context.Context, f prarchive.Filters) ([]prarchive.PrAr
 	}
 
 	total, err := s.q.CountPrArchives(ctx, dbgen.CountPrArchivesParams{
-		DateFrom: params.DateFrom,
-		DateTo:   params.DateTo,
-		Q:        params.Q,
-		Approver: params.Approver,
+		DateFrom:     params.DateFrom,
+		DateTo:       params.DateTo,
+		Q:            params.Q,
+		Approver:     params.Approver,
+		DepartmentID: params.DepartmentID,
 	})
 	if err != nil {
 		return nil, 0, err

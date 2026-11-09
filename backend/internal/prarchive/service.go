@@ -17,6 +17,7 @@ type PrArchive struct {
 	ID               int64     `json:"id"`
 	Kode             string    `json:"kode"`
 	PaymentReceiptID int64     `json:"payment_receipt_id"`
+	DepartmentID     int64     `json:"department_id"`
 	ReceiptKode      string    `json:"receipt_kode"`
 	TanggalSelesai   time.Time `json:"tanggal_selesai"`
 	NamaRequest      string    `json:"nama_request"`
@@ -36,6 +37,7 @@ type Filters struct {
 	DateFrom, DateTo *time.Time
 	Query            string
 	ApproverID       int64
+	DepartmentID     int64
 	Limit, Offset    int32
 }
 

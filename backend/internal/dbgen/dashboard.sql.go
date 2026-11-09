@@ -13,22 +13,27 @@ import (
 
 const dashboardCounts = `-- name: DashboardCounts :one
 SELECT
-    (SELECT count(*) FROM requests WHERE is_active = TRUE)     AS total_requests,
-    (SELECT count(*) FROM payment_receipt)                     AS total_payment_receipts,
+    (SELECT count(*) FROM requests WHERE is_active = TRUE
+       AND ($1::bigint IS NULL OR department_id = $1::bigint)) AS total_requests,
+    (SELECT count(*) FROM payment_receipt
+       WHERE $1::bigint IS NULL OR department_id = $1::bigint) AS total_payment_receipts,
     (SELECT count(*) FROM base WHERE is_active = TRUE)         AS total_bases,
-    (SELECT count(*) FROM department WHERE is_active = TRUE)   AS total_departments
+    (SELECT CASE WHEN $1::bigint IS NULL
+                 THEN count(*)
+                 ELSE count(*) FILTER (WHERE id = $1::bigint)
+            END FROM department WHERE is_active = TRUE) AS total_departments
 `
 
 type DashboardCountsRow struct {
 	TotalRequests        int64
 	TotalPaymentReceipts int64
 	TotalBases           int64
-	TotalDepartments     int64
+	TotalDepartments     interface{}
 }
 
 // Statistik ringkas: total request aktif, payment receipt, base, dan department.
-func (q *Queries) DashboardCounts(ctx context.Context) (DashboardCountsRow, error) {
-	row := q.db.QueryRow(ctx, dashboardCounts)
+func (q *Queries) DashboardCounts(ctx context.Context, departmentID pgtype.Int8) (DashboardCountsRow, error) {
+	row := q.db.QueryRow(ctx, dashboardCounts, departmentID)
 	var i DashboardCountsRow
 	err := row.Scan(
 		&i.TotalRequests,
@@ -44,6 +49,7 @@ SELECT date_trunc('month', tanggal_pembelian)::date AS bulan,
        coalesce(sum(total_harga), 0)::text AS spend
 FROM payment_receipt
 WHERE tanggal_pembelian >= (CURRENT_DATE - interval '11 months')::date
+  AND ($1::bigint IS NULL OR department_id = $1::bigint)
 GROUP BY 1
 ORDER BY 1
 `
@@ -54,8 +60,8 @@ type DashboardMonthlySpendRow struct {
 }
 
 // Total belanja per bulan untuk 12 bulan terakhir.
-func (q *Queries) DashboardMonthlySpend(ctx context.Context) ([]DashboardMonthlySpendRow, error) {
-	rows, err := q.db.Query(ctx, dashboardMonthlySpend)
+func (q *Queries) DashboardMonthlySpend(ctx context.Context, departmentID pgtype.Int8) ([]DashboardMonthlySpendRow, error) {
+	rows, err := q.db.Query(ctx, dashboardMonthlySpend, departmentID)
 	if err != nil {
 		return nil, err
 	}
@@ -77,6 +83,7 @@ func (q *Queries) DashboardMonthlySpend(ctx context.Context) ([]DashboardMonthly
 const dashboardStatusBreakdown = `-- name: DashboardStatusBreakdown :many
 SELECT status, count(*) AS count
 FROM payment_receipt
+WHERE $1::bigint IS NULL OR department_id = $1::bigint
 GROUP BY status
 ORDER BY status
 `
@@ -87,8 +94,8 @@ type DashboardStatusBreakdownRow struct {
 }
 
 // Jumlah payment receipt per status seluruh waktu.
-func (q *Queries) DashboardStatusBreakdown(ctx context.Context) ([]DashboardStatusBreakdownRow, error) {
-	rows, err := q.db.Query(ctx, dashboardStatusBreakdown)
+func (q *Queries) DashboardStatusBreakdown(ctx context.Context, departmentID pgtype.Int8) ([]DashboardStatusBreakdownRow, error) {
+	rows, err := q.db.Query(ctx, dashboardStatusBreakdown, departmentID)
 	if err != nil {
 		return nil, err
 	}
@@ -112,10 +119,16 @@ SELECT d.id, d.nama,
        coalesce(sum(p.total_harga), 0)::text AS total
 FROM department d
 LEFT JOIN payment_receipt p ON p.department_id = d.id
+WHERE $2::bigint IS NULL OR d.id = $2::bigint
 GROUP BY d.id, d.nama
 ORDER BY coalesce(sum(p.total_harga), 0) DESC, d.nama ASC
 LIMIT $1
 `
+
+type DashboardTopDepartmentsParams struct {
+	Limit        int32
+	DepartmentID pgtype.Int8
+}
 
 type DashboardTopDepartmentsRow struct {
 	ID    int64
@@ -124,8 +137,8 @@ type DashboardTopDepartmentsRow struct {
 }
 
 // Department dengan total belanja terbesar (secara default 5 teratas).
-func (q *Queries) DashboardTopDepartments(ctx context.Context, limit int32) ([]DashboardTopDepartmentsRow, error) {
-	rows, err := q.db.Query(ctx, dashboardTopDepartments, limit)
+func (q *Queries) DashboardTopDepartments(ctx context.Context, arg DashboardTopDepartmentsParams) ([]DashboardTopDepartmentsRow, error) {
+	rows, err := q.db.Query(ctx, dashboardTopDepartments, arg.Limit, arg.DepartmentID)
 	if err != nil {
 		return nil, err
 	}

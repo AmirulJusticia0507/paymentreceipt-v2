@@ -74,26 +74,36 @@ type LoginResult struct {
 
 // UserInfo adalah profil user tanpa data sensitif.
 type UserInfo struct {
-	ID          int64     `json:"id"`
-	Username    string    `json:"username"`
-	Email       string    `json:"email"`
-	FullName    string    `json:"full_name"`
-	Role        string    `json:"role"`
-	LastLoginAt time.Time `json:"last_login_at,omitempty"`
+	ID           int64     `json:"id"`
+	Username     string    `json:"username"`
+	Email        string    `json:"email"`
+	FullName     string    `json:"full_name"`
+	Role         string    `json:"role"`
+	DepartmentID *int64    `json:"department_id"`
+	LastLoginAt  time.Time `json:"last_login_at,omitempty"`
 }
 
 func toUserInfo(u dbgen.User) UserInfo {
 	info := UserInfo{
-		ID:       u.ID,
-		Username: u.Username,
-		Email:    u.Email,
-		FullName: u.FullName,
-		Role:     string(u.Role),
+		ID:           u.ID,
+		Username:     u.Username,
+		Email:        u.Email,
+		FullName:     u.FullName,
+		Role:         string(u.Role),
+		DepartmentID: nullableDepartmentID(u.DepartmentID),
 	}
 	if u.LastLoginAt.Valid {
 		info.LastLoginAt = u.LastLoginAt.Time
 	}
 	return info
+}
+
+func nullableDepartmentID(value pgtype.Int8) *int64 {
+	if !value.Valid {
+		return nil
+	}
+	id := value.Int64
+	return &id
 }
 
 // Login memverifikasi kredensial dan menerbitkan sepasang token.
@@ -237,11 +247,12 @@ func (s *Service) Me(ctx context.Context, userID int64) (*UserInfo, error) {
 	}
 
 	info := UserInfo{
-		ID:       user.ID,
-		Username: user.Username,
-		Email:    user.Email,
-		FullName: user.FullName,
-		Role:     string(user.Role),
+		ID:           user.ID,
+		Username:     user.Username,
+		Email:        user.Email,
+		FullName:     user.FullName,
+		Role:         string(user.Role),
+		DepartmentID: nullableDepartmentID(user.DepartmentID),
 	}
 	if user.LastLoginAt.Valid {
 		info.LastLoginAt = user.LastLoginAt.Time
@@ -274,11 +285,12 @@ func (s *Service) UpdateFullName(ctx context.Context, userID int64, fullName str
 	}
 
 	info := UserInfo{
-		ID:       user.ID,
-		Username: user.Username,
-		Email:    user.Email,
-		FullName: user.FullName,
-		Role:     string(user.Role),
+		ID:           user.ID,
+		Username:     user.Username,
+		Email:        user.Email,
+		FullName:     user.FullName,
+		Role:         string(user.Role),
+		DepartmentID: nullableDepartmentID(user.DepartmentID),
 	}
 	if user.LastLoginAt.Valid {
 		info.LastLoginAt = user.LastLoginAt.Time
@@ -288,12 +300,16 @@ func (s *Service) UpdateFullName(ctx context.Context, userID int64, fullName str
 
 // issueTokens membuat access + refresh token dan menyimpan hash refresh token.
 func (s *Service) issueTokens(ctx context.Context, user dbgen.User, ip, userAgent string) (*LoginResult, error) {
-	access, accessExp, err := s.tokenMgr.IssueAccess(user.ID, user.Username, string(user.Role))
+	departmentID := int64(0)
+	if user.DepartmentID.Valid {
+		departmentID = user.DepartmentID.Int64
+	}
+	access, accessExp, err := s.tokenMgr.IssueAccess(user.ID, user.Username, string(user.Role), departmentID)
 	if err != nil {
 		return nil, apperror.Internalf("auth.issue_access_failed", err)
 	}
 
-	refresh, refreshExp, err := s.tokenMgr.IssueRefresh(user.ID, user.Username, string(user.Role))
+	refresh, refreshExp, err := s.tokenMgr.IssueRefresh(user.ID, user.Username, string(user.Role), departmentID)
 	if err != nil {
 		return nil, apperror.Internalf("auth.issue_refresh_failed", err)
 	}

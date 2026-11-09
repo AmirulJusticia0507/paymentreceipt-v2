@@ -3,7 +3,7 @@
 -- Join ke payment_receipt untuk harga_aktual cross-check, dan ke user untuk
 -- nama approver.
 SELECT
-    a.id, a.kode, a.payment_receipt_id, p.kode AS receipt_kode,
+    a.id, a.kode, a.payment_receipt_id, p.kode AS receipt_kode, p.department_id,
     a.tanggal_selesai, a.nama_request, a.manager_approved, a.approved_by,
     u.username AS approved_by_username, a.description, a.quantity,
     a.harga_rencana, a.harga_aktual, a.created_at, a.updated_at
@@ -17,6 +17,7 @@ WHERE (sqlc.narg('date_from')::timestamptz IS NULL OR a.tanggal_selesai >= sqlc.
        OR a.manager_approved ILIKE '%' || sqlc.narg('q')::text || '%'
        OR p.kode ILIKE '%' || sqlc.narg('q')::text || '%')
   AND (sqlc.narg('approver')::bigint IS NULL OR a.approved_by = sqlc.narg('approver')::bigint)
+  AND (sqlc.narg('department_id')::bigint IS NULL OR p.department_id = sqlc.narg('department_id')::bigint)
 ORDER BY a.tanggal_selesai DESC, a.id DESC
 LIMIT sqlc.arg('limit') OFFSET sqlc.arg('offset');
 
@@ -31,11 +32,12 @@ WHERE (sqlc.narg('date_from')::timestamptz IS NULL OR a.tanggal_selesai >= sqlc.
        OR a.nama_request ILIKE '%' || sqlc.narg('q')::text || '%'
        OR a.manager_approved ILIKE '%' || sqlc.narg('q')::text || '%'
        OR p.kode ILIKE '%' || sqlc.narg('q')::text || '%')
-  AND (sqlc.narg('approver')::bigint IS NULL OR a.approved_by = sqlc.narg('approver')::bigint);
+  AND (sqlc.narg('approver')::bigint IS NULL OR a.approved_by = sqlc.narg('approver')::bigint)
+  AND (sqlc.narg('department_id')::bigint IS NULL OR p.department_id = sqlc.narg('department_id')::bigint);
 
 -- name: GetPrArchive :one
 SELECT
-    a.id, a.kode, a.payment_receipt_id, p.kode AS receipt_kode,
+    a.id, a.kode, a.payment_receipt_id, p.kode AS receipt_kode, p.department_id,
     a.tanggal_selesai, a.nama_request, a.manager_approved, a.approved_by,
     u.username AS approved_by_username, a.description, a.quantity,
     a.harga_rencana, a.harga_aktual, a.created_at, a.updated_at

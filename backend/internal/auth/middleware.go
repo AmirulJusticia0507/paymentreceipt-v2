@@ -5,16 +5,20 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/jackc/pgx/v5"
+
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/apperror"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/config"
+	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/dbgen"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/httputil"
 )
 
 // Identity adalah identitas terautentikasi yang melekat pada request.
 type Identity struct {
-	UserID   int64
-	Username string
-	Role     string
+	UserID       int64
+	Username     string
+	Role         string
+	DepartmentID int64
 }
 
 // HasRole melaporkan apakah user punya salah satu dari role yang diminta.
@@ -63,11 +67,20 @@ const (
 type Authenticator struct {
 	tokens  *TokenManager
 	cookies CookieOptions
+	users   interface {
+		GetUserSafeByID(context.Context, int64) (dbgen.GetUserSafeByIDRow, error)
+	}
 }
 
 // NewAuthenticator membuat Authenticator.
-func NewAuthenticator(tokens *TokenManager, cookies CookieOptions) *Authenticator {
-	return &Authenticator{tokens: tokens, cookies: cookies}
+func NewAuthenticator(tokens *TokenManager, cookies CookieOptions, users ...interface {
+	GetUserSafeByID(context.Context, int64) (dbgen.GetUserSafeByIDRow, error)
+}) *Authenticator {
+	a := &Authenticator{tokens: tokens, cookies: cookies}
+	if len(users) > 0 {
+		a.users = users[0]
+	}
+	return a
 }
 
 // Middleware mewajibkan request punya access token yang valid.
@@ -97,9 +110,31 @@ func (a *Authenticator) Middleware(next http.Handler) http.Handler {
 		}
 
 		identity := Identity{
-			UserID:   userID,
-			Username: claims.Username,
-			Role:     claims.Role,
+			UserID:       userID,
+			Username:     claims.Username,
+			Role:         claims.Role,
+			DepartmentID: claims.DepartmentID,
+		}
+		if a.users != nil {
+			user, lookupErr := a.users.GetUserSafeByID(r.Context(), userID)
+			if lookupErr != nil {
+				if errors.Is(lookupErr, pgx.ErrNoRows) {
+					httputil.Problemf(w, r, apperror.Unauthorized("Sesi tidak valid, silakan masuk ulang"))
+					return
+				}
+				httputil.Problemf(w, r, apperror.Internal(lookupErr))
+				return
+			}
+			if !user.IsActive {
+				httputil.Problemf(w, r, apperror.Forbidden("Akun Anda dinonaktifkan"))
+				return
+			}
+			identity.Username = user.Username
+			identity.Role = string(user.Role)
+			identity.DepartmentID = 0
+			if user.DepartmentID.Valid {
+				identity.DepartmentID = user.DepartmentID.Int64
+			}
 		}
 
 		next.ServeHTTP(w, r.WithContext(WithIdentity(r.Context(), identity)))

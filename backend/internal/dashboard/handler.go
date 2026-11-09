@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/apperror"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/auth"
@@ -22,7 +23,12 @@ type handler struct {
 
 // summary menangani GET /api/v1/dashboard/summary.
 func (h *handler) summary(w http.ResponseWriter, r *http.Request) {
-	counts, err := h.q.DashboardCounts(r.Context())
+	departmentID, err := scopedDepartmentID(r)
+	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	counts, err := h.q.DashboardCounts(r.Context(), departmentID)
 	if err != nil {
 		httputil.Problemf(w, r, apperror.Wrap(apperror.KindInternal, "dashboard.summary_failed", "Gagal memuat statistik", err))
 		return
@@ -37,11 +43,17 @@ func (h *handler) summary(w http.ResponseWriter, r *http.Request) {
 
 // recent menangani GET /api/v1/dashboard/recent.
 func (h *handler) recent(w http.ResponseWriter, r *http.Request) {
+	departmentID, err := scopedDepartmentID(r)
+	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
 	store := paymentreceiptstore.New(h.q)
 	items, _, err := store.List(r.Context(), paymentreceipt.Filters{
-		Limit:  10,
-		Offset: 0,
-		Sort:   "tanggal_desc",
+		DepartmentID: departmentID.Int64,
+		Limit:        10,
+		Offset:       0,
+		Sort:         "tanggal_desc",
 	})
 	if err != nil {
 		httputil.Problemf(w, r, apperror.Wrap(apperror.KindInternal, "dashboard.recent_failed", "Gagal memuat transaksi terakhir", err))
@@ -52,7 +64,12 @@ func (h *handler) recent(w http.ResponseWriter, r *http.Request) {
 
 // statusBreakdown menangani GET /api/v1/dashboard/status-breakdown.
 func (h *handler) statusBreakdown(w http.ResponseWriter, r *http.Request) {
-	rows, err := h.q.DashboardStatusBreakdown(r.Context())
+	departmentID, err := scopedDepartmentID(r)
+	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	rows, err := h.q.DashboardStatusBreakdown(r.Context(), departmentID)
 	if err != nil {
 		httputil.Problemf(w, r, apperror.Wrap(apperror.KindInternal, "dashboard.status_failed", "Gagal memuat breakdown status", err))
 		return
@@ -66,7 +83,12 @@ func (h *handler) statusBreakdown(w http.ResponseWriter, r *http.Request) {
 
 // monthlySpend menangani GET /api/v1/dashboard/monthly-spend.
 func (h *handler) monthlySpend(w http.ResponseWriter, r *http.Request) {
-	rows, err := h.q.DashboardMonthlySpend(r.Context())
+	departmentID, err := scopedDepartmentID(r)
+	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	rows, err := h.q.DashboardMonthlySpend(r.Context(), departmentID)
 	if err != nil {
 		httputil.Problemf(w, r, apperror.Wrap(apperror.KindInternal, "dashboard.monthly_spend_failed", "Gagal memuat total belanja bulanan", err))
 		return
@@ -104,7 +126,12 @@ func (h *handler) topDepartments(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	rows, err := h.q.DashboardTopDepartments(r.Context(), limit)
+	departmentID, err := scopedDepartmentID(r)
+	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	rows, err := h.q.DashboardTopDepartments(r.Context(), dbgen.DashboardTopDepartmentsParams{Limit: limit, DepartmentID: departmentID})
 	if err != nil {
 		httputil.Problemf(w, r, apperror.Wrap(apperror.KindInternal, "dashboard.top_departments_failed", "Gagal memuat top department", err))
 		return
@@ -118,6 +145,17 @@ func (h *handler) topDepartments(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 	httputil.JSONData(w, http.StatusOK, out)
+}
+
+func scopedDepartmentID(r *http.Request) (pgtype.Int8, error) {
+	identity, ok := auth.IdentityFrom(r.Context())
+	if !ok || identity.Role != auth.RoleRequester {
+		return pgtype.Int8{}, nil
+	}
+	if identity.DepartmentID <= 0 {
+		return pgtype.Int8{}, apperror.Forbidden("Akun requester belum ditetapkan ke department")
+	}
+	return pgtype.Int8{Int64: identity.DepartmentID, Valid: true}, nil
 }
 
 // Mount memasang route dashboard di bawah auth guard.

@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/apperror"
+	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/auth"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/dbgen"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/httputil"
 )
@@ -48,6 +49,13 @@ func (h *handler) operational(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		departmentID = pgtype.Int8{Int64: id, Valid: true}
+	}
+	if identity, ok := auth.IdentityFrom(r.Context()); ok && identity.Role == auth.RoleRequester {
+		if identity.DepartmentID <= 0 {
+			httputil.Problemf(w, r, apperror.Forbidden("Akun requester belum ditetapkan ke department"))
+			return
+		}
+		departmentID = pgtype.Int8{Int64: identity.DepartmentID, Valid: true}
 	}
 
 	rows, err := h.q.OperationalReport(r.Context(), dbgen.OperationalReportParams{

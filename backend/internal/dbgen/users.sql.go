@@ -38,7 +38,7 @@ func (q *Queries) DeactivateUser(ctx context.Context, id int64) error {
 
 const getUserByID = `-- name: GetUserByID :one
 SELECT
-    id, username, email, password_hash, full_name, role, is_active,
+    id, username, email, password_hash, full_name, role, department_id, is_active,
     last_login_at, created_at, updated_at
 FROM users
 WHERE id = $1
@@ -54,6 +54,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 		&i.PasswordHash,
 		&i.FullName,
 		&i.Role,
+		&i.DepartmentID,
 		&i.IsActive,
 		&i.LastLoginAt,
 		&i.CreatedAt,
@@ -64,7 +65,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 
 const getUserByUsername = `-- name: GetUserByUsername :one
 SELECT
-    id, username, email, password_hash, full_name, role, is_active,
+    id, username, email, password_hash, full_name, role, department_id, is_active,
     last_login_at, created_at, updated_at
 FROM users
 WHERE username = $1
@@ -82,6 +83,7 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 		&i.PasswordHash,
 		&i.FullName,
 		&i.Role,
+		&i.DepartmentID,
 		&i.IsActive,
 		&i.LastLoginAt,
 		&i.CreatedAt,
@@ -92,22 +94,23 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 
 const getUserSafeByID = `-- name: GetUserSafeByID :one
 SELECT
-    id, username, email, full_name, role, is_active,
+    id, username, email, full_name, role, is_active, department_id,
     last_login_at, created_at, updated_at
 FROM users
 WHERE id = $1
 `
 
 type GetUserSafeByIDRow struct {
-	ID          int64
-	Username    string
-	Email       string
-	FullName    string
-	Role        UserRole
-	IsActive    bool
-	LastLoginAt pgtype.Timestamptz
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	ID           int64
+	Username     string
+	Email        string
+	FullName     string
+	Role         UserRole
+	IsActive     bool
+	DepartmentID pgtype.Int8
+	LastLoginAt  pgtype.Timestamptz
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
 }
 
 // Versi tanpa password_hash, untuk ditampilkan di /auth/me dan daftar user.
@@ -121,6 +124,7 @@ func (q *Queries) GetUserSafeByID(ctx context.Context, id int64) (GetUserSafeByI
 		&i.FullName,
 		&i.Role,
 		&i.IsActive,
+		&i.DepartmentID,
 		&i.LastLoginAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -130,7 +134,7 @@ func (q *Queries) GetUserSafeByID(ctx context.Context, id int64) (GetUserSafeByI
 
 const listActiveUsers = `-- name: ListActiveUsers :many
 SELECT
-    id, username, email, full_name, role, is_active,
+    id, username, email, full_name, role, is_active, department_id,
     last_login_at, created_at, updated_at
 FROM users
 WHERE is_active = TRUE
@@ -138,15 +142,16 @@ ORDER BY username ASC
 `
 
 type ListActiveUsersRow struct {
-	ID          int64
-	Username    string
-	Email       string
-	FullName    string
-	Role        UserRole
-	IsActive    bool
-	LastLoginAt pgtype.Timestamptz
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	ID           int64
+	Username     string
+	Email        string
+	FullName     string
+	Role         UserRole
+	IsActive     bool
+	DepartmentID pgtype.Int8
+	LastLoginAt  pgtype.Timestamptz
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
 }
 
 func (q *Queries) ListActiveUsers(ctx context.Context) ([]ListActiveUsersRow, error) {
@@ -165,6 +170,7 @@ func (q *Queries) ListActiveUsers(ctx context.Context) ([]ListActiveUsersRow, er
 			&i.FullName,
 			&i.Role,
 			&i.IsActive,
+			&i.DepartmentID,
 			&i.LastLoginAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -181,22 +187,23 @@ func (q *Queries) ListActiveUsers(ctx context.Context) ([]ListActiveUsersRow, er
 
 const listUsers = `-- name: ListUsers :many
 SELECT
-    id, username, email, full_name, role, is_active,
+    id, username, email, full_name, role, is_active, department_id,
     last_login_at, created_at, updated_at
 FROM users
 ORDER BY is_active DESC, username ASC
 `
 
 type ListUsersRow struct {
-	ID          int64
-	Username    string
-	Email       string
-	FullName    string
-	Role        UserRole
-	IsActive    bool
-	LastLoginAt pgtype.Timestamptz
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	ID           int64
+	Username     string
+	Email        string
+	FullName     string
+	Role         UserRole
+	IsActive     bool
+	DepartmentID pgtype.Int8
+	LastLoginAt  pgtype.Timestamptz
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
 }
 
 func (q *Queries) ListUsers(ctx context.Context) ([]ListUsersRow, error) {
@@ -215,6 +222,7 @@ func (q *Queries) ListUsers(ctx context.Context) ([]ListUsersRow, error) {
 			&i.FullName,
 			&i.Role,
 			&i.IsActive,
+			&i.DepartmentID,
 			&i.LastLoginAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -240,11 +248,55 @@ func (q *Queries) TouchUserLastLogin(ctx context.Context, id int64) error {
 	return err
 }
 
+const updateRequesterDepartment = `-- name: UpdateRequesterDepartment :one
+UPDATE users
+SET department_id = $1, updated_at = now()
+WHERE id = $2 AND role = 'requester'::user_role
+RETURNING id, username, email, full_name, role, is_active, department_id,
+          last_login_at, created_at, updated_at
+`
+
+type UpdateRequesterDepartmentParams struct {
+	DepartmentID pgtype.Int8
+	ID           int64
+}
+
+type UpdateRequesterDepartmentRow struct {
+	ID           int64
+	Username     string
+	Email        string
+	FullName     string
+	Role         UserRole
+	IsActive     bool
+	DepartmentID pgtype.Int8
+	LastLoginAt  pgtype.Timestamptz
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
+}
+
+func (q *Queries) UpdateRequesterDepartment(ctx context.Context, arg UpdateRequesterDepartmentParams) (UpdateRequesterDepartmentRow, error) {
+	row := q.db.QueryRow(ctx, updateRequesterDepartment, arg.DepartmentID, arg.ID)
+	var i UpdateRequesterDepartmentRow
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Email,
+		&i.FullName,
+		&i.Role,
+		&i.IsActive,
+		&i.DepartmentID,
+		&i.LastLoginAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const updateUserFullName = `-- name: UpdateUserFullName :one
 UPDATE users
 SET full_name = $1, updated_at = now()
 WHERE id = $2
-RETURNING id, username, email, full_name, role, is_active, last_login_at, created_at, updated_at
+RETURNING id, username, email, full_name, role, is_active, department_id, last_login_at, created_at, updated_at
 `
 
 type UpdateUserFullNameParams struct {
@@ -253,15 +305,16 @@ type UpdateUserFullNameParams struct {
 }
 
 type UpdateUserFullNameRow struct {
-	ID          int64
-	Username    string
-	Email       string
-	FullName    string
-	Role        UserRole
-	IsActive    bool
-	LastLoginAt pgtype.Timestamptz
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	ID           int64
+	Username     string
+	Email        string
+	FullName     string
+	Role         UserRole
+	IsActive     bool
+	DepartmentID pgtype.Int8
+	LastLoginAt  pgtype.Timestamptz
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
 }
 
 // Pengguna hanya boleh mengubah nama akun miliknya sendiri. Query ini
@@ -276,6 +329,7 @@ func (q *Queries) UpdateUserFullName(ctx context.Context, arg UpdateUserFullName
 		&i.FullName,
 		&i.Role,
 		&i.IsActive,
+		&i.DepartmentID,
 		&i.LastLoginAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,

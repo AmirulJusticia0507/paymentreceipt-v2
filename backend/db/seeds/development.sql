@@ -45,6 +45,9 @@ INSERT INTO department (kode, nama, keterangan) VALUES
   ('COM',   'Commercial, Cargo & Ticketing',  'Komersial, penjualan tiket, carter pesawat & kargo perintis'),
   ('PROC',  'Procurement & Supply Chain',     'Pengadaan barang, suku cadang & manajemen rantai pasok');
 
+UPDATE users SET department_id = (SELECT id FROM department WHERE kode = 'GA')
+WHERE username = 'requester';
+
 INSERT INTO satuan (kode, nama) VALUES
   ('PCS', 'Pcs'), ('BOX', 'Box'), ('LUS', 'Lusin'), ('RIM', 'Rim'),
   ('SET', 'Set'), ('KG',  'Kilogram'), ('LTR', 'Liter'), ('PAK', 'Paket'), ('GAL', 'Galon');

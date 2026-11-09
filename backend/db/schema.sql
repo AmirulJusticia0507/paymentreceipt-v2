@@ -393,6 +393,7 @@ CREATE TABLE public.users (
     password_hash text NOT NULL,
     full_name character varying(150) DEFAULT ''::character varying NOT NULL,
     role public.user_role DEFAULT 'viewer'::public.user_role NOT NULL,
+    department_id bigint,
     is_active boolean DEFAULT true NOT NULL,
     last_login_at timestamp with time zone,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
@@ -676,6 +677,9 @@ ALTER TABLE ONLY public.users
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_username_key UNIQUE (username);
 
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_department_fk FOREIGN KEY (department_id) REFERENCES public.department(id) ON DELETE RESTRICT;
+
 
 --
 -- Name: idx_base_active; Type: INDEX; Schema: public; Owner: -
@@ -934,6 +938,8 @@ CREATE INDEX idx_users_last_login ON public.users USING btree (last_login_at DES
 --
 
 CREATE INDEX idx_users_role ON public.users USING btree (role) WHERE is_active;
+
+CREATE INDEX idx_users_department ON public.users USING btree (department_id) WHERE (department_id IS NOT NULL);
 
 
 --

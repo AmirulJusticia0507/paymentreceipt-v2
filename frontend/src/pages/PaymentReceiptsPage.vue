@@ -98,7 +98,9 @@ async function loadOptions(): Promise<void> {
   if (optionsLoaded.value) return
   try {
     const d = await requestWithMeta<any[]>(`/api/v1/departments?per_page=200`)
-    departments.value = d.data ?? []
+    departments.value = (d.data ?? []).filter((department: any) =>
+      !auth.hasRole('requester') || department.id === auth.user?.department_id,
+    )
     const r = await requestWithMeta<any[]>(`/api/v1/requests?per_page=500`)
     requests.value = r.data ?? []
     const c = await requestWithMeta<any[]>(`/api/v1/categories?per_page=200`)
@@ -159,7 +161,7 @@ function openCreate(): void {
     id: 0,
     kode: '',
     request_id: '',
-    department_id: '',
+    department_id: auth.hasRole('requester') ? auth.user?.department_id ?? '' : '',
     source_id: '',
     category_id: '',
     unit_id: '',
@@ -432,7 +434,7 @@ function openDetail(item: any): void {
       <div class="space-y-4">
         <div class="relative">
           <label class="block text-sm font-medium text-ink">Departemen <span class="text-status-cancelled" aria-hidden="true">*</span></label>
-          <select v-model="editing.department_id" class="block w-full rounded-lg border bg-raised py-2 px-3 text-sm text-ink focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none">
+          <select v-model="editing.department_id" :disabled="auth.hasRole('requester')" class="block w-full rounded-lg border bg-raised py-2 px-3 text-sm text-ink focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-70">
             <option value="">Pilih department</option>
             <option v-for="d in departments" :key="d.id" :value="d.id">{{ d.nama }}</option>
           </select>

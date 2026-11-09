@@ -17,8 +17,9 @@ import (
 // sini: isi JWT hanya di-encode, bukan di-encode.
 type Claims struct {
 	jwt.RegisteredClaims
-	Username string `json:"username"`
-	Role     string `json:"role"`
+	Username     string `json:"username"`
+	Role         string `json:"role"`
+	DepartmentID int64  `json:"department_id,omitempty"`
 	// TokenType membedakan access token dari refresh token kalau suatu saat
 	// keduanya dipakai pada jalur yang sama.
 	TokenType string `json:"typ"`
@@ -67,19 +68,26 @@ func (m *TokenManager) TTLAccess() time.Duration { return m.accessTTL }
 func (m *TokenManager) TTLRefresh() time.Duration { return m.refreshTTL }
 
 // IssueAccess membuat access token baru untuk user.
-func (m *TokenManager) IssueAccess(userID int64, username, role string) (string, time.Time, error) {
-	return m.issue(userID, username, role, TokenTypeAccess, m.accessTTL)
+func (m *TokenManager) IssueAccess(userID int64, username, role string, departmentIDs ...int64) (string, time.Time, error) {
+	return m.issue(userID, username, role, departmentID(departmentIDs), TokenTypeAccess, m.accessTTL)
 }
 
 // IssueRefresh membuat refresh token JWT.
 //
 // Refresh token disimpan sebagai hash di database, tapi yang dikirim ke klien
 // tetap JWT supaya tidak perlu lookup database hanya untuk memvalidasi format.
-func (m *TokenManager) IssueRefresh(userID int64, username, role string) (string, time.Time, error) {
-	return m.issue(userID, username, role, TokenTypeRefresh, m.refreshTTL)
+func (m *TokenManager) IssueRefresh(userID int64, username, role string, departmentIDs ...int64) (string, time.Time, error) {
+	return m.issue(userID, username, role, departmentID(departmentIDs), TokenTypeRefresh, m.refreshTTL)
 }
 
-func (m *TokenManager) issue(userID int64, username, role, typ string, ttl time.Duration) (string, time.Time, error) {
+func departmentID(values []int64) int64 {
+	if len(values) == 0 {
+		return 0
+	}
+	return values[0]
+}
+
+func (m *TokenManager) issue(userID int64, username, role string, departmentID int64, typ string, ttl time.Duration) (string, time.Time, error) {
 	now := time.Now()
 	exp := now.Add(ttl)
 
@@ -93,9 +101,10 @@ func (m *TokenManager) issue(userID int64, username, role, typ string, ttl time.
 			// ID unik per token. Berguna untuk log dan deteksi token replay.
 			ID: fmt.Sprintf("%d-%d", userID, now.UnixNano()),
 		},
-		Username:  username,
-		Role:      role,
-		TokenType: typ,
+		Username:     username,
+		Role:         role,
+		DepartmentID: departmentID,
+		TokenType:    typ,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

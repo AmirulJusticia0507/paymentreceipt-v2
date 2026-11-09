@@ -91,7 +91,7 @@ func New(d Deps) http.Handler {
 	// --- Wiring auth ------------------------------------------------------
 	tokens := auth.NewTokenManager(cfg.Auth)
 	cookies := auth.NewCookieOptions(cfg.Auth)
-	authenticator := auth.NewAuthenticator(tokens, cookies)
+	authenticator := auth.NewAuthenticator(tokens, cookies, d.Queries)
 
 	authSvc := authservice.New(
 		d.Queries,

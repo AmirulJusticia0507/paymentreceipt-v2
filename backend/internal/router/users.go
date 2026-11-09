@@ -36,11 +36,19 @@ func userDTO(u dbgen.ListUsersRow) map[string]any {
 		"email":         u.Email,
 		"full_name":     u.FullName,
 		"role":          u.Role,
+		"department_id": nullableInt64Value(u.DepartmentID),
 		"is_active":     u.IsActive,
 		"last_login_at": timestamptzOrNull(u.LastLoginAt),
 		"created_at":    u.CreatedAt,
 		"updated_at":    u.UpdatedAt,
 	}
+}
+
+func nullableInt64Value(value pgtype.Int8) any {
+	if !value.Valid {
+		return nil
+	}
+	return value.Int64
 }
 
 // timestamptzOrNull mengubah kolom timestamp nullable menjadi nilai JSON:
@@ -62,6 +70,55 @@ func mountUsers(r chi.Router, a *auth.Authenticator, cfg config.AuthConfig, q *d
 
 		r.Get("/", h.list)
 		r.Post("/{id}/reset-password", h.resetPassword)
+		r.Patch("/{id}/department", h.assignDepartment)
+	})
+}
+
+func (h *userHandler) assignDepartment(w http.ResponseWriter, r *http.Request) {
+	id, err := pathID(r)
+	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	var body struct {
+		DepartmentID int64 `json:"department_id"`
+	}
+	if err := httputil.DecodeJSON(w, r, &body); err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	if body.DepartmentID <= 0 {
+		httputil.Problemf(w, r, apperror.FieldValidation("department_id", "Department wajib dipilih", "required"))
+		return
+	}
+	if _, err := h.q.GetDepartmentByID(r.Context(), body.DepartmentID); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			httputil.Problemf(w, r, apperror.FieldValidation("department_id", "Department tidak ditemukan", "not_found"))
+			return
+		}
+		httputil.Problemf(w, r, apperror.Internal(err))
+		return
+	}
+	updated, err := h.q.UpdateRequesterDepartment(r.Context(), dbgen.UpdateRequesterDepartmentParams{
+		DepartmentID: pgtype.Int8{Int64: body.DepartmentID, Valid: true}, ID: id,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			httputil.Problemf(w, r, apperror.NotFound("Requester"))
+			return
+		}
+		httputil.Problemf(w, r, apperror.Internal(err))
+		return
+	}
+	// Assignment changes the scope encoded in a token; revoke refresh tokens so
+	// the user receives a fresh department claim at the next login.
+	if err := h.q.RevokeAllUserRefreshTokens(r.Context(), id); err != nil {
+		httputil.Problemf(w, r, apperror.Internal(err))
+		return
+	}
+	httputil.JSONData(w, http.StatusOK, map[string]any{
+		"id": updated.ID, "username": updated.Username, "role": updated.Role,
+		"department_id": nullableInt64Value(updated.DepartmentID),
 	})
 }
 

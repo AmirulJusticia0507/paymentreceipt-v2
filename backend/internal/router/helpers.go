@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/apperror"
+	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/auth"
 )
 
 // pathID membaca dan memvalidasi parameter {id} dari path.
@@ -48,4 +49,26 @@ func queryInt64(r *http.Request, name string) int64 {
 		return 0
 	}
 	return v
+}
+
+func departmentScope(r *http.Request) (int64, error) {
+	identity, ok := auth.IdentityFrom(r.Context())
+	if !ok || identity.Role != auth.RoleRequester {
+		return 0, nil
+	}
+	if identity.DepartmentID <= 0 {
+		return 0, apperror.Forbidden("Akun requester belum ditetapkan ke department")
+	}
+	return identity.DepartmentID, nil
+}
+
+func checkDepartmentAccess(r *http.Request, resourceDepartmentID int64) error {
+	departmentID, err := departmentScope(r)
+	if err != nil {
+		return err
+	}
+	if departmentID > 0 && departmentID != resourceDepartmentID {
+		return apperror.NotFound("Data")
+	}
+	return nil
 }

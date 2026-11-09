@@ -24,13 +24,15 @@ WHERE ($1::timestamptz IS NULL OR a.tanggal_selesai >= $1::timestamptz)
        OR a.manager_approved ILIKE '%' || $3::text || '%'
        OR p.kode ILIKE '%' || $3::text || '%')
   AND ($4::bigint IS NULL OR a.approved_by = $4::bigint)
+  AND ($5::bigint IS NULL OR p.department_id = $5::bigint)
 `
 
 type CountPrArchivesParams struct {
-	DateFrom pgtype.Timestamptz
-	DateTo   pgtype.Timestamptz
-	Q        pgtype.Text
-	Approver pgtype.Int8
+	DateFrom     pgtype.Timestamptz
+	DateTo       pgtype.Timestamptz
+	Q            pgtype.Text
+	Approver     pgtype.Int8
+	DepartmentID pgtype.Int8
 }
 
 func (q *Queries) CountPrArchives(ctx context.Context, arg CountPrArchivesParams) (int64, error) {
@@ -39,6 +41,7 @@ func (q *Queries) CountPrArchives(ctx context.Context, arg CountPrArchivesParams
 		arg.DateTo,
 		arg.Q,
 		arg.Approver,
+		arg.DepartmentID,
 	)
 	var count int64
 	err := row.Scan(&count)
@@ -113,7 +116,7 @@ func (q *Queries) DeletePrArchive(ctx context.Context, id int64) error {
 
 const getPrArchive = `-- name: GetPrArchive :one
 SELECT
-    a.id, a.kode, a.payment_receipt_id, p.kode AS receipt_kode,
+    a.id, a.kode, a.payment_receipt_id, p.kode AS receipt_kode, p.department_id,
     a.tanggal_selesai, a.nama_request, a.manager_approved, a.approved_by,
     u.username AS approved_by_username, a.description, a.quantity,
     a.harga_rencana, a.harga_aktual, a.created_at, a.updated_at
@@ -128,6 +131,7 @@ type GetPrArchiveRow struct {
 	Kode               string
 	PaymentReceiptID   int64
 	ReceiptKode        string
+	DepartmentID       int64
 	TanggalSelesai     time.Time
 	NamaRequest        string
 	ManagerApproved    string
@@ -149,6 +153,7 @@ func (q *Queries) GetPrArchive(ctx context.Context, id int64) (GetPrArchiveRow, 
 		&i.Kode,
 		&i.PaymentReceiptID,
 		&i.ReceiptKode,
+		&i.DepartmentID,
 		&i.TanggalSelesai,
 		&i.NamaRequest,
 		&i.ManagerApproved,
@@ -166,7 +171,7 @@ func (q *Queries) GetPrArchive(ctx context.Context, id int64) (GetPrArchiveRow, 
 
 const listPrArchives = `-- name: ListPrArchives :many
 SELECT
-    a.id, a.kode, a.payment_receipt_id, p.kode AS receipt_kode,
+    a.id, a.kode, a.payment_receipt_id, p.kode AS receipt_kode, p.department_id,
     a.tanggal_selesai, a.nama_request, a.manager_approved, a.approved_by,
     u.username AS approved_by_username, a.description, a.quantity,
     a.harga_rencana, a.harga_aktual, a.created_at, a.updated_at
@@ -180,17 +185,19 @@ WHERE ($1::timestamptz IS NULL OR a.tanggal_selesai >= $1::timestamptz)
        OR a.manager_approved ILIKE '%' || $3::text || '%'
        OR p.kode ILIKE '%' || $3::text || '%')
   AND ($4::bigint IS NULL OR a.approved_by = $4::bigint)
+  AND ($5::bigint IS NULL OR p.department_id = $5::bigint)
 ORDER BY a.tanggal_selesai DESC, a.id DESC
-LIMIT $6 OFFSET $5
+LIMIT $7 OFFSET $6
 `
 
 type ListPrArchivesParams struct {
-	DateFrom pgtype.Timestamptz
-	DateTo   pgtype.Timestamptz
-	Q        pgtype.Text
-	Approver pgtype.Int8
-	Offset   int32
-	Limit    int32
+	DateFrom     pgtype.Timestamptz
+	DateTo       pgtype.Timestamptz
+	Q            pgtype.Text
+	Approver     pgtype.Int8
+	DepartmentID pgtype.Int8
+	Offset       int32
+	Limit        int32
 }
 
 type ListPrArchivesRow struct {
@@ -198,6 +205,7 @@ type ListPrArchivesRow struct {
 	Kode               string
 	PaymentReceiptID   int64
 	ReceiptKode        string
+	DepartmentID       int64
 	TanggalSelesai     time.Time
 	NamaRequest        string
 	ManagerApproved    string
@@ -220,6 +228,7 @@ func (q *Queries) ListPrArchives(ctx context.Context, arg ListPrArchivesParams) 
 		arg.DateTo,
 		arg.Q,
 		arg.Approver,
+		arg.DepartmentID,
 		arg.Offset,
 		arg.Limit,
 	)
@@ -235,6 +244,7 @@ func (q *Queries) ListPrArchives(ctx context.Context, arg ListPrArchivesParams) 
 			&i.Kode,
 			&i.PaymentReceiptID,
 			&i.ReceiptKode,
+			&i.DepartmentID,
 			&i.TanggalSelesai,
 			&i.NamaRequest,
 			&i.ManagerApproved,

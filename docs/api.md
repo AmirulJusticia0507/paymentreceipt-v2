@@ -67,6 +67,7 @@ dan `403` bila sudah login tapi role tidak cukup.
 | GA Staff | `ga_staff` | Buat/ubah payment receipt, ubah status. |
 | Approver | `approver` | Ubah status payment receipt (termasuk menandai finished/cancelled). |
 | Viewer | `viewer` | Baca saja. |
+| Requester | `requester` | Buat/ubah receipt dan baca request/receipt hanya di department yang ditetapkan admin; tidak dapat mengubah status. |
 
 Matriks per-endpoint ada di tiap tabel di bawah (`Admin only` = hanya `admin`).
 
@@ -235,6 +236,9 @@ maksimal 10 baris:
 
 ## Requests (pengajuan department)
 
+Requester hanya dapat membaca request milik department pada akunnya; parameter
+department dari klien tidak dapat memperluas scope.
+
 | Method & path | Role |
 |---|---|
 | GET `/requests` | Login |
@@ -351,6 +355,13 @@ Khusus admin, paginasi `page`/`per_page`. Mencatat mutasi endpoint yang berhasil
 dengan aktor, method/path, status HTTP, waktu, dan request ID. Body request tidak
 disimpan.
 
+### PATCH `/api/v1/users/{id}/department`
+
+Khusus admin. Body `{ "department_id": 3 }` menetapkan department untuk akun
+ber-role `requester`. Perubahan scope berlaku pada request berikutnya karena
+role dan department dibaca dari database saat autentikasi; refresh token lama
+dicabut.
+
 ## Payment receipts
 
 Modul inti. Transaksi pembelian: item, qty, satuan, harga, usage.
@@ -362,8 +373,8 @@ Modul inti. Transaksi pembelian: item, qty, satuan, harga, usage.
 | GET `/payment-receipts/{id}/pdf` | Login |
 | GET `/payment-receipts/{id}/status-history` | Login |
 | GET `/payment-receipts/export` | Login |
-| POST `/payment-receipts` | Admin, GA Staff |
-| PUT `/payment-receipts/{id}` | Admin, GA Staff |
+| POST `/payment-receipts` | Admin, GA Staff, Requester |
+| PUT `/payment-receipts/{id}` | Admin, GA Staff, Requester |
 | DELETE `/payment-receipts/{id}` | Admin |
 | PATCH `/payment-receipts/{id}/status` | Admin, GA Staff, Approver |
 | PATCH `/payment-receipts/bulk-status` | Admin, GA Staff, Approver |
@@ -381,7 +392,9 @@ Query:
 | `sort` | `tanggal_asc`, `tanggal_desc` (default), `kode_asc`, `kode_desc`, `total_asc`, `total_desc`. Nilai asing jatuh ke default. |
 | `page`, `per_page` | Paginasi. |
 
-Response `data` berupa array `Receipt` (lihat bawah).
+Response `data` berupa array `Receipt` (lihat bawah). Requester selalu dibatasi
+ke department akun untuk list, detail, PDF, riwayat status, dan CSV; perubahan
+data ke department lain ditolak.
 
 ### Objek Receipt
 
@@ -539,6 +552,9 @@ belum dikonfigurasi"); provider tidak terpasang sama sekali (bug konfigurasi) â†
 ## PR Archive
 
 Purchase requisition yang sudah disetujui, siap cetak.
+
+Requester hanya dapat membaca daftar, detail, PDF, dan CSV arsip yang berasal
+dari receipt department miliknya.
 
 | Method & path | Role |
 |---|---|

@@ -73,7 +73,15 @@ func (h *paymentReceiptHandler) list(w http.ResponseWriter, r *http.Request) {
 	if !allowed[sort] {
 		sort = "tanggal_desc"
 	}
-	items, total, err := h.service.List(r.Context(), paymentreceipt.Filters{Status: statusValue, DepartmentID: queryInt64(r, "department_id"), RequestID: queryInt64(r, "request_id"), DateFrom: from, DateTo: to, Query: strings.TrimSpace(r.URL.Query().Get("q")), Sort: sort, Limit: int32(p.Limit()), Offset: int32(p.Offset())})
+	departmentID, err := departmentScope(r)
+	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	if departmentID == 0 {
+		departmentID = queryInt64(r, "department_id")
+	}
+	items, total, err := h.service.List(r.Context(), paymentreceipt.Filters{Status: statusValue, DepartmentID: departmentID, RequestID: queryInt64(r, "request_id"), DateFrom: from, DateTo: to, Query: strings.TrimSpace(r.URL.Query().Get("q")), Sort: sort, Limit: int32(p.Limit()), Offset: int32(p.Offset())})
 	if err != nil {
 		httputil.Problemf(w, r, err)
 		return
@@ -89,6 +97,10 @@ func (h *paymentReceiptHandler) get(w http.ResponseWriter, r *http.Request) {
 	}
 	item, err := h.service.Get(r.Context(), id)
 	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	if err := checkDepartmentAccess(r, item.DepartmentID); err != nil {
 		httputil.Problemf(w, r, err)
 		return
 	}
@@ -112,6 +124,10 @@ func (h *paymentReceiptHandler) create(w http.ResponseWriter, r *http.Request) {
 	}
 	createdBy := int64(0)
 	if identity, ok := auth.IdentityFrom(r.Context()); ok {
+		if identity.Role == auth.RoleRequester && identity.DepartmentID != body.DepartmentID {
+			httputil.Problemf(w, r, apperror.Forbidden("Requester hanya dapat membuat receipt untuk department miliknya"))
+			return
+		}
 		createdBy = identity.UserID
 	}
 	item, err := h.service.Create(r.Context(), paymentreceipt.CreateInput{
@@ -144,6 +160,10 @@ func (h *paymentReceiptHandler) pdf(w http.ResponseWriter, r *http.Request) {
 	}
 	item, err := h.service.Get(r.Context(), id)
 	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	if err := checkDepartmentAccess(r, item.DepartmentID); err != nil {
 		httputil.Problemf(w, r, err)
 		return
 	}
@@ -209,6 +229,19 @@ func (h *paymentReceiptHandler) update(w http.ResponseWriter, r *http.Request) {
 		httputil.Problemf(w, r, err)
 		return
 	}
+	current, err := h.service.Get(r.Context(), id)
+	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	if err := checkDepartmentAccess(r, current.DepartmentID); err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	if scope, _ := departmentScope(r); scope > 0 && body.DepartmentID != scope {
+		httputil.Problemf(w, r, apperror.Forbidden("Requester hanya dapat menyimpan receipt untuk department miliknya"))
+		return
+	}
 	purchaseDate, err := parseDateField(body.TanggalPembelian, "tanggal_pembelian")
 	if err != nil {
 		httputil.Problemf(w, r, err)
@@ -271,6 +304,15 @@ func (h *paymentReceiptHandler) statusHistory(w http.ResponseWriter, r *http.Req
 		httputil.Problemf(w, r, err)
 		return
 	}
+	item, err := h.service.Get(r.Context(), id)
+	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	if err := checkDepartmentAccess(r, item.DepartmentID); err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
 	items, err := h.service.StatusHistory(r.Context(), id)
 	if err != nil {
 		httputil.Problemf(w, r, err)
@@ -310,9 +352,17 @@ func (h *paymentReceiptHandler) exportCSV(w http.ResponseWriter, r *http.Request
 	if limit < 5000 {
 		limit = 5000
 	}
+	departmentID, err := departmentScope(r)
+	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	if departmentID == 0 {
+		departmentID = queryInt64(r, "department_id")
+	}
 	items, _, err := h.service.List(r.Context(), paymentreceipt.Filters{
 		Status:       statusValue,
-		DepartmentID: queryInt64(r, "department_id"),
+		DepartmentID: departmentID,
 		RequestID:    queryInt64(r, "request_id"),
 		DateFrom:     from,
 		DateTo:       to,

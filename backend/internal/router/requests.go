@@ -38,7 +38,14 @@ type requestHandler struct {
 func (h *requestHandler) List(w http.ResponseWriter, r *http.Request) {
 	p := httputil.ParsePagination(r)
 
-	departmentID, _ := strconv.ParseInt(r.URL.Query().Get("department_id"), 10, 64)
+	departmentID, err := departmentScope(r)
+	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	if departmentID == 0 {
+		departmentID, _ = strconv.ParseInt(r.URL.Query().Get("department_id"), 10, 64)
+	}
 
 	input := masterdata.ListInput{
 		Query:        r.URL.Query().Get("q"),
@@ -76,6 +83,10 @@ func (h *requestHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 
 	item, err := h.svc.GetByID(r.Context(), id)
 	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	if err := checkDepartmentAccess(r, item.DepartmentID); err != nil {
 		httputil.Problemf(w, r, err)
 		return
 	}

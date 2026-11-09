@@ -10,7 +10,7 @@
  * Reset mencabut semua refresh token target: ia keluar dari seluruh perangkat
  * dan harus login dengan password baru.
  */
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { KeyRound } from 'lucide-vue-next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 
@@ -43,11 +43,42 @@ const ROLE_LABELS: Record<AdminUser['role'], string> = {
 const queryClient = useQueryClient()
 const search = ref('')
 const toast = ref<Toast | null>(null)
+const departments = ref<{ id: number; kode: string; nama: string }[]>([])
+const assigningDepartment = ref<number | null>(null)
 
 const query = useQuery({
   queryKey: userKeys.list,
   queryFn: () => http.get<AdminUser[]>('/api/v1/users/'),
 })
+
+onMounted(async () => {
+  try {
+    const result = await http.get<{ id: number; kode: string; nama: string }[]>('/api/v1/departments/?per_page=100')
+    departments.value = result
+  } catch {
+    departments.value = []
+  }
+})
+
+async function assignDepartment(user: AdminUser, event: Event): Promise<void> {
+  const value = (event.target as HTMLSelectElement).value
+  const departmentId = Number(value)
+  if (!departmentId || departmentId === user.department_id) return
+  assigningDepartment.value = user.id
+  try {
+    await http.patch(`/api/v1/users/${user.id}/department`, { department_id: departmentId })
+    toast.value = { kind: 'success', title: 'Department requester diperbarui' }
+    await queryClient.invalidateQueries({ queryKey: userKeys.all })
+  } catch (err) {
+    toast.value = {
+      kind: 'error',
+      title: 'Gagal menetapkan department',
+      description: err instanceof ApiError ? err.message : 'Tidak bisa menghubungi server.',
+    }
+  } finally {
+    assigningDepartment.value = null
+  }
+}
 
 const rows = computed(() => {
   const items = query.data.value ?? []
@@ -134,6 +165,7 @@ const columns: Column<AdminUser>[] = [
   { key: 'email', label: 'Email', hideOnMobile: true },
   { key: 'full_name', label: 'Nama', hideOnMobile: true },
   { key: 'role', label: 'Role', width: 'w-36' },
+  { key: 'department_id', label: 'Department', width: 'w-56' },
   { key: 'is_active', label: 'Status', width: 'w-24' },
   { key: 'aksi', label: 'Aksi', align: 'right', width: 'w-16' },
 ]
@@ -176,6 +208,21 @@ const columns: Column<AdminUser>[] = [
 
       <template #cell-role="{ row }">
         <Badge variant="neutral">{{ ROLE_LABELS[row.role] }}</Badge>
+      </template>
+
+      <template #cell-department_id="{ row }">
+        <select
+          v-if="row.role === 'requester'"
+          :value="row.department_id ?? ''"
+          :disabled="assigningDepartment === row.id || departments.length === 0"
+          :aria-label="`Department untuk ${row.username}`"
+          class="max-w-52 rounded-lg border border-default bg-raised px-2 py-1.5 text-xs text-ink focus-visible:outline-2 focus-visible:outline-brand-500 disabled:opacity-60"
+          @change="assignDepartment(row, $event)"
+        >
+          <option value="" disabled>Pilih department</option>
+          <option v-for="department in departments" :key="department.id" :value="department.id">{{ department.kode }} — {{ department.nama }}</option>
+        </select>
+        <span v-else class="text-xs text-ink-muted">—</span>
       </template>
 
       <template #cell-is_active="{ row }">

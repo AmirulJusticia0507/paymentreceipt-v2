@@ -297,6 +297,7 @@ type User struct {
 	PasswordHash string
 	FullName     string
 	Role         UserRole
+	DepartmentID pgtype.Int8
 	IsActive     bool
 	LastLoginAt  pgtype.Timestamptz
 	CreatedAt    time.Time

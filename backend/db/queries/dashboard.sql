@@ -1,15 +1,21 @@
 -- name: DashboardCounts :one
 -- Statistik ringkas: total request aktif, payment receipt, base, dan department.
 SELECT
-    (SELECT count(*) FROM requests WHERE is_active = TRUE)     AS total_requests,
-    (SELECT count(*) FROM payment_receipt)                     AS total_payment_receipts,
+    (SELECT count(*) FROM requests WHERE is_active = TRUE
+       AND (sqlc.narg('department_id')::bigint IS NULL OR department_id = sqlc.narg('department_id')::bigint)) AS total_requests,
+    (SELECT count(*) FROM payment_receipt
+       WHERE sqlc.narg('department_id')::bigint IS NULL OR department_id = sqlc.narg('department_id')::bigint) AS total_payment_receipts,
     (SELECT count(*) FROM base WHERE is_active = TRUE)         AS total_bases,
-    (SELECT count(*) FROM department WHERE is_active = TRUE)   AS total_departments;
+    (SELECT CASE WHEN sqlc.narg('department_id')::bigint IS NULL
+                 THEN count(*)
+                 ELSE count(*) FILTER (WHERE id = sqlc.narg('department_id')::bigint)
+            END FROM department WHERE is_active = TRUE) AS total_departments;
 
 -- name: DashboardStatusBreakdown :many
 -- Jumlah payment receipt per status seluruh waktu.
 SELECT status, count(*) AS count
 FROM payment_receipt
+WHERE sqlc.narg('department_id')::bigint IS NULL OR department_id = sqlc.narg('department_id')::bigint
 GROUP BY status
 ORDER BY status;
 
@@ -19,6 +25,7 @@ SELECT date_trunc('month', tanggal_pembelian)::date AS bulan,
        coalesce(sum(total_harga), 0)::text AS spend
 FROM payment_receipt
 WHERE tanggal_pembelian >= (CURRENT_DATE - interval '11 months')::date
+  AND (sqlc.narg('department_id')::bigint IS NULL OR department_id = sqlc.narg('department_id')::bigint)
 GROUP BY 1
 ORDER BY 1;
 
@@ -28,6 +35,7 @@ SELECT d.id, d.nama,
        coalesce(sum(p.total_harga), 0)::text AS total
 FROM department d
 LEFT JOIN payment_receipt p ON p.department_id = d.id
+WHERE sqlc.narg('department_id')::bigint IS NULL OR d.id = sqlc.narg('department_id')::bigint
 GROUP BY d.id, d.nama
 ORDER BY coalesce(sum(p.total_harga), 0) DESC, d.nama ASC
 LIMIT $1;

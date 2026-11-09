@@ -43,18 +43,24 @@ type bulkArchiveInput struct {
 // List menangani GET /pr-archives.
 func (h *prArchiveHandler) List(w http.ResponseWriter, r *http.Request) {
 	p := httputil.ParsePagination(r)
+	departmentID, err := departmentScope(r)
+	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
 
 	dateFrom := parseDate(r.URL.Query().Get("date_from"))
 	dateTo := parseDate(r.URL.Query().Get("date_to"))
 	approverID, _ := strconv.ParseInt(r.URL.Query().Get("approver"), 10, 64)
 
 	items, total, err := h.svc.List(r.Context(), prarchive.Filters{
-		DateFrom:   dateFrom,
-		DateTo:     dateTo,
-		Query:      r.URL.Query().Get("q"),
-		ApproverID: approverID,
-		Limit:      int32(p.Limit()),
-		Offset:     int32(p.Offset()),
+		DateFrom:     dateFrom,
+		DateTo:       dateTo,
+		Query:        r.URL.Query().Get("q"),
+		ApproverID:   approverID,
+		DepartmentID: departmentID,
+		Limit:        int32(p.Limit()),
+		Offset:       int32(p.Offset()),
 	})
 	if err != nil {
 		httputil.Problemf(w, r, err)
@@ -69,6 +75,11 @@ func (h *prArchiveHandler) List(w http.ResponseWriter, r *http.Request) {
 // baris menjaga penggunaan memori tetap terkontrol; respons ditolak utuh bila
 // hasil lebih besar supaya file tidak tampak lengkap padahal terpotong.
 func (h *prArchiveHandler) ExportCSV(w http.ResponseWriter, r *http.Request) {
+	departmentID, err := departmentScope(r)
+	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
 	dateFrom, err := parseDateField(r.URL.Query().Get("date_from"), "date_from")
 	if err != nil {
 		httputil.Problemf(w, r, err)
@@ -96,7 +107,8 @@ func (h *prArchiveHandler) ExportCSV(w http.ResponseWriter, r *http.Request) {
 	items, total, err := h.svc.List(r.Context(), prarchive.Filters{
 		DateFrom: dateFrom, DateTo: dateTo,
 		Query: strings.TrimSpace(r.URL.Query().Get("q")), ApproverID: approverID,
-		Limit: exportLimit,
+		DepartmentID: departmentID,
+		Limit:        exportLimit,
 	})
 	if err != nil {
 		httputil.Problemf(w, r, err)
@@ -142,6 +154,10 @@ func (h *prArchiveHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 
 	item, err := h.svc.Get(r.Context(), id)
 	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	if err := checkDepartmentAccess(r, item.DepartmentID); err != nil {
 		httputil.Problemf(w, r, err)
 		return
 	}
@@ -205,6 +221,10 @@ func (h *prArchiveHandler) pdf(w http.ResponseWriter, r *http.Request) {
 	}
 	item, err := h.svc.Get(r.Context(), id)
 	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	if err := checkDepartmentAccess(r, item.DepartmentID); err != nil {
 		httputil.Problemf(w, r, err)
 		return
 	}
