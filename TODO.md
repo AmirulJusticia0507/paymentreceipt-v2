@@ -444,7 +444,7 @@ Tujuan: lengkapi pelaporan, pengingat, audit, ekspor arsip, dan kontrol akses pe
 - [x] **T14.4** Audit log terpusat untuk perubahan data penting dan tindakan admin; jangan simpan password/token
 - [x] **T14.5** Notifikasi dalam aplikasi untuk receipt yang menunggu tindakan atau tidak berubah selama 3 hari kalender
 - [x] **T14.6** Batasi data requester ke department yang ditetapkan pada akun; role lain mengikuti kewenangan saat ini
-- [ ] **T14.7** Review UX alur utama di mobile, perbaiki temuan, dan dokumentasikan skenario verifikasi
+- [~] **T14.7** Review UX alur utama di mobile, perbaiki temuan, dan dokumentasikan skenario verifikasi
 
 ---
 
