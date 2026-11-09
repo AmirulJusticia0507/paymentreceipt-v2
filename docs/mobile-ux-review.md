@@ -2,9 +2,9 @@
 
 ## Responsive paths reviewed
 
-The app shell uses a mobile navigation drawer, a compact page title, and a constrained notification panel sized to the viewport. Core receipt list/detail and archive pages use responsive spacing and horizontal table scrolling where tabular fields cannot fit on a phone. The operational report uses the same responsive page shell.
+The app shell uses a mobile navigation drawer, a compact page title, and a constrained notification panel sized to the viewport. Core receipt list/detail and archive pages use responsive spacing and horizontal table scrolling where tabular fields cannot fit on a phone. Operational report rows render as stacked cards below the large-screen breakpoint, while the full table remains on desktop.
 
-## Manual verification scenarios (phone viewport, 360–390 px wide)
+## Manual verification scenarios (phone viewport, 360â€“390 px wide)
 
 1. Sign in as requester; open the receipt list, create a receipt for the assigned department, and confirm the department cannot be changed.
 2. Open a receipt detail from the list and from the reminder bell; confirm the action buttons and rejection reason field remain reachable without horizontal page scrolling.
@@ -15,3 +15,5 @@ The app shell uses a mobile navigation drawer, a compact page title, and a const
 Keyboard checks: tab through drawer, reminder, user menu, filters, and primary actions; verify visible focus and that Escape/backdrop can dismiss the drawer.
 
 This checklist is the handoff for device-level UAT; completion should be confirmed against a running environment with representative accounts and data.
+
+The report card layout passed frontend lint, type-check, and production build. Manual phone-viewport interaction remains pending because the browser/app surface was unavailable to this UI review session.

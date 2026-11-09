@@ -119,8 +119,23 @@ onMounted(async () => {
         Tidak ada receipt pada filter yang dipilih.
       </div>
       <div v-else class="card overflow-hidden rounded-xl">
+        <ul class="divide-y divide-default lg:hidden">
+          <li v-for="(row, index) in rows" :key="`mobile-${row.department_id}-${row.status}-${index}`" class="space-y-2 p-4">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p class="truncate font-semibold text-ink">{{ row.department_nama }}</p>
+                <p class="text-xs text-ink-muted">{{ row.department_kode }}</p>
+              </div>
+              <span class="shrink-0 rounded-full bg-default px-2.5 py-1 text-xs font-medium capitalize text-ink">{{ row.status }}</span>
+            </div>
+            <dl class="grid grid-cols-2 gap-3 text-sm">
+              <div><dt class="text-xs text-ink-muted">Receipt</dt><dd class="mt-0.5 font-medium tabular-nums text-ink">{{ row.receipt_count }}</dd></div>
+              <div><dt class="text-xs text-ink-muted">Total transaksi</dt><dd class="mt-0.5 font-medium tabular-nums text-ink">{{ formatRupiah(row.total_amount) }}</dd></div>
+            </dl>
+          </li>
+        </ul>
         <div class="overflow-x-auto">
-          <table class="w-full min-w-[700px] text-left text-sm">
+          <table class="hidden w-full min-w-[700px] text-left text-sm lg:table">
             <thead class="border-b border-default bg-raised text-xs uppercase tracking-wide text-ink-muted">
               <tr><th class="px-4 py-3">Department</th><th class="px-4 py-3">Status</th><th class="px-4 py-3 text-right">Receipt</th><th class="px-4 py-3 text-right">Total transaksi</th></tr>
             </thead>
