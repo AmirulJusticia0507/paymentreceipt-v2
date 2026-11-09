@@ -69,9 +69,28 @@ func mountUsers(r chi.Router, a *auth.Authenticator, cfg config.AuthConfig, q *d
 		r.Use(a.RequireRole(auth.RoleAdmin))
 
 		r.Get("/", h.list)
+		r.Post("/{id}/approve", h.approveRequester)
 		r.Post("/{id}/reset-password", h.resetPassword)
 		r.Patch("/{id}/department", h.assignDepartment)
 	})
+}
+
+func (h *userHandler) approveRequester(w http.ResponseWriter, r *http.Request) {
+	id, err := pathID(r)
+	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	rows, err := h.q.ApproveRequester(r.Context(), id)
+	if err != nil {
+		httputil.Problemf(w, r, apperror.Internal(err))
+		return
+	}
+	if rows == 0 {
+		httputil.Problemf(w, r, apperror.NotFound("Requester pending"))
+		return
+	}
+	httputil.JSONData(w, http.StatusOK, map[string]any{"id": id, "is_active": true})
 }
 
 func (h *userHandler) assignDepartment(w http.ResponseWriter, r *http.Request) {

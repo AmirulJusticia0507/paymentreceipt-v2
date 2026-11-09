@@ -38,12 +38,13 @@ type TokenStore interface {
 
 // Service menangani login, refresh, dan logout.
 type Service struct {
-	users     UserStore
-	tokens    TokenStore
-	tokenMgr  *auth.TokenManager
-	cookies   auth.CookieOptions
-	argon2    auth.Params
-	loginFail *LoginLimiter
+	users        UserStore
+	tokens       TokenStore
+	tokenMgr     *auth.TokenManager
+	cookies      auth.CookieOptions
+	argon2       auth.Params
+	loginFail    *LoginLimiter
+	registration RequesterRegistrationStore
 }
 
 // New membuat Service.
@@ -55,13 +56,35 @@ func New(
 	argon2 auth.Params,
 ) *Service {
 	return &Service{
-		users:     users,
-		tokens:    tokens,
-		tokenMgr:  tokenMgr,
-		cookies:   cookies,
-		argon2:    argon2,
-		loginFail: NewLoginLimiter(5, 15*time.Minute),
+		users:        users,
+		tokens:       tokens,
+		tokenMgr:     tokenMgr,
+		cookies:      cookies,
+		argon2:       argon2,
+		loginFail:    NewLoginLimiter(5, 15*time.Minute),
+		registration: registrationStore(users),
 	}
+}
+
+func registrationStore(users UserStore) RequesterRegistrationStore {
+	store, _ := users.(RequesterRegistrationStore)
+	return store
+}
+
+// DepartmentsForSignup returns active departments for requester registration.
+func (s *Service) DepartmentsForSignup(ctx context.Context) ([]dbgen.Department, error) {
+	if s.registration == nil {
+		return nil, apperror.Internalf("auth.registration_unavailable", errors.New("registration store unavailable"))
+	}
+	return s.registration.ListDepartments(ctx, dbgen.ListDepartmentsParams{Limit: 100})
+}
+
+// RegisterRequester creates an account that remains disabled until admin approval.
+func (s *Service) RegisterRequester(ctx context.Context, username, password, phone string, departmentID int64) error {
+	if s.registration == nil {
+		return apperror.Internalf("auth.registration_unavailable", errors.New("registration store unavailable"))
+	}
+	return RegisterRequester(ctx, s.registration, s.argon2, username, password, phone, departmentID)
 }
 
 // LoginResult adalah hasil login atau refresh yang sukses.

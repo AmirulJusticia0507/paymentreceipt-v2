@@ -112,6 +112,8 @@ func New(d Deps) http.Handler {
 		// Endpoint publik.
 		r.Route("/auth", func(r chi.Router) {
 			r.Post("/login", authH.Login)
+			r.Get("/signup/departments", authH.SignupDepartments)
+			r.Post("/signup", authH.SignupRequester)
 			r.Post("/refresh", authH.Refresh)
 
 			// Logout butuh tahu siapa yang logout. Tanpa auth guard, endpoint ini

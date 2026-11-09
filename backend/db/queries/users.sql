@@ -2,14 +2,14 @@
 -- Mengambil user untuk login. Kolom password_hash ikut diambil karena
 -- service butuh memverifikasinya; layer atas TIDAK BOLEH mengirimnya ke klien.
 SELECT
-    id, username, email, password_hash, full_name, role, department_id, is_active,
+    id, username, COALESCE(email, '') AS email, password_hash, full_name, role, department_id, is_active,
     last_login_at, created_at, updated_at
 FROM users
 WHERE username = @username;
 
 -- name: GetUserByID :one
 SELECT
-    id, username, email, password_hash, full_name, role, department_id, is_active,
+    id, username, COALESCE(email, '') AS email, password_hash, full_name, role, department_id, is_active,
     last_login_at, created_at, updated_at
 FROM users
 WHERE id = @id;
@@ -17,7 +17,7 @@ WHERE id = @id;
 -- name: GetUserSafeByID :one
 -- Versi tanpa password_hash, untuk ditampilkan di /auth/me dan daftar user.
 SELECT
-    id, username, email, full_name, role, is_active, department_id,
+    id, username, COALESCE(email, '') AS email, full_name, role, is_active, department_id,
     last_login_at, created_at, updated_at
 FROM users
 WHERE id = @id;
@@ -38,7 +38,7 @@ WHERE id = @id;
 UPDATE users
 SET full_name = @full_name, updated_at = now()
 WHERE id = @id
-RETURNING id, username, email, full_name, role, is_active, department_id, last_login_at, created_at, updated_at;
+RETURNING id, username, COALESCE(email, '') AS email, full_name, role, is_active, department_id, last_login_at, created_at, updated_at;
 
 -- name: DeactivateUser :exec
 -- Soft delete. User tidak dihapus dari tabel supaya audit trail
@@ -52,7 +52,7 @@ SELECT count(*) FROM users WHERE is_active = TRUE;
 
 -- name: ListActiveUsers :many
 SELECT
-    id, username, email, full_name, role, is_active, department_id,
+    id, username, COALESCE(email, '') AS email, full_name, role, is_active, department_id,
     last_login_at, created_at, updated_at
 FROM users
 WHERE is_active = TRUE
@@ -60,7 +60,7 @@ ORDER BY username ASC;
 
 -- name: ListUsers :many
 SELECT
-    id, username, email, full_name, role, is_active, department_id,
+    id, username, COALESCE(email, '') AS email, full_name, role, is_active, department_id,
     last_login_at, created_at, updated_at
 FROM users
 ORDER BY is_active DESC, username ASC;
@@ -69,5 +69,17 @@ ORDER BY is_active DESC, username ASC;
 UPDATE users
 SET department_id = @department_id, updated_at = now()
 WHERE id = @id AND role = 'requester'::user_role
-RETURNING id, username, email, full_name, role, is_active, department_id,
+RETURNING id, username, COALESCE(email, '') AS email, full_name, role, is_active, department_id,
           last_login_at, created_at, updated_at;
+
+-- name: RegisterRequester :execrows
+INSERT INTO users (username, email, phone, password_hash, full_name, role, department_id, is_active)
+SELECT @username, NULL, @phone, @password_hash, @full_name,
+       'requester'::user_role, d.id, FALSE
+FROM department d
+WHERE d.id = @department_id AND d.is_active = TRUE;
+
+-- name: ApproveRequester :execrows
+UPDATE users
+SET is_active = TRUE, updated_at = now()
+WHERE id = @id AND role = 'requester'::user_role AND is_active = FALSE;

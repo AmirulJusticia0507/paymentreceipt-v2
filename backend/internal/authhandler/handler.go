@@ -71,6 +71,43 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	h.writeLoginResponse(w, result, http.StatusOK)
 }
 
+type requesterRegistrationRequest struct {
+	Username     string `json:"username"`
+	Password     string `json:"password"`
+	Phone        string `json:"phone"`
+	DepartmentID int64  `json:"department_id"`
+}
+
+// SignupDepartments lists active departments without exposing administrative fields.
+func (h *Handler) SignupDepartments(w http.ResponseWriter, r *http.Request) {
+	departments, err := h.svc.DepartmentsForSignup(r.Context())
+	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	items := make([]map[string]any, 0, len(departments))
+	for _, department := range departments {
+		items = append(items, map[string]any{"id": department.ID, "kode": department.Kode, "nama": department.Nama})
+	}
+	httputil.JSONData(w, http.StatusOK, items)
+}
+
+// SignupRequester accepts public requester registrations and never creates an active session.
+func (h *Handler) SignupRequester(w http.ResponseWriter, r *http.Request) {
+	var req requesterRegistrationRequest
+	if err := httputil.DecodeJSON(w, r, &req); err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	if err := h.svc.RegisterRequester(r.Context(), req.Username, req.Password, req.Phone, req.DepartmentID); err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	httputil.JSONData(w, http.StatusCreated, map[string]string{
+		"message": "Pendaftaran berhasil dikirim. Akun menunggu persetujuan admin.",
+	})
+}
+
 // Refresh menangani POST /api/v1/auth/refresh.
 //
 // Tidak butuh access token: justru INI yang dikembalikan. Frontend memanggilnya

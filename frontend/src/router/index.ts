@@ -22,6 +22,12 @@ const routes: RouteRecordRaw[] = [
     meta: { title: 'Masuk' },
   },
   {
+    path: '/signup',
+    name: 'requester-signup',
+    component: () => import('@/pages/RequesterSignupPage.vue'),
+    meta: { title: 'Daftar Requester' },
+  },
+  {
     path: '/',
     component: () => import('@/layouts/AppShell.vue'),
     meta: { requiresAuth: true },

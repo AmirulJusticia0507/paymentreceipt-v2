@@ -12,6 +12,20 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const approveRequester = `-- name: ApproveRequester :execrows
+UPDATE users
+SET is_active = TRUE, updated_at = now()
+WHERE id = $1 AND role = 'requester'::user_role AND is_active = FALSE
+`
+
+func (q *Queries) ApproveRequester(ctx context.Context, id int64) (int64, error) {
+	result, err := q.db.Exec(ctx, approveRequester, id)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const countActiveUsers = `-- name: CountActiveUsers :one
 SELECT count(*) FROM users WHERE is_active = TRUE
 `
@@ -38,11 +52,25 @@ func (q *Queries) DeactivateUser(ctx context.Context, id int64) error {
 
 const getUserByID = `-- name: GetUserByID :one
 SELECT
-    id, username, email, password_hash, full_name, role, department_id, is_active,
+    id, username, COALESCE(email, '') AS email, password_hash, full_name, role, department_id, is_active,
     last_login_at, created_at, updated_at
 FROM users
 WHERE id = $1
 `
+
+type GetUserByIDRow struct {
+	ID           int64
+	Username     string
+	Email        string
+	PasswordHash string
+	FullName     string
+	Role         UserRole
+	DepartmentID pgtype.Int8
+	IsActive     bool
+	LastLoginAt  pgtype.Timestamptz
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
+}
 
 func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 	row := q.db.QueryRow(ctx, getUserByID, id)
@@ -65,11 +93,25 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 
 const getUserByUsername = `-- name: GetUserByUsername :one
 SELECT
-    id, username, email, password_hash, full_name, role, department_id, is_active,
+    id, username, COALESCE(email, '') AS email, password_hash, full_name, role, department_id, is_active,
     last_login_at, created_at, updated_at
 FROM users
 WHERE username = $1
 `
+
+type GetUserByUsernameRow struct {
+	ID           int64
+	Username     string
+	Email        string
+	PasswordHash string
+	FullName     string
+	Role         UserRole
+	DepartmentID pgtype.Int8
+	IsActive     bool
+	LastLoginAt  pgtype.Timestamptz
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
+}
 
 // Mengambil user untuk login. Kolom password_hash ikut diambil karena
 // service butuh memverifikasinya; layer atas TIDAK BOLEH mengirimnya ke klien.
@@ -94,7 +136,7 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 
 const getUserSafeByID = `-- name: GetUserSafeByID :one
 SELECT
-    id, username, email, full_name, role, is_active, department_id,
+    id, username, COALESCE(email, '') AS email, full_name, role, is_active, department_id,
     last_login_at, created_at, updated_at
 FROM users
 WHERE id = $1
@@ -134,7 +176,7 @@ func (q *Queries) GetUserSafeByID(ctx context.Context, id int64) (GetUserSafeByI
 
 const listActiveUsers = `-- name: ListActiveUsers :many
 SELECT
-    id, username, email, full_name, role, is_active, department_id,
+    id, username, COALESCE(email, '') AS email, full_name, role, is_active, department_id,
     last_login_at, created_at, updated_at
 FROM users
 WHERE is_active = TRUE
@@ -187,7 +229,7 @@ func (q *Queries) ListActiveUsers(ctx context.Context) ([]ListActiveUsersRow, er
 
 const listUsers = `-- name: ListUsers :many
 SELECT
-    id, username, email, full_name, role, is_active, department_id,
+    id, username, COALESCE(email, '') AS email, full_name, role, is_active, department_id,
     last_login_at, created_at, updated_at
 FROM users
 ORDER BY is_active DESC, username ASC
@@ -237,6 +279,36 @@ func (q *Queries) ListUsers(ctx context.Context) ([]ListUsersRow, error) {
 	return items, nil
 }
 
+const registerRequester = `-- name: RegisterRequester :execrows
+INSERT INTO users (username, email, phone, password_hash, full_name, role, department_id, is_active)
+SELECT $1, NULL, $2, $3, $4,
+       'requester'::user_role, d.id, FALSE
+FROM department d
+WHERE d.id = $5 AND d.is_active = TRUE
+`
+
+type RegisterRequesterParams struct {
+	Username     string
+	Phone        pgtype.Text
+	PasswordHash string
+	FullName     string
+	DepartmentID int64
+}
+
+func (q *Queries) RegisterRequester(ctx context.Context, arg RegisterRequesterParams) (int64, error) {
+	result, err := q.db.Exec(ctx, registerRequester,
+		arg.Username,
+		arg.Phone,
+		arg.PasswordHash,
+		arg.FullName,
+		arg.DepartmentID,
+	)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const touchUserLastLogin = `-- name: TouchUserLastLogin :exec
 UPDATE users
 SET last_login_at = now()
@@ -252,7 +324,7 @@ const updateRequesterDepartment = `-- name: UpdateRequesterDepartment :one
 UPDATE users
 SET department_id = $1, updated_at = now()
 WHERE id = $2 AND role = 'requester'::user_role
-RETURNING id, username, email, full_name, role, is_active, department_id,
+RETURNING id, username, COALESCE(email, '') AS email, full_name, role, is_active, department_id,
           last_login_at, created_at, updated_at
 `
 
@@ -296,7 +368,7 @@ const updateUserFullName = `-- name: UpdateUserFullName :one
 UPDATE users
 SET full_name = $1, updated_at = now()
 WHERE id = $2
-RETURNING id, username, email, full_name, role, is_active, department_id, last_login_at, created_at, updated_at
+RETURNING id, username, COALESCE(email, '') AS email, full_name, role, is_active, department_id, last_login_at, created_at, updated_at
 `
 
 type UpdateUserFullNameParams struct {

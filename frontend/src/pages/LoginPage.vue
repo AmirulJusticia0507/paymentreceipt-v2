@@ -7,7 +7,7 @@
  * - Tombol "lihat password" disediakan untuk mempermudah pengecekan tanpa membuka risiko.
  */
 import { ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useForm, useField } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import { z } from 'zod'
@@ -237,6 +237,7 @@ const isDemo =
             <span>{{ isSubmitting ? 'Memproses Masuk...' : 'Masuk ke Sistem' }}</span>
           </button>
         </form>
+        <p class="mt-4 text-center text-sm text-ink-muted">Belum punya akun requester? <RouterLink to="/signup" class="font-semibold text-brand-600 hover:underline focus-visible:outline-brand-500">Daftar di sini</RouterLink></p>
       </div>
 
       <!-- Kredensial demo (Quick Fill) -->

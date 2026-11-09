@@ -389,7 +389,8 @@ CREATE TABLE public.status_history (
 CREATE TABLE public.users (
     id bigint NOT NULL,
     username public.citext NOT NULL,
-    email public.citext NOT NULL,
+    email public.citext,
+    phone character varying(30),
     password_hash text NOT NULL,
     full_name character varying(150) DEFAULT ''::character varying NOT NULL,
     role public.user_role DEFAULT 'viewer'::public.user_role NOT NULL,
@@ -398,7 +399,8 @@ CREATE TABLE public.users (
     last_login_at timestamp with time zone,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    CONSTRAINT users_email_format CHECK ((email OPERATOR(public.~) '^[^@\s]+@[^@\s]+\.[^@\s]+$'::public.citext)),
+    CONSTRAINT users_email_format CHECK ((email IS NULL) OR (email OPERATOR(public.~) '^[^@\s]+@[^@\s]+\.[^@\s]+$'::public.citext)),
+    CONSTRAINT users_phone_format CHECK ((phone IS NULL) OR ((phone)::text ~ '^[0-9+()\- ]{8,30}$'::text)),
     CONSTRAINT users_fullname_len CHECK ((char_length((full_name)::text) <= 150)),
     CONSTRAINT users_username_format CHECK ((username OPERATOR(public.~) '^[a-zA-Z0-9._-]{3,50}$'::public.citext))
 );

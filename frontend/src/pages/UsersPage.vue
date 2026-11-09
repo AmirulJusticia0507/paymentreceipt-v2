@@ -11,7 +11,7 @@
  * dan harus login dengan password baru.
  */
 import { computed, onMounted, ref } from 'vue'
-import { KeyRound } from 'lucide-vue-next'
+import { Check, KeyRound } from 'lucide-vue-next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 
 import Badge from '@/components/ui/Badge.vue'
@@ -160,6 +160,17 @@ function submitReset(): void {
   resetMutation.mutate(resetTarget.value)
 }
 
+const approveMutation = useMutation({
+  mutationFn: (user: AdminUser) => http.post(`/api/v1/users/${user.id}/approve`),
+  onSuccess: (_data, user) => {
+    toast.value = { kind: 'success', title: `Akun ${user.username} disetujui` }
+    void queryClient.invalidateQueries({ queryKey: userKeys.all })
+  },
+  onError: (err) => {
+    toast.value = { kind: 'error', title: 'Gagal menyetujui akun', description: err instanceof ApiError ? err.message : 'Tidak bisa menghubungi server.' }
+  },
+})
+
 const columns: Column<AdminUser>[] = [
   { key: 'username', label: 'Username', width: 'w-40' },
   { key: 'email', label: 'Email', hideOnMobile: true },
@@ -232,6 +243,17 @@ const columns: Column<AdminUser>[] = [
       </template>
 
       <template #cell-aksi="{ row }">
+        <div class="flex justify-end gap-1">
+        <button
+          v-if="row.role === 'requester' && !row.is_active"
+          type="button"
+          class="rounded-md p-1.5 text-status-finished transition-colors hover:bg-default focus-visible:ring-2 focus-visible:ring-brand-600 disabled:opacity-60"
+          :disabled="approveMutation.isPending.value"
+          :aria-label="`Setujui akun ${row.username}`"
+          @click="approveMutation.mutate(row)"
+        >
+          <Check class="size-4" aria-hidden="true" />
+        </button>
         <button
           type="button"
           class="rounded-md p-1.5 text-ink-muted transition-colors hover:bg-default hover:text-brand-600 focus-visible:ring-2 focus-visible:ring-brand-600"
@@ -240,6 +262,7 @@ const columns: Column<AdminUser>[] = [
         >
           <KeyRound class="size-4" aria-hidden="true" />
         </button>
+        </div>
       </template>
 
       <template #empty>

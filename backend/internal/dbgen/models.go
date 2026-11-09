@@ -301,6 +301,7 @@ type User struct {
 	ID           int64
 	Username     string
 	Email        string
+	Phone        pgtype.Text
 	PasswordHash string
 	FullName     string
 	Role         UserRole
