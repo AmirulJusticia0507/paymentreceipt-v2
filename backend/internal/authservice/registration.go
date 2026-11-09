@@ -19,6 +19,19 @@ type RequesterRegistrationStore interface {
 	ListDepartments(context.Context, dbgen.ListDepartmentsParams) ([]dbgen.Department, error)
 }
 
+// isAllowedUsernameRune membatasi username ke karakter yang sama dengan
+// constraint users_username_format di database.
+func isAllowedUsernameRune(ch rune) bool {
+	return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') ||
+		(ch >= '0' && ch <= '9') || strings.ContainsRune("._-", ch)
+}
+
+// isAllowedPhoneRune membatasi nomor HP ke karakter yang sama dengan
+// constraint users_phone_format di database.
+func isAllowedPhoneRune(ch rune) bool {
+	return (ch >= '0' && ch <= '9') || strings.ContainsRune("+()- ", ch)
+}
+
 // RegisterRequester creates an inactive requester account pending admin approval.
 func RegisterRequester(ctx context.Context, store RequesterRegistrationStore, params auth.Params, username, password, phone string, departmentID int64) error {
 	username = strings.TrimSpace(username)
@@ -27,7 +40,7 @@ func RegisterRequester(ctx context.Context, store RequesterRegistrationStore, pa
 		return apperror.FieldValidation("username", "Username harus 3–50 karakter", "length")
 	}
 	for _, ch := range username {
-		if !(ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z' || ch >= '0' && ch <= '9' || strings.ContainsRune("._-", ch)) {
+		if !isAllowedUsernameRune(ch) {
 			return apperror.FieldValidation("username", "Username hanya boleh berisi huruf, angka, titik, garis bawah, dan tanda hubung", "format")
 		}
 	}
@@ -38,7 +51,7 @@ func RegisterRequester(ctx context.Context, store RequesterRegistrationStore, pa
 		return apperror.FieldValidation("phone", "Nomor HP harus 8–30 karakter", "length")
 	}
 	for _, ch := range phone {
-		if !(ch >= '0' && ch <= '9' || strings.ContainsRune("+()- ", ch)) {
+		if !isAllowedPhoneRune(ch) {
 			return apperror.FieldValidation("phone", "Format nomor HP tidak valid", "format")
 		}
 	}
