@@ -145,6 +145,16 @@ func (ns NullUserRole) Value() (driver.Value, error) {
 	return string(ns.UserRole), nil
 }
 
+type AuditLog struct {
+	ID          int64
+	ActorID     int64
+	HttpMethod  string
+	RequestPath string
+	StatusCode  int16
+	RequestID   string
+	CreatedAt   time.Time
+}
+
 type Base struct {
 	ID         int64
 	Kode       string

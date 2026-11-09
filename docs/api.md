@@ -345,6 +345,12 @@ sudah terbit tetap berlaku sampai kedaluwarsa (maksimal `AUTH_ACCESS_TTL`).
 
 ---
 
+### GET `/api/v1/audit-logs/`
+
+Khusus admin, paginasi `page`/`per_page`. Mencatat mutasi endpoint yang berhasil
+dengan aktor, method/path, status HTTP, waktu, dan request ID. Body request tidak
+disimpan.
+
 ## Payment receipts
 
 Modul inti. Transaksi pembelian: item, qty, satuan, harga, usage.

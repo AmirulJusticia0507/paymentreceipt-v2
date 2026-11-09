@@ -73,7 +73,10 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     title: 'Administrasi',
-    items: [{ label: 'Pengguna', to: '/users', icon: Users, roles: ['admin'] }],
+    items: [
+      { label: 'Pengguna', to: '/users', icon: Users, roles: ['admin'] },
+      { label: 'Audit Log', to: '/audit-logs', icon: FileText, roles: ['admin'] },
+    ],
   },
 ]
 

@@ -10,6 +10,7 @@ import (
 
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/ai"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/aihandler"
+	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/auditlog"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/auth"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/authhandler"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/authservice"
@@ -128,6 +129,7 @@ func New(d Deps) http.Handler {
 		// bisa dipanggil siapa saja tanpa login.
 		r.Group(func(r chi.Router) {
 			r.Use(authenticator.Middleware)
+			r.Use(middleware.AuditMutations(d.Queries))
 
 			// Master data (Phase 4).
 			//
@@ -163,6 +165,7 @@ func New(d Deps) http.Handler {
 
 			mountSources(r, authenticator, d.Queries)
 			mountUsers(r, authenticator, cfg.Auth, d.Queries)
+			auditlog.Mount(r, authenticator, d.Queries)
 			mountPaymentReceipts(r, authenticator, paymentreceipt.NewService(paymentreceiptstore.New(d.Queries)))
 
 			// AI ekstraksi struk/faktur — upload gambar, dapatkan data terstruktur.
