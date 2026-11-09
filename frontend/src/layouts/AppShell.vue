@@ -10,6 +10,7 @@ import { computed, ref, watch } from 'vue'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import {
   FileText,
+  Bell,
   FolderTree,
   LayoutDashboard,
   LogOut,
@@ -28,6 +29,9 @@ import {
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
 import type { UserRole } from '@/lib/types'
+import { requestWithMeta } from '@/lib/http'
+
+interface ReceiptNotice { id: number; kode: string; status: string; department_nama: string; days_waiting: number }
 
 interface NavItem {
   label: string
@@ -88,6 +92,25 @@ const router = useRouter()
 const sidebarOpen = ref(false)
 const collapsed = ref(localStorage.getItem('pr-sidebar-collapsed') === 'true')
 const userMenuOpen = ref(false)
+const noticesOpen = ref(false)
+const notices = ref<ReceiptNotice[]>([])
+const noticesError = ref('')
+const noticesLoading = ref(false)
+
+async function loadNotices(): Promise<void> {
+  noticesLoading.value = true
+  noticesError.value = ''
+  try {
+    const result = await requestWithMeta<ReceiptNotice[]>('/api/v1/notifications/receipts')
+    notices.value = result.data
+  } catch {
+    noticesError.value = 'Pengingat tidak dapat dimuat.'
+  } finally {
+    noticesLoading.value = false
+  }
+}
+
+watch(() => route.fullPath, () => { void loadNotices() }, { immediate: true })
 
 function toggleCollapse(): void {
   collapsed.value = !collapsed.value
@@ -287,6 +310,21 @@ const roleLabel: Record<UserRole, string> = {
         </h1>
 
         <div class="ml-auto flex items-center gap-2 relative">
+          <div class="relative">
+            <button type="button" class="relative rounded-lg p-2 text-ink-muted hover:bg-default hover:text-ink focus-visible:outline-2 focus-visible:outline-brand-500" aria-label="Pengingat receipt" :aria-expanded="noticesOpen" @click="noticesOpen = !noticesOpen">
+              <Bell class="size-5" aria-hidden="true" />
+              <span v-if="notices.length" class="absolute right-0.5 top-0.5 min-w-4 rounded-full bg-status-cancelled px-1 text-[10px] leading-4 text-white">{{ notices.length }}</span>
+            </button>
+            <section v-if="noticesOpen" class="absolute right-0 top-full z-50 mt-2 w-[min(22rem,calc(100vw-2rem))] rounded-xl border border-default bg-raised p-3 shadow-lg" aria-label="Receipt perlu perhatian">
+              <div class="mb-2 flex items-center justify-between"><h2 class="text-sm font-semibold text-ink">Receipt perlu perhatian</h2><button class="text-xs text-brand-600 hover:text-brand-700" @click="loadNotices">Muat ulang</button></div>
+              <p v-if="noticesLoading" class="py-4 text-center text-sm text-ink-muted">Memuat pengingat…</p>
+              <p v-else-if="noticesError" class="py-4 text-sm text-status-cancelled">{{ noticesError }}</p>
+              <p v-else-if="!notices.length" class="py-4 text-sm text-ink-muted">Tidak ada receipt aktif.</p>
+              <ul v-else class="max-h-80 space-y-1 overflow-y-auto">
+                <li v-for="notice in notices" :key="notice.id"><RouterLink :to="`/payment-receipts/${notice.id}`" class="block rounded-lg px-2 py-2 hover:bg-default focus-visible:outline-2 focus-visible:outline-brand-500" @click="noticesOpen = false"><span class="block text-sm font-medium text-ink">{{ notice.kode }} · {{ notice.status }}</span><span class="text-xs text-ink-muted">{{ notice.department_nama }} · {{ notice.days_waiting >= 3 ? `${notice.days_waiting} hari, tertunda` : `${notice.days_waiting} hari` }}</span></RouterLink></li>
+              </ul>
+            </section>
+          </div>
           <button
             type="button"
             class="flex items-center gap-1.5 rounded-xl border border-default bg-surface/70 px-2.5 py-1.5 text-xs font-semibold text-ink shadow-2xs backdrop-blur-xs transition-all hover:bg-default hover:shadow-xs focus-visible:outline-2 focus-visible:outline-brand-500"

@@ -97,3 +97,16 @@ RETURNING id, kode, request_id, department_id, source_id, category_id, unit_id,
 
 -- name: DeletePaymentReceipt :exec
 DELETE FROM payment_receipt WHERE id = @id;
+
+-- name: ListReceiptNotifications :many
+SELECT p.id, p.kode, p.status, p.department_id, d.nama AS department_nama,
+       GREATEST(p.updated_at, COALESCE(MAX(h.created_at), p.created_at)) AS last_activity,
+       GREATEST(0, CURRENT_DATE - GREATEST(p.updated_at::date, COALESCE(MAX(h.created_at)::date, p.created_at::date)))::int AS days_waiting
+FROM payment_receipt p
+JOIN department d ON d.id = p.department_id
+LEFT JOIN status_history h ON h.payment_receipt_id = p.id
+WHERE p.status IN ('pending', 'checked', 'processed')
+  AND (sqlc.narg('department_id')::bigint IS NULL OR p.department_id = sqlc.narg('department_id')::bigint)
+GROUP BY p.id, d.nama
+ORDER BY last_activity ASC, p.id ASC
+LIMIT 100;

@@ -167,6 +167,7 @@ func New(d Deps) http.Handler {
 			mountUsers(r, authenticator, cfg.Auth, d.Queries)
 			auditlog.Mount(r, authenticator, d.Queries)
 			mountPaymentReceipts(r, authenticator, paymentreceipt.NewService(paymentreceiptstore.New(d.Queries)))
+			mountReceiptNotifications(r, authenticator, d.Queries)
 
 			// AI ekstraksi struk/faktur — upload gambar, dapatkan data terstruktur.
 			r.Post(aiExtractRoute, aiH.ExtractReceipt)

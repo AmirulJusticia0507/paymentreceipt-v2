@@ -338,6 +338,58 @@ func (q *Queries) ListPaymentReceipts(ctx context.Context, arg ListPaymentReceip
 	return items, nil
 }
 
+const listReceiptNotifications = `-- name: ListReceiptNotifications :many
+SELECT p.id, p.kode, p.status, p.department_id, d.nama AS department_nama,
+       GREATEST(p.updated_at, COALESCE(MAX(h.created_at), p.created_at)) AS last_activity,
+       GREATEST(0, CURRENT_DATE - GREATEST(p.updated_at::date, COALESCE(MAX(h.created_at)::date, p.created_at::date)))::int AS days_waiting
+FROM payment_receipt p
+JOIN department d ON d.id = p.department_id
+LEFT JOIN status_history h ON h.payment_receipt_id = p.id
+WHERE p.status IN ('pending', 'checked', 'processed')
+  AND ($1::bigint IS NULL OR p.department_id = $1::bigint)
+GROUP BY p.id, d.nama
+ORDER BY last_activity ASC, p.id ASC
+LIMIT 100
+`
+
+type ListReceiptNotificationsRow struct {
+	ID             int64
+	Kode           string
+	Status         PaymentStatus
+	DepartmentID   int64
+	DepartmentNama string
+	LastActivity   interface{}
+	DaysWaiting    int32
+}
+
+func (q *Queries) ListReceiptNotifications(ctx context.Context, departmentID pgtype.Int8) ([]ListReceiptNotificationsRow, error) {
+	rows, err := q.db.Query(ctx, listReceiptNotifications, departmentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListReceiptNotificationsRow
+	for rows.Next() {
+		var i ListReceiptNotificationsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Kode,
+			&i.Status,
+			&i.DepartmentID,
+			&i.DepartmentNama,
+			&i.LastActivity,
+			&i.DaysWaiting,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updatePaymentReceipt = `-- name: UpdatePaymentReceipt :one
 UPDATE payment_receipt
 SET request_id = $1,

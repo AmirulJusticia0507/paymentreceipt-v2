@@ -700,3 +700,10 @@ curl -b jar.txt -D - -o /dev/null "$BASE/payment-receipts/42" | grep -i x-reques
   atau pesan error manual di handler.
 - Semua query list wajib lewat `ParsePagination` (jangan menerima `per_page`
   tanpa batas).
+
+## Receipt notifications
+
+`GET /api/v1/notifications/receipts` returns active (`pending`, `checked`,
+`processed`) receipts ordered by oldest activity, up to 100. Each item includes
+`days_waiting`; 3 calendar days or more is considered overdue. Requester accounts
+receive only their assigned department's receipts.
