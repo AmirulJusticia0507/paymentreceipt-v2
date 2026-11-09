@@ -438,7 +438,7 @@ Tujuan: dokumen kebijakan internal dan panduan pemakaian untuk pengguna akhir.
 
 Tujuan: lengkapi pelaporan, pengingat, audit, ekspor arsip, dan kontrol akses per department.
 
-- [ ] **T14.1** Laporan operasional dengan rentang tanggal dan rekap per department/status
+- [x] **T14.1** Laporan operasional dengan rentang tanggal dan rekap per department/status
 - [ ] **T14.2** Ekspor CSV daftar arsip PR mengikuti filter yang aktif
 - [ ] **T14.3** Wajibkan alasan saat receipt ditolak/dibatalkan dan tampilkan di audit status
 - [ ] **T14.4** Audit log terpusat untuk perubahan data penting dan tindakan admin; jangan simpan password/token

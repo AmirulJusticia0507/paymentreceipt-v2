@@ -31,3 +31,17 @@ LEFT JOIN payment_receipt p ON p.department_id = d.id
 GROUP BY d.id, d.nama
 ORDER BY coalesce(sum(p.total_harga), 0) DESC, d.nama ASC
 LIMIT $1;
+
+-- name: OperationalReport :many
+-- Rekap operasional receipt per department dan status untuk periode pilihan.
+SELECT d.id AS department_id, d.kode AS department_kode, d.nama AS department_nama,
+       p.status, count(*) AS receipt_count,
+       coalesce(sum(p.total_harga), 0)::text AS total_amount
+FROM payment_receipt p
+JOIN department d ON d.id = p.department_id
+WHERE p.tanggal_pembelian >= sqlc.arg('date_from')::date
+  AND p.tanggal_pembelian <= sqlc.arg('date_to')::date
+  AND (sqlc.narg('department_id')::bigint IS NULL
+       OR p.department_id = sqlc.narg('department_id')::bigint)
+GROUP BY d.id, d.kode, d.nama, p.status
+ORDER BY d.nama, p.status;

@@ -143,3 +143,60 @@ func (q *Queries) DashboardTopDepartments(ctx context.Context, limit int32) ([]D
 	}
 	return items, nil
 }
+
+const operationalReport = `-- name: OperationalReport :many
+SELECT d.id AS department_id, d.kode AS department_kode, d.nama AS department_nama,
+       p.status, count(*) AS receipt_count,
+       coalesce(sum(p.total_harga), 0)::text AS total_amount
+FROM payment_receipt p
+JOIN department d ON d.id = p.department_id
+WHERE p.tanggal_pembelian >= $1::date
+  AND p.tanggal_pembelian <= $2::date
+  AND ($3::bigint IS NULL
+       OR p.department_id = $3::bigint)
+GROUP BY d.id, d.kode, d.nama, p.status
+ORDER BY d.nama, p.status
+`
+
+type OperationalReportParams struct {
+	DateFrom     pgtype.Date
+	DateTo       pgtype.Date
+	DepartmentID pgtype.Int8
+}
+
+type OperationalReportRow struct {
+	DepartmentID   int64
+	DepartmentKode string
+	DepartmentNama string
+	Status         PaymentStatus
+	ReceiptCount   int64
+	TotalAmount    string
+}
+
+// Rekap operasional receipt per department dan status untuk periode pilihan.
+func (q *Queries) OperationalReport(ctx context.Context, arg OperationalReportParams) ([]OperationalReportRow, error) {
+	rows, err := q.db.Query(ctx, operationalReport, arg.DateFrom, arg.DateTo, arg.DepartmentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []OperationalReportRow
+	for rows.Next() {
+		var i OperationalReportRow
+		if err := rows.Scan(
+			&i.DepartmentID,
+			&i.DepartmentKode,
+			&i.DepartmentNama,
+			&i.Status,
+			&i.ReceiptCount,
+			&i.TotalAmount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

@@ -622,6 +622,13 @@ Semua butuh login (tanpa pembatasan role khusus).
 | GET `/dashboard/monthly-spend` | Array 12 bulan terakhir `{ month: "2026-10", label: "Oct 2026", spend: "1500000" }` — bulan kosong diisi `"0"`. |
 | GET `/dashboard/top-departments?limit=` | Array `{ id, nama, total }`. `limit` 1–20 (default 5); nilai di luar rentang jatuh ke default. |
 
+## Laporan Operasional
+
+`GET /reports/operational?date_from=YYYY-MM-DD&date_to=YYYY-MM-DD&department_id=`
+butuh login. Kedua tanggal wajib, tanggal akhir harus sama atau setelah tanggal
+awal. `department_id` opsional. Respons berisi satu baris untuk setiap kombinasi
+department/status dengan `receipt_count` dan `total_amount` selama periode itu.
+
 ---
 
 ## Contoh alur lengkap

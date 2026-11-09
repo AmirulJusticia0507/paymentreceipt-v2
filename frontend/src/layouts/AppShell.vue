@@ -51,6 +51,7 @@ const NAV_GROUPS: NavGroup[] = [
       { label: 'Dashboard', to: '/', icon: LayoutDashboard },
       { label: 'Payment Receipt', to: '/payment-receipts', icon: Receipt },
       { label: 'Arsip PR', to: '/pr-archives', icon: FileText },
+      { label: 'Laporan Operasional', to: '/reports/operational', icon: FileText },
     ],
   },
   {

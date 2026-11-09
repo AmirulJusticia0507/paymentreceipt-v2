@@ -25,6 +25,7 @@ import (
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/middleware"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/paymentreceipt"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/paymentreceiptstore"
+	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/report"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/requestbasestore"
 	"github.com/AmirulJusticia0507/paymentreceipt-v2/backend/internal/requeststore"
 )
@@ -172,6 +173,7 @@ func New(d Deps) http.Handler {
 
 			// Dashboard (Phase 9).
 			dashboard.Mount(r, authenticator, d.Queries)
+			report.Mount(r, d.Queries)
 
 			// Modul bisnis lain menyusul di Phase 5-7.
 		})
