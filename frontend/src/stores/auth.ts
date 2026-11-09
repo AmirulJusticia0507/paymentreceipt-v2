@@ -4,6 +4,7 @@ import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 
 import { ApiError, http } from '@/lib/http'
+import { useBiometric } from '@/composables/useBiometric'
 import type { LoginResponse, User, UserRole } from '@/lib/types'
 
 export const useAuthStore = defineStore('auth', () => {
@@ -16,6 +17,25 @@ export const useAuthStore = defineStore('auth', () => {
   const role = computed<UserRole | null>(() => user.value?.role ?? null)
 
   const isAdmin = computed(() => role.value === 'admin')
+
+  // --- Biometric lock (WebAuthn Platform Authenticator) ---
+  const biometricLocked = ref(false)
+  const biometricEnrolled = ref(false)
+
+  /** Kunci aplikasi, harus dibuka dengan sidik jari. */
+  function lockBiometric(): void {
+    biometricLocked.value = true
+  }
+
+  /** Buka kunci aplikasi setelah verifikasi sidik jari sukses. */
+  function unlockBiometric(): void {
+    biometricLocked.value = false
+  }
+
+  /** Tandai sidik jari sudah terdaftar secara lokal. */
+  function setBiometricEnrolled(value: boolean): void {
+    biometricEnrolled.value = value
+  }
 
   /**
    * Loading session saat aplikasi dibuka.
@@ -30,6 +50,15 @@ export const useAuthStore = defineStore('auth', () => {
 
     try {
       user.value = await http.get<User>('/api/v1/auth/me', { skipRefresh: true })
+
+      // Setelah sesi valid, cek apakah perlu kunci biometrik. Kalau browser
+      // mendukung dan credential sudah terdaftar, kunci aplikasi sampai
+      // pengguna memverifikasi sidik jari.
+      const { isAvailable, hasEnrolled } = useBiometric()
+      if (await isAvailable() && hasEnrolled()) {
+        biometricLocked.value = true
+        biometricEnrolled.value = true
+      }
     } catch (err) {
       // 401 di sini berarti memang tidak ada sesi - itu kondisi normal,
       // bukan error. Error lain (network, 500) juga berarti belum ada user
@@ -67,12 +96,28 @@ export const useAuthStore = defineStore('auth', () => {
       // gagal adalah pengalaman yang lebih buruk daripada cookie yatim.
     } finally {
       user.value = null
+      clearBiometric()
     }
   }
 
   /** Memperbarui profil lokal setelah server menyimpan perubahan profil. */
   function setUser(nextUser: User): void {
     user.value = nextUser
+  }
+
+  /** Daftarkan sidik jari baru (dipanggil saat pertama kali mengaktifkan). */
+  async function enrollBiometric(): Promise<void> {
+    const { enroll } = useBiometric()
+    await enroll()
+    biometricEnrolled.value = true
+  }
+
+  /** Hapus credential biometric (mis. saat logout atau nonaktifkan fitur). */
+  function clearBiometric(): void {
+    biometricLocked.value = false
+    biometricEnrolled.value = false
+    const { remove } = useBiometric()
+    remove()
   }
 
   function hasRole(...roles: UserRole[]): boolean {
@@ -83,6 +128,7 @@ export const useAuthStore = defineStore('auth', () => {
   function clear(): void {
     user.value = null
     initialized.value = true
+    clearBiometric()
   }
 
   return {
@@ -92,9 +138,16 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     role,
     isAdmin,
+    biometricLocked,
+    biometricEnrolled,
     login,
     logout,
     setUser,
+    setBiometricEnrolled,
+    lockBiometric,
+    unlockBiometric,
+    enrollBiometric,
+    clearBiometric,
     restore,
     hasRole,
     clear,
