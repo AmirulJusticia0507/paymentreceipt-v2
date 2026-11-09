@@ -48,6 +48,9 @@ interface NavGroup {
   items: NavItem[]
 }
 
+const ADMIN_ROLES: UserRole[] = ['admin']
+const REPORT_ROLES: UserRole[] = ['admin', 'ga_staff', 'approver', 'viewer']
+
 const NAV_GROUPS: NavGroup[] = [
   {
     title: 'Umum',
@@ -55,31 +58,31 @@ const NAV_GROUPS: NavGroup[] = [
       { label: 'Dashboard', to: '/', icon: LayoutDashboard },
       { label: 'Payment Receipt', to: '/payment-receipts', icon: Receipt },
       { label: 'Arsip PR', to: '/pr-archives', icon: FileText },
-      { label: 'Laporan Operasional', to: '/reports/operational', icon: FileText },
+      { label: 'Laporan Operasional', to: '/reports/operational', icon: FileText, roles: REPORT_ROLES },
     ],
   },
   {
     title: 'Master Data',
     items: [
-      { label: 'Department', to: '/departments', icon: Package },
-      { label: 'Satuan', to: '/satuan', icon: Tags },
-      { label: 'Kategori', to: '/categories', icon: Tags },
-      { label: 'Base', to: '/bases', icon: FolderTree },
-      { label: 'Sumber Beli', to: '/sources', icon: Truck },
+      { label: 'Department', to: '/departments', icon: Package, roles: ADMIN_ROLES },
+      { label: 'Satuan', to: '/satuan', icon: Tags, roles: ADMIN_ROLES },
+      { label: 'Kategori', to: '/categories', icon: Tags, roles: ADMIN_ROLES },
+      { label: 'Base', to: '/bases', icon: FolderTree, roles: ADMIN_ROLES },
+      { label: 'Sumber Beli', to: '/sources', icon: Truck, roles: ADMIN_ROLES },
     ],
   },
   {
     title: 'Pengajuan',
     items: [
-      { label: 'Request', to: '/requests', icon: FolderTree },
-      { label: 'Request Base', to: '/request-bases', icon: FolderTree },
+      { label: 'Request', to: '/requests', icon: FolderTree, roles: ADMIN_ROLES },
+      { label: 'Request Base', to: '/request-bases', icon: FolderTree, roles: ADMIN_ROLES },
     ],
   },
   {
     title: 'Administrasi',
     items: [
-      { label: 'Pengguna', to: '/users', icon: Users, roles: ['admin'] },
-      { label: 'Audit Log', to: '/audit-logs', icon: FileText, roles: ['admin'] },
+      { label: 'Pengguna', to: '/users', icon: Users, roles: ADMIN_ROLES },
+      { label: 'Audit Log', to: '/audit-logs', icon: FileText, roles: ADMIN_ROLES },
     ],
   },
 ]

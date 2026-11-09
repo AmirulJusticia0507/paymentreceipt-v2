@@ -47,3 +47,23 @@ func TestAuthenticator_UsesCurrentRoleAndDepartmentFromDatabase(t *testing.T) {
 		t.Fatalf("identity = %#v, want current database identity", got)
 	}
 }
+
+func TestAuthenticator_RequireRoleRejectsRoleOutsideModule(t *testing.T) {
+	authenticator := NewAuthenticator(testManager(time.Minute), CookieOptions{})
+	called := false
+	endpoint := authenticator.RequireRole(RoleAdmin, RoleGAStaff)(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		called = true
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	request := httptest.NewRequest(http.MethodGet, "/api/v1/sources", nil)
+	request = request.WithContext(WithIdentity(request.Context(), Identity{UserID: 8, Role: RoleRequester}))
+	response := httptest.NewRecorder()
+	endpoint.ServeHTTP(response, request)
+
+	if response.Code != http.StatusForbidden {
+		t.Fatalf("status = %d, want %d", response.Code, http.StatusForbidden)
+	}
+	if called {
+		t.Fatal("protected handler was called for requester")
+	}
+}

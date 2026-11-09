@@ -190,8 +190,8 @@ func mountRequestBases(
 	admin := authn.RequireRole(auth.RoleAdmin)
 
 	r.Route(path, func(r chi.Router) {
-		r.Get("/", h.List)
-		r.Get("/{id}", h.GetByID)
+		r.With(admin).Get("/", h.List)
+		r.With(admin).Get("/{id}", h.GetByID)
 
 		r.With(admin).Post("/", h.Create)
 		r.With(admin).Put("/{id}", h.Update)

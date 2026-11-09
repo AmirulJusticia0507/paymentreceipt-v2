@@ -69,6 +69,16 @@ dan `403` bila sudah login tapi role tidak cukup.
 | Viewer | `viewer` | Baca saja. |
 | Requester | `requester` | Buat/ubah receipt dan baca request/receipt hanya di department yang ditetapkan admin; tidak dapat mengubah status. |
 
+Menu aplikasi per role: admin mendapat semua modul; GA Staff mendapat dashboard,
+receipt, arsip PR, laporan, dan notifikasi; approver dan viewer mendapat dashboard,
+receipt, arsip PR, laporan, dan notifikasi; requester mendapat dashboard, receipt,
+arsip department-nya, dan notifikasi. Semua role dapat membuka profil melalui menu akun.
+Route halaman administrasi dibatasi ke admin; endpoint laporan menolak requester,
+request-base dan katalog base hanya untuk admin, sedangkan daftar sumber pembelian
+hanya untuk admin, GA Staff, dan approver. Endpoint department, satuan, kategori,
+dan request tetap menyediakan lookup yang dibutuhkan form receipt; hasil request
+requester selalu dibatasi ke department akunnya.
+
 Matriks per-endpoint ada di tiap tabel di bawah (`Admin only` = hanya `admin`).
 
 ### Error (RFC 9457 Problem Details)

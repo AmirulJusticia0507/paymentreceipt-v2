@@ -149,10 +149,13 @@ func New(d Deps) http.Handler {
 				masterdata.ResourceDescribe{Singular: "Kategori", Plural: "Kategori"},
 				"payment receipt", categoryDTO, nil)
 
-			// Base punya endpoint autocomplete untuk dipakai form request base.
-			mountMasterData(r, authenticator, basestore.NewBaseStore(d.Queries), "/bases",
-				masterdata.ResourceDescribe{Singular: "Base", Plural: "Base"},
-				"request base", baseDTO, SearchBases(d.Queries))
+			// Base adalah master data administrasi; role lain tidak memerlukan
+			// katalog ini untuk mengisi receipt.
+			r.With(authenticator.RequireRole(auth.RoleAdmin)).Group(func(r chi.Router) {
+				mountMasterData(r, authenticator, basestore.NewBaseStore(d.Queries), "/bases",
+					masterdata.ResourceDescribe{Singular: "Base", Plural: "Base"},
+					"request base", baseDTO, SearchBases(d.Queries))
+			})
 
 			// Request (pengajuan department) — filter list per departemen
 			// dan department_id wajib saat create/update.
@@ -170,14 +173,16 @@ func New(d Deps) http.Handler {
 			mountReceiptNotifications(r, authenticator, d.Queries)
 
 			// AI ekstraksi struk/faktur — upload gambar, dapatkan data terstruktur.
-			r.Post(aiExtractRoute, aiH.ExtractReceipt)
+			r.With(authenticator.RequireRole(auth.RoleAdmin, auth.RoleGAStaff, auth.RoleRequester)).Post(aiExtractRoute, aiH.ExtractReceipt)
 
 			// Arsip PR (Phase 7).
 			mountPrArchive(r, authenticator, d.DB, d.Queries)
 
 			// Dashboard (Phase 9).
 			dashboard.Mount(r, authenticator, d.Queries)
-			report.Mount(r, d.Queries)
+			r.With(authenticator.RequireRole(auth.RoleAdmin, auth.RoleGAStaff, auth.RoleApprover, auth.RoleViewer)).Group(func(r chi.Router) {
+				report.Mount(r, d.Queries)
+			})
 
 			// Modul bisnis lain menyusul di Phase 5-7.
 		})

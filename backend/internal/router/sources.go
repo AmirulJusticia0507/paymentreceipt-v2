@@ -186,9 +186,10 @@ func (h *sourceHandler) delete(w http.ResponseWriter, r *http.Request) {
 
 func mountSources(r chi.Router, a *auth.Authenticator, q *dbgen.Queries) {
 	h := &sourceHandler{q: q}
+	read := a.RequireRole(auth.RoleAdmin, auth.RoleGAStaff, auth.RoleApprover)
 	r.Route("/sources", func(r chi.Router) {
-		r.Get("/", h.list)
-		r.Get("/{id}", h.get)
+		r.With(read).Get("/", h.list)
+		r.With(read).Get("/{id}", h.get)
 		r.Group(func(r chi.Router) {
 			r.Use(a.RequireRole(auth.RoleAdmin))
 			r.Post("/", h.create)
