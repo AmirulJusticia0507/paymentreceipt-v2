@@ -205,20 +205,27 @@ const roleLabel: Record<UserRole, string> = {
     >
       <!-- Brand -->
       <div class="flex h-16 shrink-0 items-center gap-2.5 border-b border-default px-3.5">
-        <div
-          class="flex items-center justify-center rounded-xl bg-white p-1.5 shadow-2xs ring-1 ring-black/5 dark:bg-white dark:ring-white/20 transition-all shrink-0"
-          :class="collapsed ? 'size-10' : 'h-10 px-2 max-w-[130px]'"
+        <RouterLink
+          to="/"
+          aria-label="Kembali ke dashboard"
+          title="Kembali ke dashboard"
+          class="flex min-w-0 items-center gap-2.5 rounded-lg focus-visible:outline-2 focus-visible:outline-brand-500"
         >
-          <img
-            src="/susi-air-logo.png"
-            alt="Logo Susi Air"
-            class="h-full w-auto object-contain"
-          />
-        </div>
-        <div v-if="!collapsed" class="min-w-0">
-          <p class="truncate text-sm font-bold text-ink">Payment Receipt</p>
-          <p class="truncate text-xs font-semibold text-brand-600 dark:text-brand-400">Susi Air · GA</p>
-        </div>
+          <div
+            class="flex shrink-0 items-center justify-center rounded-xl bg-white p-1.5 shadow-2xs ring-1 ring-black/5 transition-all dark:bg-white dark:ring-white/20"
+            :class="collapsed ? 'size-10' : 'h-10 max-w-[130px] px-2'"
+          >
+            <img
+              src="/susi-air-logo.png"
+              alt="Logo Susi Air"
+              class="h-full w-auto object-contain"
+            />
+          </div>
+          <div v-if="!collapsed" class="min-w-0">
+            <p class="truncate text-sm font-bold text-ink">Payment Receipt</p>
+            <p class="truncate text-xs font-semibold text-brand-600 dark:text-brand-400">Susi Air · GA</p>
+          </div>
+        </RouterLink>
         <button
           type="button"
           class="ml-auto rounded-md p-1 text-ink-muted hover:text-ink lg:hidden"
