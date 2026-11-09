@@ -71,6 +71,15 @@ async function fetchList(): Promise<void> {
   }
 }
 
+function exportCsv(): void {
+  const params = qs({
+    q: search.value.trim() || undefined,
+    date_from: dateFrom.value || undefined,
+    date_to: dateTo.value || undefined,
+  })
+  window.location.href = `/api/v1/pr-archives/export${params}`
+}
+
 onMounted(fetchList)
 
 async function loadBulkReceipts(): Promise<void> {
@@ -205,6 +214,7 @@ async function saveForm(): Promise<void> {
       <input v-model="dateFrom" type="date" class="rounded-lg border border-default bg-raised px-3 py-2 text-sm text-ink focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none" />
       <input v-model="dateTo" type="date" class="rounded-lg border border-default bg-raised px-3 py-2 text-sm text-ink focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none" />
       <BaseButton variant="secondary" size="sm" @click="fetchList()">Cari</BaseButton>
+      <BaseButton variant="secondary" size="sm" @click="exportCsv()">Export CSV</BaseButton>
     </div>
 
     <BaseTable

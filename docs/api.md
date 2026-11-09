@@ -608,6 +608,10 @@ Respons sukses `201`:
 PDF arsip: `GET /pr-archives/{id}/pdf` (bentuk sama dengan PDF payment
 receipt).
 
+Ekspor daftar arsip: `GET /pr-archives/export?q=&date_from=YYYY-MM-DD&date_to=YYYY-MM-DD`.
+Filter pencarian dan tanggal sama dengan daftar arsip. Ekspor dibatasi 50.000
+baris; jika hasil lebih besar, server meminta filter dipersempit.
+
 ---
 
 ## Dashboard

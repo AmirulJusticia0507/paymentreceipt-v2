@@ -1,9 +1,11 @@
 package router
 
 import (
+	"encoding/csv"
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -61,6 +63,73 @@ func (h *prArchiveHandler) List(w http.ResponseWriter, r *http.Request) {
 
 	page := httputil.NewPagination(p.Page, p.PerPage, total)
 	httputil.JSONList(w, items, page)
+}
+
+// ExportCSV mengekspor arsip yang cocok dengan filter aktif. Batas 50.000
+// baris menjaga penggunaan memori tetap terkontrol; respons ditolak utuh bila
+// hasil lebih besar supaya file tidak tampak lengkap padahal terpotong.
+func (h *prArchiveHandler) ExportCSV(w http.ResponseWriter, r *http.Request) {
+	dateFrom, err := parseDateField(r.URL.Query().Get("date_from"), "date_from")
+	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	dateTo, err := parseDateField(r.URL.Query().Get("date_to"), "date_to")
+	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	if dateFrom != nil && dateTo != nil && dateTo.Before(*dateFrom) {
+		httputil.Problemf(w, r, apperror.FieldValidation("date_to", "Tanggal akhir harus sama atau setelah tanggal awal", "range"))
+		return
+	}
+	approverID := int64(0)
+	if raw := r.URL.Query().Get("approver"); raw != "" {
+		approverID, err = strconv.ParseInt(raw, 10, 64)
+		if err != nil || approverID <= 0 {
+			httputil.Problemf(w, r, apperror.FieldValidation("approver", "Approver tidak valid", "number"))
+			return
+		}
+	}
+
+	const exportLimit = 50000
+	items, total, err := h.svc.List(r.Context(), prarchive.Filters{
+		DateFrom: dateFrom, DateTo: dateTo,
+		Query: strings.TrimSpace(r.URL.Query().Get("q")), ApproverID: approverID,
+		Limit: exportLimit,
+	})
+	if err != nil {
+		httputil.Problemf(w, r, err)
+		return
+	}
+	if total > exportLimit {
+		httputil.Problemf(w, r, apperror.New(apperror.KindValidation, "pr_archive.export_too_large", "Hasil ekspor melebihi 50.000 baris; persempit filter tanggal atau pencarian"))
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/csv; charset=utf-8")
+	w.Header().Set("Content-Disposition", "attachment; filename=\"pr-archives.csv\"")
+	writer := csv.NewWriter(w)
+	_ = writer.Write([]string{"Kode PR", "Kode Receipt", "Nama Request", "Tanggal Selesai", "Disetujui Oleh", "Manager Approved", "Deskripsi", "Quantity", "Harga Rencana", "Harga Aktual"})
+	for _, item := range items {
+		if err := writer.Write([]string{
+			csvSafeText(item.Kode), csvSafeText(item.ReceiptKode), csvSafeText(item.NamaRequest),
+			item.TanggalSelesai.Format("2006-01-02"), csvSafeText(item.ApprovedByNama),
+			csvSafeText(item.ManagerApproved), csvSafeText(item.Description),
+			strconv.Itoa(int(item.Quantity)), item.HargaRencana, item.HargaAktual,
+		}); err != nil {
+			return
+		}
+	}
+	writer.Flush()
+}
+
+func csvSafeText(value string) string {
+	trimmed := strings.TrimLeft(value, " \t\r\n")
+	if trimmed != "" && strings.ContainsRune("=+-@", rune(trimmed[0])) {
+		return "'" + value
+	}
+	return value
 }
 
 // GetByID menangani GET /pr-archives/{id}.
@@ -334,6 +403,7 @@ func mountPrArchive(
 	admin := authn.RequireRole(auth.RoleAdmin)
 
 	r.Route("/pr-archives", func(r chi.Router) {
+		r.Get("/export", h.ExportCSV)
 		r.Get("/", h.List)
 		r.Get("/{id}", h.GetByID)
 		r.Get("/{id}/pdf", h.pdf)
