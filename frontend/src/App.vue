@@ -12,7 +12,7 @@ import BiometricLock from '@/components/ui/BiometricLock.vue'
 const auth = useAuthStore()
 const router = useRouter()
 
-const biometricLocked = computed(() => auth.biometricLocked && auth.biometricEnrolled)
+const biometricLocked = computed(() => auth.biometricSupported && auth.biometricLocked && auth.biometricEnrolled)
 
 function routerPushLogin(): void {
   void router.push({ name: 'login' })

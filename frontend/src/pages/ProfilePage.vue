@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { Save, UserRound } from 'lucide-vue-next'
+import { computed, ref, watch, onMounted } from 'vue'
+import { Save, UserRound, Fingerprint } from 'lucide-vue-next'
 import { useMutation } from '@tanstack/vue-query'
 
 import BaseButton from '@/components/ui/BaseButton.vue'
@@ -10,11 +10,16 @@ import type { Toast } from '@/composables/useMasterCrud'
 import { ApiError, http } from '@/lib/http'
 import type { User } from '@/lib/types'
 import { useAuthStore } from '@/stores/auth'
+import { useBiometric } from '@/composables/useBiometric'
 
 const auth = useAuthStore()
+const { isAvailable, enroll } = useBiometric()
 const fullName = ref(auth.user?.full_name ?? '')
 const submitted = ref(false)
 const toast = ref<Toast | null>(null)
+
+const biometricEnrolling = ref(false)
+const biometricSupported = ref(false)
 
 watch(
   () => auth.user?.full_name,
@@ -51,6 +56,48 @@ function submit(): void {
   if (fullNameError.value) return
   mutation.mutate()
 }
+
+/** Kunci biometric didukung browser atau tidak. */
+async function checkBiometricSupport(): Promise<void> {
+  biometricSupported.value = await isAvailable()
+}
+
+/** Aktifkan atau nonaktifkan kunci sidik jari. */
+async function toggleBiometric(enable: boolean): Promise<void> {
+  if (enable) {
+    biometricEnrolling.value = true
+    try {
+      await enroll()
+      auth.setBiometricEnrolled(true)
+      auth.lockBiometric()
+      toast.value = {
+        kind: 'success',
+        title: 'Sidik jari terdaftar',
+        description: 'Kunci biometric aktif. Anda akan diminta verifikasi sidik jari saat membuka aplikasi.',
+      }
+    } catch (err: any) {
+      biometricEnrolling.value = false
+      toast.value = {
+        kind: 'error',
+        title: 'Gagal mendaftarkan sidik jari',
+        description: err?.message ?? 'Coba lagi nanti.',
+      }
+      return
+    }
+    biometricEnrolling.value = false
+  } else {
+    auth.clearBiometric()
+    toast.value = {
+      kind: 'info',
+      title: 'Sidik jari dinonaktifkan',
+      description: 'Kunci biometric dimatikan.',
+    }
+  }
+}
+
+onMounted(() => {
+  checkBiometricSupport()
+})
 </script>
 
 <template>
@@ -64,6 +111,7 @@ function submit(): void {
       <p class="mt-1 text-sm text-ink-muted">Ubah nama lengkap yang tampil pada aplikasi.</p>
     </div>
 
+    <!-- Form nama lengkap -->
     <form class="card space-y-5 p-5" @submit.prevent="submit">
       <FormField
         v-model="fullName"
@@ -82,6 +130,44 @@ function submit(): void {
         </BaseButton>
       </div>
     </form>
+
+    <!-- Kunci biometric -->
+    <div class="card space-y-4 p-5">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="flex items-center gap-2 text-brand-600 mb-1">
+            <Fingerprint class="size-4" aria-hidden="true" />
+            <p class="text-sm font-semibold">Kunci Sidik Jari</p>
+          </div>
+          <p class="text-xs text-ink-muted">
+            Buka aplikasi dengan sensor sidik jari (TouchID, FaceID, Windows Hello, atau sidik jari Android).
+            <br />
+            <span class="block mt-1">
+              {{ !biometricSupported ? 'Memeriksa dukungan…' : biometricSupported ? 'Didukung di browser ini.' : 'Tidak didukung di browser ini.' }}
+            </span>
+          </p>
+        </div>
+        <div class="relative inline-flex items-center">
+          <input
+            id="biometric-toggle"
+            type="checkbox"
+            role="switch"
+            :aria-checked="auth.biometricEnrolled"
+            :checked="auth.biometricEnrolled"
+            @change="toggleBiometric(($event.target as HTMLInputElement).checked)"
+            :disabled="!biometricSupported || biometricEnrolling"
+            class="sr-only peer"
+          />
+          <div
+            class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600"
+          />
+        </div>
+      </div>
+
+      <p v-if="!biometricSupported" class="text-xs text-ink-muted mt-1">
+        Browser atau perangkat ini tidak mendukung autentikasi biometric (WebAuthn).
+      </p>
+    </div>
 
     <div class="fixed right-4 bottom-4 z-40 w-full max-w-sm">
       <ToastNotification

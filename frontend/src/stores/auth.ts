@@ -21,6 +21,7 @@ export const useAuthStore = defineStore('auth', () => {
   // --- Biometric lock (WebAuthn Platform Authenticator) ---
   const biometricLocked = ref(false)
   const biometricEnrolled = ref(false)
+  const biometricSupported = ref(false)
 
   /** Kunci aplikasi, harus dibuka dengan sidik jari. */
   function lockBiometric(): void {
@@ -51,11 +52,13 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       user.value = await http.get<User>('/api/v1/auth/me', { skipRefresh: true })
 
-      // Setelah sesi valid, cek apakah perlu kunci biometrik. Kalau browser
-      // mendukung dan credential sudah terdaftar, kunci aplikasi sampai
-      // pengguna memverifikasi sidik jari.
+      // Cek dukungan browser ke biometric.
       const { isAvailable, hasEnrolled } = useBiometric()
-      if (await isAvailable() && hasEnrolled()) {
+      biometricSupported.value = await isAvailable()
+
+      // Setelah sesi valid, kunci aplikasi kalau browser mendukung dan
+      // credential sudah terdaftar.
+      if (biometricSupported.value && hasEnrolled()) {
         biometricLocked.value = true
         biometricEnrolled.value = true
       }
@@ -140,6 +143,7 @@ export const useAuthStore = defineStore('auth', () => {
     isAdmin,
     biometricLocked,
     biometricEnrolled,
+    biometricSupported,
     login,
     logout,
     setUser,
