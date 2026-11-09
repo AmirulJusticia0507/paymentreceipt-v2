@@ -19,7 +19,7 @@ const submitted = ref(false)
 const toast = ref<Toast | null>(null)
 
 const biometricEnrolling = ref(false)
-const biometricSupported = ref(false)
+const biometricSupported = ref<boolean | null>(null)
 
 watch(
   () => auth.user?.full_name,
@@ -143,11 +143,11 @@ onMounted(() => {
             Buka aplikasi dengan sensor sidik jari (TouchID, FaceID, Windows Hello, atau sidik jari Android).
             <br />
             <span class="block mt-1">
-              {{ !biometricSupported ? 'Memeriksa dukungan…' : biometricSupported ? 'Didukung di browser ini.' : 'Tidak didukung di browser ini.' }}
+              {{ biometricSupported === null ? 'Memeriksa dukungan…' : biometricSupported ? 'Didukung di browser ini.' : 'Tidak didukung di browser ini.' }}
             </span>
           </p>
         </div>
-        <div class="relative inline-flex items-center">
+        <label for="biometric-toggle" class="relative inline-flex cursor-pointer items-center">
           <input
             id="biometric-toggle"
             type="checkbox"
@@ -155,16 +155,16 @@ onMounted(() => {
             :aria-checked="auth.biometricEnrolled"
             :checked="auth.biometricEnrolled"
             @change="toggleBiometric(($event.target as HTMLInputElement).checked)"
-            :disabled="!biometricSupported || biometricEnrolling"
+            :disabled="biometricSupported !== true || biometricEnrolling"
             class="sr-only peer"
           />
           <div
             class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600"
           />
-        </div>
+        </label>
       </div>
 
-      <p v-if="!biometricSupported" class="text-xs text-ink-muted mt-1">
+      <p v-if="biometricSupported === false" class="text-xs text-ink-muted mt-1">
         Browser atau perangkat ini tidak mendukung autentikasi biometric (WebAuthn).
       </p>
     </div>
