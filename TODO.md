@@ -446,6 +446,7 @@ Tujuan: lengkapi pelaporan, pengingat, audit, ekspor arsip, dan kontrol akses pe
 - [x] **T14.6** Batasi data requester ke department yang ditetapkan pada akun; role lain mengikuti kewenangan saat ini
 - [~] **T14.7** Review UX alur utama di mobile, perbaiki temuan, dan dokumentasikan skenario verifikasi
 - [~] **T14.8** Persist status notifikasi receipt per pengguna; yang dibaca hilang sampai ada aktivitas receipt baru
+- [ ] **T14.9** Pisahkan menu dan halaman requester; lindungi modul yang bukan bagian alur requester
 
 ---
 
