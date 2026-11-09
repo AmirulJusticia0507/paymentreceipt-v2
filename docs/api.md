@@ -448,8 +448,9 @@ Validasi server (semua menghasilkan `422` + `errors[]` per-field):
 { "status": "checked", "note": "Dicek GA" }
 ```
 
-Transisi harus legal (diagram di atas); selain itu `409`. `note` opsional,
-tersimpan di status history.
+Transisi harus legal (diagram di atas); selain itu `409`. `note` maksimal 1.000
+karakter dan tersimpan di status history. Untuk `status: "cancelled"`, alasan
+wajib diisi setelah spasi di awal/akhir diabaikan; berlaku juga untuk bulk status.
 
 ### PATCH `/payment-receipts/bulk-status`
 

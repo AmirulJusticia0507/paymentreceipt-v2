@@ -283,6 +283,9 @@ func (s *Service) ChangeStatus(ctx context.Context, id int64, in ChangeStatusInp
 	if !domain.ValidStatus(in.Status) {
 		return Receipt{}, apperror.New(apperror.KindValidation, "payment_receipt.invalid_status", "Status tidak valid")
 	}
+	if err := validateStatusNote(in.Status, in.Note); err != nil {
+		return Receipt{}, err
+	}
 
 	item, err := s.store.Get(ctx, id)
 	if err != nil {
@@ -331,6 +334,9 @@ func (s *Service) BulkChangeStatus(ctx context.Context, ids []int64, status stri
 	if !domain.ValidStatus(status) {
 		return 0, apperror.New(apperror.KindValidation, "payment_receipt.invalid_status", "Status tidak valid")
 	}
+	if err := validateStatusNote(status, note); err != nil {
+		return 0, err
+	}
 	for _, id := range ids {
 		item, err := s.store.Get(ctx, id)
 		if err != nil {
@@ -359,6 +365,16 @@ func (s *Service) BulkChangeStatus(ctx context.Context, ids []int64, status stri
 		changed++
 	}
 	return changed, nil
+}
+
+func validateStatusNote(status, note string) error {
+	if status == string(domain.StatusCancelled) && strings.TrimSpace(note) == "" {
+		return apperror.FieldValidation("note", "Alasan penolakan wajib diisi", "required")
+	}
+	if len(note) > 1000 {
+		return apperror.FieldValidation("note", "Catatan maksimal 1000 karakter", "maxlen")
+	}
+	return nil
 }
 
 // ErrNotFound indicates that a receipt does not exist.

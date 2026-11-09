@@ -18,8 +18,8 @@ const router = useRouter()
 
 const STATUS_TRANSITIONS: Record<string, string[]> = {
   pending: ['checked'],
-  checked: ['processed', 'cancelled'],
-  processed: ['finished', 'cancelled'],
+  checked: ['processed'],
+  processed: ['finished'],
   finished: [],
   cancelled: [],
 }
@@ -51,6 +51,7 @@ const state = ref<'ready' | 'loading'>('ready')
 
 const bulkSelected = ref<Set<number>>(new Set())
 const bulkStatus = ref('')
+const bulkNote = ref('')
 const bulkBusy = ref(false)
 function toggleRow(id: number): void {
   if (bulkSelected.value.has(id)) bulkSelected.value.delete(id)
@@ -261,11 +262,12 @@ async function applyBulk(): Promise<void> {
   try {
     const res: any = await requestWithMeta('/api/v1/payment-receipts/bulk-status', {
       method: 'PATCH',
-      body: { ids: [...bulkSelected.value], status: bulkStatus.value, note: '' },
+      body: { ids: [...bulkSelected.value], status: bulkStatus.value, note: bulkNote.value.trim() },
     })
     toast.value = { kind: 'success', title: 'Bulk status berhasil', description: `Diubah: ${res.data?.changed ?? bulkSelected.value.size}` }
     bulkSelected.value = new Set()
     bulkStatus.value = ''
+    bulkNote.value = ''
     await fetchList()
   } catch (e: any) {
     toast.value = { kind: 'error', title: 'Bulk gagal', description: e?.message ?? 'Error' }
@@ -352,7 +354,8 @@ function openDetail(item: any): void {
         <option value="finished">Finished</option>
         <option value="cancelled">Cancelled</option>
       </select>
-      <BaseButton size="sm" :loading="bulkBusy" :disabled="!bulkStatus" @click="applyBulk()">Terapkan</BaseButton>
+      <textarea v-if="bulkStatus === 'cancelled'" v-model="bulkNote" maxlength="1000" rows="2" required aria-label="Alasan pembatalan" placeholder="Alasan penolakan wajib diisi" class="min-w-48 flex-1 rounded border border-default bg-raised px-2 py-1 text-sm text-ink focus-visible:outline-2 focus-visible:outline-brand-500" />
+      <BaseButton size="sm" :loading="bulkBusy" :disabled="!bulkStatus || (bulkStatus === 'cancelled' && !bulkNote.trim())" @click="applyBulk()">Terapkan</BaseButton>
     </div>
 
     <BaseButton variant="secondary" size="sm" @click="exportCsv()">Export CSV</BaseButton>

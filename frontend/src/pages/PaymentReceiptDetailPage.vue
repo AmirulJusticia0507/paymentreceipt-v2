@@ -432,12 +432,13 @@ function goBack(): void {
           <!-- Catatan -->
           <div>
             <label for="catatan-approval" class="block text-xs font-medium text-ink mb-1">
-              Catatan <span class="text-ink-muted font-normal">(opsional)</span>
+              Catatan <span class="text-ink-muted font-normal">(alasan wajib saat menolak)</span>
             </label>
             <textarea
               id="catatan-approval"
               v-model="catatan"
               rows="3"
+              maxlength="1000"
               placeholder="Tambahkan catatan persetujuan…"
               class="block w-full rounded-lg border border-default bg-raised px-3 py-2 text-sm text-ink placeholder:text-ink-muted focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none resize-none transition-(--transition-fast) disabled:opacity-60"
               :disabled="approving || cancelling"
@@ -465,7 +466,7 @@ function goBack(): void {
               v-if="canCancel"
               variant="danger"
               :loading="cancelling"
-              :disabled="approving"
+              :disabled="approving || !catatan.trim()"
               full
               @click="changeStatus('cancelled')"
             >
